@@ -1,27 +1,27 @@
 {
- "source": "att-string-transcoder ATTPrefabs.ts + attprefabulator spawnables.db (both MIT); regenerate with data/regen.js",
- "count": 1334,
- "spawnableCount": 820,
+ "source": "att-string-transcoder ATTPrefabs.ts + attprefabulator spawnables.db (both MIT); spawnable flags reconciled with live `spawn list` on 2026-09-25; retain catalog reference entries",
+ "count": 1342,
+ "spawnableCount": 1121,
  "prefabs": [
   {
    "name": "(Child_Node)_Climbing_Tower_Teleporter_Node",
    "hash": 5078,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "(OriginalRoot_Node)_Climbing_Tower_Teleporter_Node",
    "hash": 55446,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "(Original_Child_Node)_Climbing_Tower_Teleporter_Node",
    "hash": 26916,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "(Root_Node)_Climbing_Tower_Teleporter_Node",
    "hash": 7668,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "ATM_Coin_Bank",
@@ -31,17 +31,17 @@
   {
    "name": "Absolute_Apple_Tree_Variant",
    "hash": 15898,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Absolute_Blueberry_Tree_Variant",
    "hash": 16322,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "And",
    "hash": 42422,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Anvil",
@@ -76,12 +76,12 @@
   {
    "name": "Apple_Flower_Bloom",
    "hash": 12580,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Apple_Flower_Bud",
    "hash": 12578,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Apple_Full_Burnt",
@@ -106,7 +106,7 @@
   {
    "name": "Apple_Growth",
    "hash": 19192,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Apple_Half_Burnt",
@@ -136,37 +136,37 @@
   {
    "name": "Apple_Tree_Growth",
    "hash": 14226,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Apple_Tree_Separated",
    "hash": 8974,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Apple_Tree_Stage_1",
    "hash": 50926,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Apple_Tree_Stage_2",
    "hash": 57538,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Apple_Tree_Stage_3",
    "hash": 62702,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Area_of_Influence_Receiver_puzzle",
    "hash": 13256,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Area_of_Influence_Sender_puzzle",
    "hash": 59482,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Arrow",
@@ -201,12 +201,12 @@
   {
    "name": "Ash_Gotera_Seed_Spray",
    "hash": 61862,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Ash_Gotera_Smoke",
    "hash": 48860,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Ash_Pile",
@@ -216,27 +216,27 @@
   {
    "name": "Ash_Tree_Growth",
    "hash": 48208,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Ash_Tree_Seed",
    "hash": 35274,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Ash_Tree_Stage_1",
    "hash": 17892,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Assembly_Deck",
    "hash": 17520,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Auto_Cam_Player",
    "hash": 61644,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Axe_Head",
@@ -266,47 +266,47 @@
   {
    "name": "Axe_Training",
    "hash": 57010,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Babu",
    "hash": 9140,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Babu_Leg_Bone",
    "hash": 32526,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Babu_Leg_Full_Burnt",
    "hash": 64844,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Babu_Leg_Full_Cooked",
    "hash": 42916,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Babu_Leg_Full_Ripe",
    "hash": 2562,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Babu_Leg_Half_Burnt",
    "hash": 50328,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Babu_Leg_Half_Cooked",
    "hash": 50326,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Babu_Leg_Half_Ripe",
    "hash": 50252,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Bag",
@@ -316,52 +316,52 @@
   {
    "name": "Barrel_Bag",
    "hash": 19354,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Basic_Population_Folder",
    "hash": 31116,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Birch_Tree_Growth",
    "hash": 48218,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Birch_Tree_Seed",
    "hash": 55274,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Birch_Tree_Stage_1",
    "hash": 17704,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Blue_Mix_Recipe_Burnt_Stew",
    "hash": 57666,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Blue_Mix_Recipe_Cooked_Stew",
    "hash": 57642,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Blue_Mix_Recipe_Raw_Stew",
    "hash": 57614,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Blueberry_Flower_Bloom",
    "hash": 40922,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Blueberry_Flower_Bud",
    "hash": 40920,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Blueberry_Full_Burnt",
@@ -386,22 +386,22 @@
   {
    "name": "Blueberry_Growth",
    "hash": 19292,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Blueberry_Recipe_Burnt_Stew",
    "hash": 36830,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Blueberry_Recipe_Cooked_Stew",
    "hash": 36086,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Blueberry_Recipe_Raw_Stew",
    "hash": 35338,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Blueberry_Tree",
@@ -411,32 +411,32 @@
   {
    "name": "Blueberry_Tree_Growth",
    "hash": 14700,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Blueberry_Tree_Separated",
    "hash": 13784,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Blueberry_Tree_Stage_1",
    "hash": 26588,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Blueberry_Tree_Stage_2",
    "hash": 1038,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Blueberry_Tree_Stage_3",
    "hash": 1040,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Book",
    "hash": 44174,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Bookshelf",
@@ -451,17 +451,17 @@
   {
    "name": "Bought_Skill_Orb_Replacer",
    "hash": 42842,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Boulder_Button_Spawner",
    "hash": 21830,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Bouncing_Movement",
    "hash": 34396,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Bow",
@@ -481,12 +481,12 @@
   {
    "name": "Bramble_Obstacle",
    "hash": 59178,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Bramble_Obstacle_No_Bush",
    "hash": 24434,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Breakable_Box",
@@ -501,22 +501,22 @@
   {
    "name": "Breakable_Root_2.5m_Bendy",
    "hash": 35896,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Breakable_Root_2.5m_Curved",
    "hash": 35738,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Breakable_Root_2.5m_Straight",
    "hash": 34564,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Breakable_Root_2.5m_Wavy",
    "hash": 36054,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Breakable_Root_Bendy",
@@ -626,7 +626,7 @@
   {
    "name": "Breakable_Root_Spawner",
    "hash": 40946,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Breakable_Root_Straight",
@@ -736,7 +736,7 @@
   {
    "name": "Bronze_Alloy_Ingot",
    "hash": 26316,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Brown_Mushroom_Shield",
@@ -746,12 +746,12 @@
   {
    "name": "Bung",
    "hash": 8050,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Buried_Grass",
    "hash": 47090,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Buried_Pullup",
@@ -761,22 +761,22 @@
   {
    "name": "Buried_Pullup_Bramble",
    "hash": 37764,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Buried_Pullup_Carrot",
    "hash": 59026,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Buried_Pullup_Potato_Sapling",
    "hash": 10960,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Buried_Pullup_Primitive",
    "hash": 29550,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Burnable_Root_Fence",
@@ -886,7 +886,7 @@
   {
    "name": "Button_Spawner",
    "hash": 42752,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Campfire",
@@ -901,7 +901,7 @@
   {
    "name": "Campfire_Spawner",
    "hash": 6584,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Campfire_Weak",
@@ -1001,32 +1001,32 @@
   {
    "name": "Cave_Layer_Chunk",
    "hash": 61672,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Cave_Layer_Generation",
    "hash": 61664,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Cave_Surface_Teleporter_Ruins",
    "hash": 43368,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Cave_Teleporter",
    "hash": 27074,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Cave_Teleporter_Station",
    "hash": 22840,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Cave_Teleporter_Station_Ruins",
    "hash": 29310,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Cave_Wall_Support",
@@ -1036,7 +1036,7 @@
   {
    "name": "Cave_Water_Mound",
    "hash": 57530,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Ceiling_Lantern",
@@ -1166,17 +1166,17 @@
   {
    "name": "Christmas_Gift_Mail_Box_01",
    "hash": 24764,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Christmas_Gift_Mail_Box_02",
    "hash": 16494,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Christmas_Gift_Mail_Box_03",
    "hash": 1080,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Christmas_Tree",
@@ -1186,42 +1186,42 @@
   {
    "name": "Chunk_Directional_Surface",
    "hash": 47534,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Chunk_Spherical_Surface",
    "hash": 47614,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Chute_Gcore_Dynamic",
    "hash": 60246,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "CircleSpawner",
    "hash": 49642,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "CircleSpawner(ExplosiveSpike)",
    "hash": 31046,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "CircleSpawner_ExplosiveSpike",
    "hash": 31046,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Climbing_Tower_Progression_Visualizer",
    "hash": 44244,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Climbing_Unlock_Orb_Pedestal",
    "hash": 51594,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Coal",
@@ -1266,7 +1266,7 @@
   {
    "name": "Constant",
    "hash": 42424,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Cooking_Stand",
@@ -1286,7 +1286,7 @@
   {
    "name": "Copper_Cluster",
    "hash": 20646,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Copper_Ingot",
@@ -1326,7 +1326,7 @@
   {
    "name": "Crafting_Deck",
    "hash": 28396,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Crane_Center_Piece",
@@ -1336,7 +1336,7 @@
   {
    "name": "Crank",
    "hash": 15392,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Crate",
@@ -1346,12 +1346,12 @@
   {
    "name": "Crate_Stack_Spawner",
    "hash": 38974,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Crater_Gcore_Dynamic",
    "hash": 21218,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Cross_Slash",
@@ -1416,12 +1416,12 @@
   {
    "name": "Crystal_Wyrm_(Trial)",
    "hash": 48128,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Cube",
    "hash": 5262,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Curled_Wooden_Handle",
@@ -1431,7 +1431,7 @@
   {
    "name": "Customization_Controller",
    "hash": 5526,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Dagger_Blade_Curved",
@@ -1456,62 +1456,62 @@
   {
    "name": "Dais_Antler_Red_Variant",
    "hash": 18358,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Dais_Antler_Variant",
    "hash": 30180,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Dais_Child_Red_Variant",
    "hash": 13444,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Dais_Child_Variant",
    "hash": 31838,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Dais_Meat_Full_Burnt",
    "hash": 41870,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Dais_Meat_Full_Cooked",
    "hash": 43452,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Dais_Meat_Full_Ripe",
    "hash": 47394,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Dais_Meat_Half_Burnt",
    "hash": 43674,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Dais_Meat_Half_Cooked",
    "hash": 43502,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Dais_Meat_Half_Ripe",
    "hash": 43294,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Dais_Red_Variant",
    "hash": 8530,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Dais_Variant",
    "hash": 42430,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Darksteel_Ingot",
@@ -1521,37 +1521,37 @@
   {
    "name": "Death_Fern",
    "hash": 37642,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Death_Fern_Poison_Cloud",
    "hash": 39240,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Death_Fern_Seed_Planted",
    "hash": 40824,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "DebugArrow",
    "hash": 34892,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "DebugNet",
    "hash": 12632,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "DebugPlayerStone",
    "hash": 62120,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "DebugTool",
    "hash": 16078,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Decrafting_Deck",
@@ -1561,42 +1561,42 @@
   {
    "name": "Default_Burnt_Stew",
    "hash": 20108,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Default_Cooked_Stew",
    "hash": 19398,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Default_Raw_Stew",
    "hash": 43078,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Descent_Shaft_Gcore_Elevator_Dynamic",
    "hash": 52804,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Descent_Shaft_Gcore_Floor_Diggable_Dynamic",
    "hash": 18120,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Descent_Shaft_Gcore_Floor_Mining_Boulder_Dynamic",
    "hash": 6308,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Descent_Shaft_Gcore_Wall_Wyrm_Dynamic",
    "hash": 33338,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Digging_Box_Hebios",
    "hash": 42226,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Digging_Dirt_Mound",
@@ -1606,7 +1606,7 @@
   {
    "name": "Digging_Dirt_Mound_Hebios",
    "hash": 33570,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Digging_Dirt_Parts",
@@ -1616,52 +1616,52 @@
   {
    "name": "Digging_Geode",
    "hash": 55696,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Digging_Material_Box",
    "hash": 35612,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Directional_Encounter",
    "hash": 23796,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Discovery_Landmark",
    "hash": 37940,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Disk_Encounter",
    "hash": 65062,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Dragonfly",
    "hash": 54404,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Dragonfly_Corpse",
    "hash": 43552,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Drawbridge_Puzzle_Range",
    "hash": 40692,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Drawbridge_Puzzle_Range_long",
    "hash": 58514,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Drawbridge_Puzzle_Toggle",
    "hash": 24580,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Dried_Grass_Bush",
@@ -1676,7 +1676,7 @@
   {
    "name": "Duplicate_Paper_Variant",
    "hash": 11048,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Dynamite",
@@ -1726,12 +1726,12 @@
   {
    "name": "Eggplant_Flower_Bloom",
    "hash": 27848,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Eggplant_Flower_Bud",
    "hash": 27850,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Eggplant_Full_Burnt",
@@ -1756,7 +1756,7 @@
   {
    "name": "Eggplant_Growth",
    "hash": 19304,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Eggplant_Half_Burnt",
@@ -1781,17 +1781,17 @@
   {
    "name": "Eggplant_Potato_Recipe_Burnt_Stew",
    "hash": 57688,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Eggplant_Potato_Recipe_Cooked_Stew",
    "hash": 57712,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Eggplant_Potato_Recipe_Raw_Stew",
    "hash": 57736,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Eggplant_Tree",
@@ -1801,47 +1801,47 @@
   {
    "name": "Eggplant_Tree_Growth",
    "hash": 15090,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Eggplant_Tree_Separated",
    "hash": 17770,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Eggplant_Tree_Stage_1",
    "hash": 14282,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Eggplant_Tree_Stage_2",
    "hash": 14440,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Eggplant_Tree_Stage_3",
    "hash": 16154,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Elevator",
    "hash": 44898,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Elevator_Puzzle_Crank",
    "hash": 64134,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Elevator_Puzzle_Rope",
    "hash": 20484,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Empty",
    "hash": 40954,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Etheral_Arrow",
@@ -1861,7 +1861,7 @@
   {
    "name": "Explosion_Boulder_Large",
    "hash": 30854,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Explosive_Spike",
@@ -1886,42 +1886,42 @@
   {
    "name": "Firework",
    "hash": 40748,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Fixed_Light_Bag_Attachment",
    "hash": 1056,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Flame_Step_Effect_Proto",
    "hash": 24020,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Flame_Step_Effect_Proto_Lava_Test_Long_Variant",
    "hash": 54460,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Flame_Step_Effect_Proto_Lava_Test_Variant",
    "hash": 41226,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Flame_Step_Effect_Proto_Vent_test",
    "hash": 5142,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Flaming_Coalbed",
    "hash": 13480,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Flashlight_Lantern",
    "hash": 23642,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Flint",
@@ -1936,7 +1936,7 @@
   {
    "name": "Float_Range_Operator",
    "hash": 50768,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Flower_Blue",
@@ -1951,27 +1951,27 @@
   {
    "name": "FlyCam_Player",
    "hash": 44058,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Forage_Basket_Bag",
    "hash": 39880,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Forage_Side_Pouch_Attachment",
    "hash": 32874,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Forest_Chunk_Point_Generator",
    "hash": 45732,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Forest_Population",
    "hash": 18818,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Forge",
@@ -1986,17 +1986,17 @@
   {
    "name": "Friend_Request_Token",
    "hash": 15314,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Fruit_Tree_Path",
    "hash": 40982,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Gacha_Handle_",
    "hash": 34422,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Garlic_Full_Burnt",
@@ -2066,22 +2066,22 @@
   {
    "name": "Gift_Mail_Box",
    "hash": 56348,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Glowing_Mushroom_Recipe_Burnt_Stew",
    "hash": 47384,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Glowing_Mushroom_Recipe_Cooked_Stew",
    "hash": 47362,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Glowing_Mushroom_Recipe_Raw_Stew",
    "hash": 44774,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "GoldCoin",
@@ -2116,27 +2116,27 @@
   {
    "name": "Gotera_Ash_Bomb",
    "hash": 56764,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Gotera_Ash_Variant",
    "hash": 61448,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Gotera_Big_Dart",
    "hash": 26780,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Gotera_Big_Seed_Spray",
    "hash": 18468,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Gotera_Birch_Variant",
    "hash": 2370,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Gotera_Dart",
@@ -2146,7 +2146,7 @@
   {
    "name": "Gotera_Redwood_Variant",
    "hash": 27128,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Gotera_Seed_Spray",
@@ -2161,12 +2161,12 @@
   {
    "name": "Gotera_Walnut_Bomb",
    "hash": 35174,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Gotera_Walnut_Variant",
    "hash": 38096,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Gourd_Canteen",
@@ -2191,12 +2191,12 @@
   {
    "name": "Greater_Gotera_Charge_Explosion",
    "hash": 5316,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Greater_Gotera_Seed_Spray",
    "hash": 13476,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Green_Crystal_cluster_03",
@@ -2241,22 +2241,22 @@
   {
    "name": "Gymnasium_Prefab_Spawner",
    "hash": 25312,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Gymnasium_Teleport_Tablet",
    "hash": 2718,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Gymnasium_Xp_Display_View",
    "hash": 57304,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hammer",
    "hash": 61660,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Hammer_Head",
@@ -2276,7 +2276,7 @@
   {
    "name": "Hand_Camera",
    "hash": 59806,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Handle_Bow",
@@ -2301,7 +2301,7 @@
   {
    "name": "Handle_Large_Standard",
    "hash": 43252,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Handle_Long_Straight",
@@ -2386,52 +2386,52 @@
   {
    "name": "Handy_Cam",
    "hash": 13790,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Hanging_Health_Vine_01",
    "hash": 52952,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hanging_Health_Vine_02",
    "hash": 56796,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hanging_Health_Vine_03",
    "hash": 53496,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hanging_Loot_Box_Platform",
    "hash": 54462,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hanging_Loot_Sack",
    "hash": 49658,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hard_Metal_Small_Bits",
    "hash": 62594,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hard_Plate_Metal_Medium_Square",
    "hash": 50988,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Healing_Pod",
    "hash": 44360,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Healing_Pod_Plant",
    "hash": 48826,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Heart_Receptacle",
@@ -2441,7 +2441,7 @@
   {
    "name": "Hebios_Buried_Spawn_Area",
    "hash": 51290,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hebios_Camp_Barren",
@@ -2456,7 +2456,7 @@
   {
    "name": "Hebios_Camp_Spawner",
    "hash": 43300,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Hebios_Camp_Valley",
@@ -2466,32 +2466,32 @@
   {
    "name": "Hebios_Camp_Valley_Center_Section_NEW",
    "hash": 5350,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Hebios_Camp_Valley_Center_Section_Pond",
    "hash": 54680,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Hebios_Camp_Valley_Front_Section_Spike_Gate",
    "hash": 42358,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Hebios_Camp_Valley_Front_Section_Stone_Cliff",
    "hash": 19412,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Hebios_Camp_Valley_Left_Section_Archway",
    "hash": 40482,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Hebios_Camp_Valley_Left_Section_Hilly_Forest",
    "hash": 37966,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Hebios_Closed_Crate_Spawner",
@@ -2501,62 +2501,62 @@
   {
    "name": "Hebios_Crafted_Mould",
    "hash": 22498,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hebios_Guard",
    "hash": 5144,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hebios_Handle_Katana",
    "hash": 53200,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hebios_Handle_Kunai",
    "hash": 18456,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hebios_Handle_Naginata",
    "hash": 24220,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hebios_Handle_Wakizashi",
    "hash": 47662,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hebios_Katana_Blade_Part_01",
    "hash": 12388,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hebios_Katana_Blade_Part_02",
    "hash": 12386,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hebios_Katana_Blade_Part_Full",
    "hash": 17266,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hebios_Naginata_Blade_Part_01",
    "hash": 17238,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hebios_Naginata_Blade_Part_02",
    "hash": 42894,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hebios_Naginata_Blade_Part_Full",
    "hash": 17420,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hebios_Open_Crate_Spawner",
@@ -2566,17 +2566,17 @@
   {
    "name": "Hebios_Sai_Blade_Part_01",
    "hash": 57048,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hebios_Sai_Blade_Part_02",
    "hash": 56830,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hebios_Sai_Blade_Part_Full",
    "hash": 1600,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hebios_Storage_Chest",
@@ -2586,27 +2586,27 @@
   {
    "name": "Hebios_Storage_Chest_Climbing",
    "hash": 35078,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hebios_Storage_Chest_Gcore",
    "hash": 31618,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hebios_Wakizashi_Blade_Part_01",
    "hash": 49774,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hebios_Wakizashi_Blade_Part_02",
    "hash": 50184,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hebios_Wakizashi_Blade_Part_Full",
    "hash": 9018,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hitting_Short_Sword_Training",
@@ -2616,17 +2616,17 @@
   {
    "name": "Hoarder_Bag",
    "hash": 54214,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "HolidayRewardDisplay",
    "hash": 32158,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hot_Coalbed",
    "hash": 41234,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Hover_Piece",
@@ -2636,22 +2636,22 @@
   {
    "name": "Infinite_Fire",
    "hash": 5172,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Info_Board",
    "hash": 51114,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Ingredient_Generator_Shelf",
    "hash": 51096,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Int_Range_Operator",
    "hash": 55740,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Iron_Boulder",
@@ -2671,7 +2671,7 @@
   {
    "name": "Iron_Cluster",
    "hash": 28272,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Iron_Ingot",
@@ -2761,17 +2761,17 @@
   {
    "name": "Large_Sword",
    "hash": 8374,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Lava_Pool",
    "hash": 34696,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Leaderboard",
    "hash": 44390,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Lectern",
@@ -2791,7 +2791,7 @@
   {
    "name": "Lever",
    "hash": 27966,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "LightPuzzle_Test",
@@ -2801,7 +2801,7 @@
   {
    "name": "Liquid_Pump",
    "hash": 39174,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Lockbox",
@@ -2816,47 +2816,47 @@
   {
    "name": "Log_Mallet",
    "hash": 42518,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Log_Mallet_v02",
    "hash": 42030,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "LogicBoolOneTimeActivate",
    "hash": 28136,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "LogicFloatChangeOnBool",
    "hash": 62220,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "LogicFloatReset",
    "hash": 57100,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "LogicReset",
    "hash": 36976,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Logic_Context",
    "hash": 34630,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Logic_Int_To_Bool",
    "hash": 2454,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Logic_Operator",
    "hash": 13390,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Long_S_Hook",
@@ -2866,12 +2866,12 @@
   {
    "name": "Loot_Module",
    "hash": 29544,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "MRK_Activation_Line",
    "hash": 24096,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Automated_Pipe_Hazard_Elevator",
@@ -2881,162 +2881,162 @@
   {
    "name": "MRK_Automated_Pipe_Hazard_Elevator_7.6_Variant",
    "hash": 61754,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Automated_Pipe_Hazard_Elevator_Large_Inverse_Variant",
    "hash": 34664,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Automated_Pipe_Hazard_Elevator_Tall_Variant",
    "hash": 37626,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Fuel_Core",
    "hash": 65358,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Horizontal_Lift",
    "hash": 37822,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Lantern_01",
    "hash": 36130,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Lantern_Fire",
    "hash": 29468,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Large_Gear_Variant",
    "hash": 29874,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Large_Lever",
    "hash": 12812,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Liftable_Pipe_Gate",
    "hash": 9344,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Molten_Core",
    "hash": 51764,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Pipe_Gate",
    "hash": 49320,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Puzzle_Core_01",
    "hash": 14158,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Puzzle_Core_02",
    "hash": 28416,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Puzzle_Core_Initial_Stand_01_Variant",
    "hash": 60550,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Puzzle_Core_Initial_Stand_02_Variant",
    "hash": 30056,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Puzzle_Core_Stand_01",
    "hash": 58540,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Puzzle_Core_Stand_02",
    "hash": 34594,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Slip_Door",
    "hash": 14114,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Small_Lever",
    "hash": 1330,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Smelter_Gem_Pedestal_1",
    "hash": 33006,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Smelter_Gem_Pedestal_2",
    "hash": 56376,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Smelter_Gem_Pedestal_3",
    "hash": 57516,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_TeleporterOut",
    "hash": 49418,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_Wheel_Bridge",
    "hash": 61844,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_activation_lever",
    "hash": 35030,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_gate_01",
    "hash": 3094,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_gate_01_1.5x_Variant",
    "hash": 64136,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_gate_02",
    "hash": 54328,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "MRK_heartReceptacle_01",
    "hash": 9566,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Mail_Deposit_Box",
    "hash": 64204,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Main_Menu_Controller",
    "hash": 58810,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Map_Board",
@@ -3046,12 +3046,12 @@
   {
    "name": "Material_Box",
    "hash": 46376,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Material_Box_Pieces",
    "hash": 42982,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Metal_Bow",
@@ -3066,22 +3066,22 @@
   {
    "name": "Metal_Hebios_Katana_Blade",
    "hash": 17174,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Metal_Hebios_Naginata_Blade",
    "hash": 15124,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Metal_Hebios_Sai_Blade",
    "hash": 53124,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Metal_Hebios_Wakizashi_Blade",
    "hash": 48902,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Metal_Tap",
@@ -3091,7 +3091,7 @@
   {
    "name": "Metal_Wall_Hook",
    "hash": 61180,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Mining_Base_Generator",
@@ -3101,32 +3101,32 @@
   {
    "name": "Mining_Path",
    "hash": 30950,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Modular_Backpack",
    "hash": 12060,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Modular_Hook",
    "hash": 60188,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Modular_Sack",
    "hash": 8344,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Mother_Fern",
    "hash": 65004,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Mother_Fern_Seed_Spray",
    "hash": 26710,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Mould",
@@ -3136,12 +3136,12 @@
   {
    "name": "Mould_Press_Hebios",
    "hash": 2594,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Mould_Press_Standard",
    "hash": 13362,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Mould_Rack",
@@ -3291,7 +3291,7 @@
   {
    "name": "Mushroom_Fairy_Circle_Puzzle",
    "hash": 46706,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Mushroom_Fairy_Circle_Puzzle_OLD",
@@ -3301,52 +3301,52 @@
   {
    "name": "Mushroom_Fairy_Circle_Puzzle_Teleport",
    "hash": 28040,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Mushroom_Mix_Recipe_Burnt_Stew",
    "hash": 27398,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Mushroom_Mix_Recipe_Cooked_Stew",
    "hash": 27376,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Mushroom_Mix_Recipe_Raw_Stew",
    "hash": 14914,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Mushroom_Poultry_Recipe_Burnt_Stew",
    "hash": 54614,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Mushroom_Poultry_Recipe_Cooked_Stew",
    "hash": 55358,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Mushroom_Poultry_Recipe_Raw_Stew",
    "hash": 55978,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Mushroom_Recipe_Burnt_Stew",
    "hash": 30560,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Mushroom_Recipe_Cooked_Stew",
    "hash": 31606,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Mushroom_Recipe_Raw_Stew",
    "hash": 32650,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Mythril_Boulder",
@@ -3376,12 +3376,12 @@
   {
    "name": "Name_Proxy",
    "hash": 15340,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Nand",
    "hash": 42426,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Navigation_wheel",
@@ -3391,57 +3391,57 @@
   {
    "name": "New_Tree_Grower",
    "hash": 62444,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Non_Recipe_Burnt_Stew",
    "hash": 48634,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Non_Recipe_Cooked_Stew",
    "hash": 49314,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Non_Recipe_Raw_Stew",
    "hash": 49962,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Nor",
    "hash": 42420,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Not",
    "hash": 42414,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Oak_Tree_Growth",
    "hash": 48238,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Oak_Tree_Seed",
    "hash": 17302,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Oak_Tree_Stage_1",
    "hash": 17412,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Obstacle_Path",
    "hash": 62838,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "One_Time_Upgrade_Station_Health",
    "hash": 46992,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Onion_Full_Burnt",
@@ -3496,7 +3496,7 @@
   {
    "name": "Or",
    "hash": 42416,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Orchi_Ingot",
@@ -3506,17 +3506,17 @@
   {
    "name": "Ore_Bag",
    "hash": 64560,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Ore_Side_Pouch_Attachment",
    "hash": 61020,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Ore_Storage",
    "hash": 65420,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Ore_Training",
@@ -3541,7 +3541,7 @@
   {
    "name": "Page",
    "hash": 40320,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Paper",
@@ -3576,22 +3576,22 @@
   {
    "name": "Pickaxe_Training",
    "hash": 29706,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "PickupSlidingDoor",
    "hash": 13452,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "PillarBridgeRotate",
    "hash": 47436,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "PillarRotate",
    "hash": 25648,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Pink_Crystal_cluster_02",
@@ -3601,12 +3601,12 @@
   {
    "name": "PlaceItemPuzzleNoDock",
    "hash": 12962,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "PlaceItemPuzzleNoDockFire",
    "hash": 64858,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Placed_Table",
@@ -3621,12 +3621,12 @@
   {
    "name": "PlayerInAreaLogic",
    "hash": 11982,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Player_Template",
    "hash": 61646,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Poison_Cloud",
@@ -3636,7 +3636,7 @@
   {
    "name": "Poison_Vent",
    "hash": 37252,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Pole_Hugger_Edgy",
@@ -3726,7 +3726,7 @@
   {
    "name": "Potato_Growth",
    "hash": 49408,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Potato_Half_Burnt",
@@ -3751,37 +3751,37 @@
   {
    "name": "Potato_Plant_Growth",
    "hash": 15786,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Potato_Plant_Stage_1",
    "hash": 62602,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Potato_Plant_Stage_2",
    "hash": 63530,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Potato_Plant_Stage_3",
    "hash": 54788,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Potato_Puree_Recipe_Burnt_Stew",
    "hash": 57936,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Potato_Puree_Recipe_Cooked_Stew",
    "hash": 57960,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Potato_Puree_Recipe_Raw_Stew",
    "hash": 57918,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Potato_Sapling",
@@ -3791,7 +3791,7 @@
   {
    "name": "Potion_Hoops_Side_Tool_Attachment",
    "hash": 31418,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Potion_Medium",
@@ -3801,7 +3801,7 @@
   {
    "name": "Potion_Small",
    "hash": 62934,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Pouch",
@@ -3816,47 +3816,47 @@
   {
    "name": "Poultry_Onion_Mushroom_Recipe_Burnt_Stew",
    "hash": 57780,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Poultry_Onion_Mushroom_Recipe_Cooked_Stew",
    "hash": 57762,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Poultry_Onion_Mushroom_Recipe_Raw_Stew",
    "hash": 57804,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Poultry_Potato_Recipe_Burnt_Stew",
    "hash": 57894,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Poultry_Potato_Recipe_Cooked_Stew",
    "hash": 57852,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Poultry_Potato_Recipe_Raw_Stew",
    "hash": 57876,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Poultry_Recipe_Burnt_Stew",
    "hash": 10830,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Poultry_Recipe_Cooked_Stew",
    "hash": 11448,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Poultry_Recipe_Raw_Stew",
    "hash": 12132,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Power_Strike_Counter",
@@ -3866,7 +3866,7 @@
   {
    "name": "Practice_Gate",
    "hash": 64704,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Profession_Upgrade_Shrine",
@@ -3881,27 +3881,27 @@
   {
    "name": "Proto_Greater_Got_Bramble_Wall",
    "hash": 34050,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Pumpkin_Growth",
    "hash": 59922,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Pumpkin_Recipe_Burnt_Stew",
    "hash": 62678,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Pumpkin_Recipe_Cooked_Stew",
    "hash": 62694,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Pumpkin_Recipe_Raw_Stew",
    "hash": 62724,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Pumpkin_Tree",
@@ -3911,52 +3911,52 @@
   {
    "name": "Pumpkin_Tree_Growth",
    "hash": 41658,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Pumpkin_Tree_Separated",
    "hash": 23566,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Pumpkin_Tree_Stage_1",
    "hash": 38672,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Pumpkin_Tree_Stage_2",
    "hash": 42508,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Pumpkin_Tree_Stage_3",
    "hash": 63038,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Puzzle_Orb_1",
    "hash": 31620,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Puzzle_Orb_2",
    "hash": 47150,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Puzzle_Orb_Restrictor",
    "hash": 29276,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Puzzle_Pillar_with_Wheel_Bridge",
    "hash": 15908,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Quest_Board",
    "hash": 57298,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Quiver",
@@ -3971,7 +3971,7 @@
   {
    "name": "Random_Spawn_Rectangle",
    "hash": 24644,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Rapier_Blade",
@@ -3991,17 +3991,17 @@
   {
    "name": "Red_Mushroom_Recipe_Burnt_Stew",
    "hash": 63290,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Red_Mushroom_Recipe_Cooked_Stew",
    "hash": 62660,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Red_Mushroom_Recipe_Raw_Stew",
    "hash": 62024,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Red_Mushroom_Shield",
@@ -4011,37 +4011,37 @@
   {
    "name": "Red_Sauce_Recipe_Burnt_Stew",
    "hash": 57978,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Red_Sauce_Recipe_Cooked_Stew",
    "hash": 58026,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Red_Sauce_Recipe_Raw_Stew",
    "hash": 58002,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Redwood_Gotera_Core",
    "hash": 41402,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Redwood_Tree_Growth",
    "hash": 48248,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Redwood_Tree_Seed",
    "hash": 55054,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Redwood_Tree_Stage_1",
    "hash": 17526,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Repair_Box",
@@ -4061,27 +4061,27 @@
   {
    "name": "Repeater",
    "hash": 40046,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Rock_Boulder_01",
    "hash": 63838,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Rock_Boulder_02",
    "hash": 63828,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Rock_Boulder_03",
    "hash": 63836,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Rock_Boulder_04",
    "hash": 63834,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Rock_Cluster",
@@ -4096,12 +4096,12 @@
   {
    "name": "Rock_Spire_Gcore_Dynamic",
    "hash": 40128,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Rock_WallBoulder_02",
    "hash": 63832,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Rod_Long",
@@ -4121,47 +4121,47 @@
   {
    "name": "Rope_Clump",
    "hash": 43836,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Rope_Pully_Puzzle",
    "hash": 51434,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Ruins_Elevator_Puzzle_Square",
    "hash": 27582,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Ruins_Elevator_Puzzle_Square_Crystal_Pillar",
    "hash": 3512,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Ruins_Elevator_Puzzle_Square_Large_Variant",
    "hash": 4192,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Ruins_Elevator_Puzzle_Square_Pillar_Variant",
    "hash": 22284,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Ruins_Hand_Touch_Activator",
    "hash": 1002,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Ruins_Pillar_Crystal",
    "hash": 58240,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Ruins_Sliding_Wall_Puzzle_Square",
    "hash": 42494,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Rusty_Axe",
@@ -4216,7 +4216,7 @@
   {
    "name": "Safe_Point",
    "hash": 33004,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Sai",
@@ -4256,12 +4256,12 @@
   {
    "name": "Sapling",
    "hash": 25994,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Sapling_Freshly_Planted",
    "hash": 25992,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "ScaleTemp",
@@ -4296,17 +4296,17 @@
   {
    "name": "Select_Server_Orb",
    "hash": 55760,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Send_Post",
    "hash": 53190,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Set_Piece",
    "hash": 62334,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Shelf",
@@ -4421,7 +4421,7 @@
   {
    "name": "Sliding_Door",
    "hash": 33420,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Slingshot",
@@ -4431,12 +4431,12 @@
   {
    "name": "Slow_Grass",
    "hash": 59062,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Small_Bone_Spike",
    "hash": 61488,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Small_Cave_Mushroom_01",
@@ -4466,82 +4466,82 @@
   {
    "name": "Smelter_Gem_1",
    "hash": 34986,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Smelter_Gem_2",
    "hash": 41638,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Smelter_Gem_3",
    "hash": 46508,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Smelter_gem_2_item_pedestal",
    "hash": 56098,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Smelter_gem_3_item_pedestal",
    "hash": 63036,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "SnowballMoundSpawner",
    "hash": 30542,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "SnowballSpawner",
    "hash": 22418,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Snowball_network_Prefab",
    "hash": 52090,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Snowman_Network_Prefab_1",
    "hash": 57830,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Snowman_Network_Prefab_2",
    "hash": 16878,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Snowman_Network_Prefab_3",
    "hash": 17612,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Snowman_Network_Prefab_test",
    "hash": 25690,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Soft_Fabric_Large_Roll",
    "hash": 23206,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Soft_Fabric_Medium_Roll",
    "hash": 47760,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Soft_Fabric_Medium_Strips",
    "hash": 63204,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Spade_Head",
    "hash": 50548,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Spawn_Point",
@@ -4551,32 +4551,32 @@
   {
    "name": "Spawner_Test",
    "hash": 51070,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Spear_Head_Pyramid",
    "hash": 13554,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Spear_Head_Spiky",
    "hash": 13680,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Spear_Head_Standard",
    "hash": 13816,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Spectral_Ghost",
    "hash": 57494,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Spherical_Encounter",
    "hash": 1222,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Spike_Fancy",
@@ -4596,12 +4596,12 @@
   {
    "name": "Spire_Gcore_Dynamic",
    "hash": 23472,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Spread_Spawner_Dynamic",
    "hash": 18426,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Spriggull",
@@ -4671,12 +4671,12 @@
   {
    "name": "Spriggull_Fletching_Blue",
    "hash": 50608,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Spriggull_Fletching_Red",
    "hash": 24072,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Spriggull_Nest",
@@ -4696,37 +4696,37 @@
   {
    "name": "Stalactite_pillar",
    "hash": 3944,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Standard_Crafted_Mould",
    "hash": 38578,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Standard_Side_Pouch_Attachment",
    "hash": 7852,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Standard_Side_Tool_Attachment",
    "hash": 59468,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Standard_Stages",
    "hash": 31152,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Steam_Spray",
    "hash": 53376,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Steel_Alloy_Ingot",
    "hash": 22222,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Stick",
@@ -4741,7 +4741,7 @@
   {
    "name": "Stick_Storage",
    "hash": 46252,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Stick_Training",
@@ -4811,22 +4811,22 @@
   {
    "name": "TEMP_Hebios_Camp_Spawner_Barren",
    "hash": 33858,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "TEMP_Hebios_Camp_Spawner_Valley",
    "hash": 33880,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "TEMP_Watch_Tower_Spawner",
    "hash": 44032,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Tab_Lever",
    "hash": 3354,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Table_Placer",
@@ -4846,22 +4846,22 @@
   {
    "name": "Targeted_Geyser",
    "hash": 60812,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "TeleportOnTrueLogic",
    "hash": 18260,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Teleport_Point",
    "hash": 33542,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Teleporter_Puzzle",
    "hash": 19164,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Teleporter_To_Customization",
@@ -4881,12 +4881,12 @@
   {
    "name": "Test_Serializable_Large",
    "hash": 57330,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Test_Serializable_Small",
    "hash": 51498,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Thick_Great_Sword_Blade",
@@ -4896,27 +4896,27 @@
   {
    "name": "Thin_Cloth_Medium_Square",
    "hash": 34570,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Timber_Bag",
    "hash": 25122,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Timber_Side_Pouch_Attachment",
    "hash": 7102,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Timed_Respawner",
    "hash": 32620,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "TimerLogic",
    "hash": 18490,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Tinder",
@@ -4926,12 +4926,12 @@
   {
    "name": "Tomato_Flower_Bloom",
    "hash": 13022,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Tomato_Flower_Bud",
    "hash": 13024,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Tomato_Full_Burnt",
@@ -4956,7 +4956,7 @@
   {
    "name": "Tomato_Growth",
    "hash": 19280,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Tomato_Half_Burnt",
@@ -4986,27 +4986,27 @@
   {
    "name": "Tomato_Tree_Growth",
    "hash": 16358,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Tomato_Tree_Separated",
    "hash": 21548,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Tomato_Tree_Stage_1",
    "hash": 2384,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Tomato_Tree_Stage_2",
    "hash": 2542,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Tomato_Tree_Stage_3",
    "hash": 2892,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Torch",
@@ -5026,7 +5026,7 @@
   {
    "name": "Township_Bridge_Repair_Box",
    "hash": 60674,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Trade_Deck",
@@ -5036,7 +5036,7 @@
   {
    "name": "TraderPrototype",
    "hash": 28820,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Training_Short_Sword_Blade_COLD",
@@ -5056,37 +5056,37 @@
   {
    "name": "Tree_Button_Spawner",
    "hash": 3934,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Tree_Grower",
    "hash": 25934,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Tree_Grown",
    "hash": 30572,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Tree_Spawner_-_Any_Ash",
    "hash": 50794,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Tree_Spawner_-_Any_Birch",
    "hash": 570,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Tree_Spawner_-_Any_Oak",
    "hash": 48358,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Tree_Spawner_-_Any_Redwood",
    "hash": 546,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Tree_Spawner_-_Any_Standard",
@@ -5101,7 +5101,7 @@
   {
    "name": "Tree_Spawner_-_Any_Walnut",
    "hash": 34710,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Tree_Spawner_-_Small_Standard",
@@ -5111,72 +5111,72 @@
   {
    "name": "Tree_Young",
    "hash": 30570,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Trial_Spawner_MD-T1",
    "hash": 62144,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Trial_Spawner_MD-T2",
    "hash": 60910,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Trial_Spawner_MD-T3",
    "hash": 52988,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Trial_Spawner_MD-W1",
    "hash": 32210,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Trial_Spawner_MD-W2",
    "hash": 50818,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Trial_Spawner_T-1",
    "hash": 7744,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Trial_Spawner_T-2",
    "hash": 40198,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Trial_Spawner_T-3",
    "hash": 45096,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Trial_Spawner_T-3-Myth",
    "hash": 49994,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Trial_Spawner_W-1",
    "hash": 33084,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Trial_Spawner_W-2",
    "hash": 18696,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Trial_Spawner_W-2-Crys",
    "hash": 58286,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Trial_Spawner_W-3",
    "hash": 42624,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Turabada",
@@ -5196,7 +5196,7 @@
   {
    "name": "Turabada_Copper_Trial_Variant",
    "hash": 14248,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Turabada_Copper_Variant",
@@ -5216,7 +5216,7 @@
   {
    "name": "Turabada_Gold_Trial_Variant",
    "hash": 15506,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Turabada_Gold_Variant",
@@ -5226,7 +5226,7 @@
   {
    "name": "Turabada_Hub_Dynamic",
    "hash": 48478,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Turabada_Iron_Destroy_Variant",
@@ -5236,7 +5236,7 @@
   {
    "name": "Turabada_Iron_Trial_Variant",
    "hash": 16684,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Turabada_Iron_Variant",
@@ -5251,7 +5251,7 @@
   {
    "name": "Turabada_Large_Trial_Variant",
    "hash": 17814,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Turabada_Large_Variant",
@@ -5266,7 +5266,7 @@
   {
    "name": "Turabada_Mythril_Trial_Variant",
    "hash": 18722,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Turabada_Mythril_Variant",
@@ -5276,12 +5276,12 @@
   {
    "name": "Turabada_Preview",
    "hash": 49464,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Turabada_Shard_Core",
    "hash": 7900,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Turabada_Short_Destroy_Variant",
@@ -5291,7 +5291,7 @@
   {
    "name": "Turabada_Short_Trial_Variant",
    "hash": 19936,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Turabada_Short_Variant",
@@ -5301,12 +5301,12 @@
   {
    "name": "Turabada_Silver_Destroy_Variant",
    "hash": 1960,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Turabada_Silver_Trial_Variant",
    "hash": 20844,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Turabada_Silver_Variant",
@@ -5316,27 +5316,27 @@
   {
    "name": "Turabada_Spawner_Automatic",
    "hash": 51652,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Turabada_Spawner_Reactive",
    "hash": 27188,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Turabada_Trial_Variant",
    "hash": 21882,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "UnplacedMetalWallHook",
    "hash": 18972,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "VR_Player_Character_New",
    "hash": 49582,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Vacuum",
@@ -5346,42 +5346,42 @@
   {
    "name": "Vegetable_Ragu_Recipe_Burnt_Stew",
    "hash": 58092,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Vegetable_Ragu_Recipe_Cooked_Stew",
    "hash": 58074,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Vegetable_Ragu_Recipe_Raw_Stew",
    "hash": 58050,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Vine_Attack_Fern",
    "hash": 24402,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Vine_Boulder_01",
    "hash": 31088,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Vision_Recipe_Burnt_Stew",
    "hash": 58138,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Vision_Recipe_Cooked_Stew",
    "hash": 58120,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Vision_Recipe_Raw_Stew",
    "hash": 58162,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Wakizashi",
@@ -5391,7 +5391,7 @@
   {
    "name": "Walk_Air",
    "hash": 50936,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Wall_Shelf",
@@ -5411,27 +5411,27 @@
   {
    "name": "Wall_Torch_Holder_Puzzle",
    "hash": 30196,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Walnut_Gotera_Bomb_Dart",
    "hash": 39716,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Walnut_Tree_Growth",
    "hash": 48268,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Walnut_Tree_Seed",
    "hash": 44172,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Walnut_Tree_Stage_1",
    "hash": 26568,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "WarHammer",
@@ -5441,7 +5441,7 @@
   {
    "name": "Water_Well_Dynamic",
    "hash": 14364,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Water_Well_Tunnel_Dynamic",
@@ -5461,17 +5461,17 @@
   {
    "name": "Weight_Gauge",
    "hash": 48306,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "WheelBridge",
    "hash": 7252,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "WheelPuzzle",
    "hash": 52364,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "WheelPuzzleOLD",
@@ -5486,657 +5486,657 @@
   {
    "name": "Woodcut_Ash_LeafClump_Base",
    "hash": 28312,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Ash_LeafClump_C1C1",
    "hash": 44892,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Ash_LeafClump_C1C2",
    "hash": 34638,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Ash_LeafClump_C1C2_E",
    "hash": 47502,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Ash_LeafClump_C1_E",
    "hash": 47458,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Ash_LeafClump_C1_E_1",
    "hash": 14074,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Ash_LeafClump_C1_E_2",
    "hash": 40722,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Ash_LeafClump_C2C2",
    "hash": 44908,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Ash_LeafClump_C2C3",
    "hash": 9426,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Ash_LeafClump_C2C3_E",
    "hash": 57802,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Ash_LeafClump_C2_E",
    "hash": 29976,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Ash_LeafClump_C2_E_1",
    "hash": 24422,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Ash_LeafClump_C3C3",
    "hash": 10682,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Ash_LeafClump_C3_E",
    "hash": 57250,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Ash_Seed_Spawner_Attachment",
    "hash": 16054,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_B0_B0",
    "hash": 11470,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_B0_B0_S-30",
    "hash": 19224,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_B0_B0_S15",
    "hash": 35014,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_B0_B0_S30",
    "hash": 36844,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_B0_B0_S30_S30",
    "hash": 6224,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_B0_B15_B30",
    "hash": 35020,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_B0_B30_S30",
    "hash": 51486,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_B0_E",
    "hash": 29444,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_B0_S0_S30",
    "hash": 35028,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_B0_S0_S60",
    "hash": 8102,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_B0_S30_S30",
    "hash": 54764,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_B15_B15",
    "hash": 38016,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_B30_B30",
    "hash": 62548,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_B5_B5",
    "hash": 1780,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Birch_LeafClump_Base",
    "hash": 37794,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_LeafClump_C1C1_1",
    "hash": 1178,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_LeafClump_C1C1_1_E",
    "hash": 7260,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_LeafClump_C1C1_2",
    "hash": 42598,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_LeafClump_C1C1_2_E",
    "hash": 10700,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_LeafClump_C1C2_1",
    "hash": 54804,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_LeafClump_C1C2_1_E",
    "hash": 2760,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_LeafClump_C1C2_2",
    "hash": 12688,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_LeafClump_C1C2_2_E",
    "hash": 54174,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_LeafClump_C1_E",
    "hash": 55364,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_LeafClump_C2C3_1",
    "hash": 54092,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_LeafClump_C2C3_1_E",
    "hash": 2568,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_LeafClump_C2C3_2",
    "hash": 54852,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_LeafClump_C2C3_2_E",
    "hash": 54108,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_LeafClump_C2_E",
    "hash": 12672,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_LeafClump_C3C4_1",
    "hash": 7276,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_LeafClump_C3C4_1_E",
    "hash": 34602,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_LeafClump_C3C4_2",
    "hash": 12182,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_LeafClump_C3C4_2_E",
    "hash": 11234,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_LeafClump_C3_E",
    "hash": 54820,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_LeafClump_C4_E",
    "hash": 44404,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Birch_Seed_Spawner_Attachment",
    "hash": 16026,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_BranchRoot_V1_B0",
    "hash": 8158,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_BranchRoot_V1_B15_S30",
    "hash": 22660,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_BranchRoot_V2_B0",
    "hash": 50658,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Leaves_V1_L_F",
    "hash": 42932,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Leaves_V1_L_S",
    "hash": 42928,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Leaves_V1_S_F",
    "hash": 42934,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Leaves_V1_S_S",
    "hash": 42930,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Leaves_V2_D",
    "hash": 63786,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Leaves_V2_L",
    "hash": 63466,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Leaves_V2_Topper",
    "hash": 26276,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Oak_LeafClump_Base",
    "hash": 60158,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Oak_LeafClump_C1C1_1",
    "hash": 38364,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Oak_LeafClump_C1C1_2",
    "hash": 38344,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Oak_LeafClump_C1C2_1",
    "hash": 38324,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Oak_LeafClump_C1C2_2",
    "hash": 38304,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Oak_LeafClump_C1C2_E",
    "hash": 38284,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Oak_LeafClump_C1_E",
    "hash": 38382,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Oak_LeafClump_C2C2_1",
    "hash": 38242,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Oak_LeafClump_C2C2_2",
    "hash": 38224,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Oak_LeafClump_C2C3_1",
    "hash": 38204,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Oak_LeafClump_C2C3_2",
    "hash": 38184,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Oak_LeafClump_C2C3_E",
    "hash": 38162,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Oak_LeafClump_C2_E",
    "hash": 38264,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Oak_LeafClump_C3C3_1",
    "hash": 38122,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Oak_LeafClump_C3C3_2",
    "hash": 38102,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Oak_LeafClump_C3_E",
    "hash": 38144,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Oak_Seed_Spawner_Attachment",
    "hash": 49710,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_Base",
    "hash": 55152,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_T1_D30_C1C2",
    "hash": 21374,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_T1_D30_C3C4",
    "hash": 49074,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_T1_D30_C5C6",
    "hash": 55378,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_T1_D30_C7C8",
    "hash": 47486,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_T2_D30_C1C2",
    "hash": 55954,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_T2_D30_C3C4",
    "hash": 57266,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_T2_D30_C5C6",
    "hash": 1528,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_T2_D30_C7C8",
    "hash": 9410,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_T3_D30_C1C2",
    "hash": 10666,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_T3_D30_C3C4",
    "hash": 6716,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_T3_D30_C5C6",
    "hash": 55520,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_T3_D30_C7C8",
    "hash": 6732,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_T4_D30_C1",
    "hash": 42552,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_T4_D30_C2",
    "hash": 46726,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_T4_D30_C3",
    "hash": 1774,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_T4_D30_C4",
    "hash": 1512,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_T4_D30_C5",
    "hash": 54122,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_T4_D30_C6",
    "hash": 7242,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_T4_D30_C7",
    "hash": 44386,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafClump_T4_D30_C8",
    "hash": 10754,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_LeafTopper",
    "hash": 34724,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Redwood_Seed_Spawner_Attachment",
    "hash": 16012,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Root_V1_T0",
    "hash": 31522,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Root_V1_T0_B15",
    "hash": 34660,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Root_V1_T0_S30",
    "hash": 34546,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Root_V1_T30",
    "hash": 47612,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_S-15_S-15",
    "hash": 39282,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_S0_E",
    "hash": 25704,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_S0_S0",
    "hash": 44986,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_S0_S0_S-30",
    "hash": 25116,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_S0_S0_S30",
    "hash": 190,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_S0_S15_S15",
    "hash": 62106,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_S0_S30_S30",
    "hash": 9058,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_S15_S15",
    "hash": 19364,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_SL15_SL15",
    "hash": 7464,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_SR15_SR15",
    "hash": 53266,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_T0_B0_B30",
    "hash": 35026,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_T0_B15_B30",
    "hash": 21794,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_T0_B30_B30",
    "hash": 26492,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_T0_B45_B45_B60",
    "hash": 62378,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_T0_E",
    "hash": 49440,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_T0_T0",
    "hash": 6554,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_T0_T0_B30",
    "hash": 35016,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_T0_T0_B45",
    "hash": 52242,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_T0_T0_B45_B45_B60",
    "hash": 34502,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_T0_T0_B60",
    "hash": 29162,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_T0_T0_S30",
    "hash": 35022,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_T0_T0_S30_S30_S30",
    "hash": 33712,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_T0_T30_B30",
    "hash": 2712,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_T15_T15",
    "hash": 40700,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_T30_T30",
    "hash": 30226,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_T5_T5",
    "hash": 18498,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Training_Block",
@@ -6146,162 +6146,162 @@
   {
    "name": "Woodcut_Twigs_V1_-30",
    "hash": 49360,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Twigs_V1_0",
    "hash": 64824,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Twigs_V1_30",
    "hash": 19674,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Twigs_V2_-30",
    "hash": 63554,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Twigs_V2_0",
    "hash": 1846,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Twigs_V2_30",
    "hash": 1452,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Twigs_V3_-30",
    "hash": 49972,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Twigs_V3_0",
    "hash": 63168,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Twigs_V3_30",
    "hash": 15084,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Twigs_V4_0",
    "hash": 52628,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Twigs_V4_30",
    "hash": 31554,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcut_Twigs_V5_-15",
    "hash": 16424,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Twigs_V5_15",
    "hash": 32642,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Twigs_V5_L15",
    "hash": 40208,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Twigs_V5_R15",
    "hash": 25388,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Walnut_LeafClump_Base",
    "hash": 47632,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Walnut_LeafClump_C1C1",
    "hash": 29962,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Walnut_LeafClump_C1C1_E",
    "hash": 2796,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Walnut_LeafClump_C1C2",
    "hash": 8570,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Walnut_LeafClump_C1C2_E",
    "hash": 54836,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Walnut_LeafClump_C2C2",
    "hash": 8932,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Walnut_LeafClump_C2C2_E",
    "hash": 1792,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Walnut_LeafClump_C2C3",
    "hash": 47520,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Walnut_LeafClump_C2C3_E",
    "hash": 46292,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Walnut_LeafClump_C3C3",
    "hash": 54190,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Walnut_LeafClump_C3C3_E",
    "hash": 8292,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Walnut_LeafClump_C3C4",
    "hash": 57820,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Walnut_LeafClump_C3C4_E",
    "hash": 1546,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Walnut_LeafClump_C4C4_E",
    "hash": 44372,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Walnut_LeafClump_C4C5_E",
    "hash": 6218,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Walnut_LeafClump_C5C5_E",
    "hash": 9940,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Walnut_Seed_Spawner_Attachment",
    "hash": 16040,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcut_Wedge",
@@ -6326,37 +6326,37 @@
   {
    "name": "Woodcut_Wedge_Storage",
    "hash": 12512,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcutting_Path",
    "hash": 45418,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Woodcutting_Vines_V1_Large",
    "hash": 24682,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcutting_Vines_V1_Small_V1",
    "hash": 24686,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcutting_Vines_V1_Small_V2",
    "hash": 24684,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Woodcutting_Vines_V1_Small_V3",
    "hash": 24688,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Wooden_Bag",
    "hash": 30060,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Wooden_Barrel",
@@ -6386,12 +6386,12 @@
   {
    "name": "Wooden_Net",
    "hash": 53540,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Wooden_Passage_Dynamic",
    "hash": 43806,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Wooden_Short_Sword",
@@ -6416,17 +6416,17 @@
   {
    "name": "Wyrm_(Trial)",
    "hash": 6004,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Wyrm_Arm",
    "hash": 46340,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Wyrm_Boulder_01",
    "hash": 37174,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "Wyrm_Crystal_Spit",
@@ -6441,12 +6441,12 @@
   {
    "name": "Xnor",
    "hash": 42418,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "Xor",
    "hash": 42428,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "archery_target_puzzle_test",
@@ -6456,7 +6456,7 @@
   {
    "name": "cam",
    "hash": 8760,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "combat_dummy",
@@ -6466,67 +6466,67 @@
   {
    "name": "item_pedestal_puzzle_base",
    "hash": 27250,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "mrk_extensionBridge_01",
    "hash": 34038,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "mrk_large_lift_01",
    "hash": 28708,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "mrk_lift_01",
    "hash": 45646,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "mrk_puzzleCore_symbol_01",
    "hash": 48100,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "mrk_puzzleCore_symbol_02",
    "hash": 48102,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "ore_copper",
    "hash": 22768,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "ore_gold",
    "hash": 38596,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "ore_iron",
    "hash": 60876,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "ore_mythril",
    "hash": 18158,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "ore_silver",
    "hash": 26988,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "pot_01",
    "hash": 44028,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "pumpkin_flower",
    "hash": 3116,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "pumpkin_full_burnt",
@@ -6591,22 +6591,22 @@
   {
    "name": "ruins_orbBasin_01",
    "hash": 27482,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "ruins_orbBasin_01TEST",
    "hash": 58180,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "ruins_orbBasin_01_Variant",
    "hash": 13294,
-   "spawnable": false
+   "spawnable": true
   },
   {
    "name": "tallPot",
    "hash": 23320,
-   "spawnable": true
+   "spawnable": false
   },
   {
    "name": "timberBlock_1Long",
@@ -6671,6 +6671,46 @@
   {
    "name": "woodenPlatform_W2x4",
    "hash": 33664,
+   "spawnable": true
+  },
+  {
+   "name": "Greater_Gotera",
+   "hash": 19034,
+   "spawnable": true
+  },
+  {
+   "name": "Domain",
+   "hash": 22752,
+   "spawnable": true
+  },
+  {
+   "name": "Wall_Shelf_Tutorial",
+   "hash": 19868,
+   "spawnable": true
+  },
+  {
+   "name": "Lamp_Post",
+   "hash": 18244,
+   "spawnable": true
+  },
+  {
+   "name": "Short_Sword_Blade_MT",
+   "hash": 3376,
+   "spawnable": true
+  },
+  {
+   "name": "Micro_Tutorial_Portal",
+   "hash": 36840,
+   "spawnable": true
+  },
+  {
+   "name": "Player_Grave",
+   "hash": 28202,
+   "spawnable": true
+  },
+  {
+   "name": "MRK_gate_01",
+   "hash": 34734,
    "spawnable": true
   }
  ]

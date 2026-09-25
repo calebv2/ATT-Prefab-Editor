@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.2 — 2026-09-25
+
+- Refreshed both prefab catalogs from the connected server's `spawn list` snapshot.
+- Added 8 catalog entries and updated spawnability from the current server; older reference entries remain available.
+- Snapshot contains 1,119 unique spawnable hashes (1,121 catalog entries, including two existing aliases). Client and server DLLs are unchanged.
+
+
 ## 2.0.1 — 2026-09-25
 
 - Updated server console auth to let an installed Harmony auth prefix validate its own non-RS256 token, including TavernLib's HS256 owner token.
