@@ -396,7 +396,7 @@ function createServer(opts) {
                 }
 
                 case 'GET /api/prefabs': {
-                    const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 1), 500);
+                    const limit = Math.min(Math.max(parseInt(url.searchParams.get('limit') || '50', 10) || 50, 1), 2000);
                     const results = searchPrefabs(catalog, url.searchParams.get('q') || '',
                         url.searchParams.get('spawnable') === '1', limit);
                     return json(res, 200, { count: results.length, results });

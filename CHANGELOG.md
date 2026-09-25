@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.3 — 2026-09-25
+
+- The server panel's prefab picker now shows the full catalog when search is empty and scrolls through all results.
+- The “spawnable only” filter is optional and off by default; non-spawnable catalog entries are visibly marked.
+
+
 ## 2.0.2 — 2026-09-25
 
 - Refreshed both prefab catalogs from the connected server's `spawn list` snapshot.

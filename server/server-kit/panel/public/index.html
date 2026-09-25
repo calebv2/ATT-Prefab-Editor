@@ -66,10 +66,10 @@
     <h2>Prefab search (vendored catalog)</h2>
     <div class="row">
       <input id="q" placeholder="name or hash &mdash; e.g. iron ore, 61652" style="flex:1" autofocus>
-      <label><input type="checkbox" id="spawnableOnly" checked> spawnable only</label>
+      <label><input type="checkbox" id="spawnableOnly"> spawnable only</label>
     </div>
     <div id="results"><table><tbody id="resultRows"></tbody></table></div>
-    <div class="hint">Click a row to arm it for spawning. Names are canonical (underscored); search ignores separators.</div>
+    <div class="hint">The full catalog is shown when search is empty. Click a row to arm it for spawning; rows marked “-” may not be accepted by the server.</div>
   </section>
 
   <section>
@@ -168,7 +168,7 @@ let searchTimer = null;
 async function search() {
   const q = $('q').value.trim();
   const sp = $('spawnableOnly').checked ? '&spawnable=1' : '';
-  const data = await (await fetch('/api/prefabs?limit=100&q=' + encodeURIComponent(q) + sp)).json();
+  const data = await (await fetch('/api/prefabs?limit=2000&q=' + encodeURIComponent(q) + sp)).json();
   const tbody = $('resultRows');
   tbody.innerHTML = '';
   for (const p of data.results) {
