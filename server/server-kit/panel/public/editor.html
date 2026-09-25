@@ -1,0 +1,697 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATT Prefab Editor — 3D Editor</title>
+<style>
+  :root {
+    --bg: #14161a; --panel: #1c1f26; --edge: #2c313c; --ink: #d7dae0;
+    --dim: #8a909c; --accent: #d9a441; --ok: #6fbf73; --bad: #e06c5f; --sel: #4f8fd9;
+  }
+  * { box-sizing: border-box; }
+  html, body { height: 100%; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 14px/1.45 "Segoe UI", system-ui, sans-serif;
+         display: flex; flex-direction: column; overflow: hidden; }
+  header { display: flex; align-items: center; gap: 10px; padding: 8px 14px;
+           border-bottom: 1px solid var(--edge); flex-wrap: wrap; }
+  header h1 { font-size: 15px; margin: 0; color: var(--accent); letter-spacing: .04em; }
+  header a { color: var(--dim); font-size: 12px; }
+  header label { color: var(--dim); font-size: 12px; }
+  input, select, button { font: inherit; color: var(--ink); background: var(--bg);
+                  border: 1px solid var(--edge); border-radius: 4px; padding: 4px 8px; }
+  input:focus { outline: 1px solid var(--accent); }
+  button { cursor: pointer; background: var(--panel); }
+  button:hover { border-color: var(--accent); }
+  button.danger { color: var(--bad); }
+  button.danger:hover { border-color: var(--bad); }
+  button.danger.armed { background: var(--bad); color: #fff; border-color: var(--bad); }
+  #status { margin-left: auto; font-size: 12px; color: var(--dim); max-width: 46%;
+            white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  #status.err { color: var(--bad); }
+  #status.good { color: var(--ok); }
+
+  #wrap { flex: 1; display: flex; min-height: 0; }
+  #viewport { flex: 1; position: relative; min-width: 0; }
+  #view { position: absolute; inset: 0; width: 100%; height: 100%; display: block;
+          cursor: crosshair; }
+  #helpTag { position: absolute; left: 10px; bottom: 8px; font-size: 11px;
+             color: var(--dim); pointer-events: none; user-select: none;
+             background: rgba(20,22,26,.75); padding: 4px 8px; border-radius: 4px; }
+
+  aside { width: 300px; border-left: 1px solid var(--edge); background: var(--panel);
+          padding: 10px 12px; overflow-y: auto; flex-shrink: 0; }
+  aside h2 { margin: 10px 0 6px; font-size: 12px; text-transform: uppercase;
+             letter-spacing: .08em; color: var(--dim); }
+  aside h2:first-child { margin-top: 0; }
+  .row { display: flex; gap: 5px; margin-bottom: 6px; flex-wrap: wrap; align-items: center; }
+  .row label { color: var(--dim); font-size: 12px; min-width: 12px; }
+  .num { width: 74px; }
+  .mini { padding: 3px 7px; font-size: 12px; }
+  #selName { color: var(--accent); font-weight: 600; }
+  #selMeta { font-size: 12px; color: var(--dim); font-family: Consolas, monospace;
+             white-space: pre-wrap; }
+  .flag { display: inline-block; font-size: 11px; border: 1px solid var(--edge);
+          border-radius: 3px; padding: 0 5px; margin-right: 4px; color: var(--dim); }
+  .flag.box { color: var(--ok); border-color: var(--ok); }
+  .flag.mounted { color: var(--bad); border-color: var(--bad); }
+  .none { color: var(--dim); font-size: 12px; }
+  hr { border: 0; border-top: 1px solid var(--edge); margin: 10px 0; }
+</style>
+</head>
+<body>
+<header>
+  <h1>ATT PREFAB EDITOR — 3D</h1>
+  <a href="/">&larr; panel</a>
+  <label>anchor</label>
+  <select id="player" style="min-width:110px"><option value="">(camera)</option></select>
+  <label>radius</label>
+  <input id="radius" class="num" value="30">
+  <button id="btnScan">rescan</button>
+  <label><input type="checkbox" id="auto" checked> auto 2.5s</label>
+  <span id="status">loading&hellip;</span>
+</header>
+<div id="wrap">
+  <div id="viewport">
+    <canvas id="view"></canvas>
+    <div id="helpTag">drag&nbsp;look &middot; WASD&nbsp;fly &middot; R/F&nbsp;up/down &middot; shift&nbsp;fast &middot; wheel&nbsp;speed
+      &middot; click&nbsp;select &middot; G+mouse&nbsp;drag&nbsp;XZ &middot; V+mouse&nbsp;height &middot; arrows&nbsp;nudge</div>
+  </div>
+  <aside>
+    <h2>Selection</h2>
+    <div id="selEmpty" class="none">Click an entity marker to select it.</div>
+    <div id="selCard" style="display:none">
+      <div id="selName"></div>
+      <div id="selFlags" style="margin:4px 0"></div>
+      <div id="selMeta"></div>
+
+      <h2>Position</h2>
+      <div class="row">
+        <label>x</label><input id="px" class="num">
+        <label>y</label><input id="py" class="num">
+        <label>z</label><input id="pz" class="num">
+      </div>
+      <div class="row">
+        <button id="btnApplyPos" class="mini">apply position</button>
+        <button id="btnGround" class="mini">snap to ground</button>
+      </div>
+      <div class="row">
+        <label>step</label>
+        <select id="step"><option>0.1</option><option selected>0.5</option><option>1</option><option>5</option></select>
+        <span class="none">arrows move on the ground plane (camera-relative), PgUp/PgDn height</span>
+      </div>
+
+      <h2>Rotation (euler)</h2>
+      <div class="row">
+        <label>x</label><input id="rx" class="num">
+        <label>y</label><input id="ry" class="num">
+        <label>z</label><input id="rz" class="num">
+      </div>
+      <div class="row">
+        <button id="btnApplyRot" class="mini">apply rotation</button>
+        <button class="mini yaw" data-d="-90">yaw -90</button>
+        <button class="mini yaw" data-d="-15">-15</button>
+        <button class="mini yaw" data-d="15">+15</button>
+        <button class="mini yaw" data-d="90">+90</button>
+      </div>
+
+      <h2>String</h2>
+      <div class="row">
+        <button id="btnToString" class="mini">to string &amp; copy 📋</button>
+        <button id="btnCopyStr" class="mini" style="display:none">copy</button>
+        <span id="strMeta" class="none"></span>
+      </div>
+      <textarea id="strBox" readonly rows="3" style="display:none;width:100%;margin-top:4px;background:var(--bg);color:var(--ink);border:1px solid var(--edge);border-radius:4px;padding:4px 6px;font:11px/1.4 Consolas,monospace;resize:vertical"></textarea>
+      <div class="none" style="margin-top:4px">the exact save string — paste into the workbench to edit, or <code>/string</code> to respawn it.</div>
+
+      <hr>
+      <div class="row">
+        <button id="btnRefresh" class="mini">refresh entity</button>
+        <button id="btnLookAt" class="mini">fly camera to it</button>
+        <button id="btnDeselect" class="mini">deselect</button>
+      </div>
+      <div class="row">
+        <button id="btnDelete" class="mini danger">delete&hellip;</button>
+        <span id="deleteHint" class="none"></span>
+      </div>
+    </div>
+
+    <hr>
+    <h2>Scene</h2>
+    <div id="sceneMeta" class="none">no scan yet</div>
+    <div class="row" style="margin-top:6px">
+      <button id="btnScanHere" class="mini">scan around camera</button>
+    </div>
+    <div class="none" style="margin-top:8px">
+      Entities exist only near players (chunk loading). Docked and held items
+      are not listed; <span class="flag mounted">mounted</span> parts move with
+      their base. Delete is two-click and only ever hits the selected id.
+    </div>
+  </aside>
+</div>
+<script>
+'use strict';
+
+// ---------- state ----------
+const cam = { x: 0, y: 12, z: -10, yaw: 0, pitch: -0.35, speed: 8 };
+let entities = [];            // last scan, records from the edit module
+let anchor = { x: 0, y: 0, z: 0 };
+let playerMark = null;        // {name,x,y,z,yaw}
+let selId = null;
+let hoverId = null;
+let firstScan = true;
+let busy = false;             // a move/rotate command in flight
+let dragMode = null;          // 'xz' | 'y' while G/V held with a selection
+let dragPreview = null;       // {x,y,z} pending position during drag
+const keys = {};
+
+const canvas = document.getElementById('view');
+const ctx = canvas.getContext('2d');
+const $ = (id) => document.getElementById(id);
+
+function status(msg, cls) {
+    const el = $('status');
+    el.textContent = msg;
+    el.className = cls || '';
+}
+
+// ---------- api ----------
+async function api(method, url, body) {
+    const post = method !== 'GET';
+    const r = await fetch(url, {
+        method,
+        headers: post ? { 'Content-Type': 'application/json' } : undefined,
+        body: post ? JSON.stringify(body || {}) : undefined
+    });
+    const j = await r.json();
+    if (!r.ok || j.ok === false) { throw new Error(j.error || (j.data && j.data.err) || ('HTTP ' + r.status)); }
+    return j;
+}
+
+async function loadPlayers() {
+    try {
+        const j = await api('GET', '/api/edit/players');
+        const sel = $('player');
+        const keep = sel.value;
+        while (sel.options.length > 1) sel.remove(1);
+        for (const p of j.data.players) {
+            const o = document.createElement('option');
+            o.value = p.name; o.textContent = p.name;
+            sel.add(o);
+        }
+        if (keep && [...sel.options].some(o => o.value === keep)) sel.value = keep;
+        else if (keep === '' && sel.options.length > 1 && firstScan) sel.selectedIndex = 1;
+        else if (keep === '') sel.value = '';
+        return j.data.players;
+    } catch (e) { status('players: ' + e.message, 'err'); return []; }
+}
+
+async function rescan(aroundCamera) {
+    const radius = Math.min(Math.max(parseFloat($('radius').value) || 30, 1), 200);
+    const player = aroundCamera ? '' : $('player').value;
+    const body = player ? { player, radius } : { x: cam.x, y: cam.y, z: cam.z, radius };
+    try {
+        const j = await api('POST', '/api/edit/scan', body);
+        const d = j.data;
+        anchor = d.anchor;
+        playerMark = d.player || playerMark;
+        // keep the selected entity's local record if the scan lost it (chunk edge)
+        const selRec = sel();
+        entities = d.entities;
+        if (selRec && !sel()) entities.push(selRec);
+        $('sceneMeta').textContent = d.count + ' entities in ' + d.radius + 'm'
+            + (d.truncated ? ' (truncated to nearest)' : '')
+            + (d.player ? ' around ' + d.player.name : ' around camera anchor');
+        if (firstScan) { firstScan = false; placeCameraAtAnchor(); }
+        if (selId != null && !sel()) { selId = null; renderSel(); status('selection left the loaded world', 'err'); }
+        else status('scan ok: ' + d.count + ' entities', 'good');
+    } catch (e) { status('scan: ' + e.message, 'err'); }
+}
+
+function placeCameraAtAnchor() {
+    const yawDeg = playerMark ? playerMark.yaw : 0;
+    const yaw = (yawDeg || 0) * Math.PI / 180;
+    cam.x = anchor.x - Math.sin(yaw) * 10;
+    cam.z = anchor.z - Math.cos(yaw) * 10;
+    cam.y = anchor.y + 7;
+    cam.yaw = yaw;
+    cam.pitch = -0.5;
+}
+
+function sel() { return entities.find(e => e.id === selId) || null; }
+
+// ---------- edit commands ----------
+async function editCmd(url, body, verb) {
+    if (busy) return;
+    busy = true;
+    try {
+        const j = await api('POST', url, body);
+        const ent = j.data.entity;
+        const i = entities.findIndex(e => e.id === ent.id);
+        if (i >= 0) entities[i] = ent; else entities.push(ent);
+        if (selId === ent.id) renderSel();
+        status(verb + ' ok: ' + ent.prefab + ' #' + ent.id
+            + (j.data.note ? ' — ' + j.data.note : ''), 'good');
+    } catch (e) { status(verb + ': ' + e.message, 'err'); }
+    busy = false;
+}
+
+const round3 = (v) => Math.round(v * 1000) / 1000;
+
+function moveSel(x, y, z) {
+    const s = sel(); if (!s) return;
+    editCmd('/api/edit/move', { id: s.id, x: round3(x), y: round3(y), z: round3(z) }, 'move');
+}
+function rotateSel(x, y, z) {
+    const s = sel(); if (!s) return;
+    editCmd('/api/edit/rotate', { id: s.id, x: round3(x), y: round3(y), z: round3(z) }, 'rotate');
+}
+
+// ---------- selection panel ----------
+function renderSel() {
+    disarmDelete();
+    clearStrBox();
+    const s = sel();
+    $('selEmpty').style.display = s ? 'none' : '';
+    $('selCard').style.display = s ? '' : 'none';
+    if (!s) return;
+    $('selName').textContent = s.prefab + '  #' + s.id;
+    $('selFlags').innerHTML = s.flags.map(f => '<span class="flag ' + f + '">' + f + '</span>').join('');
+    $('selMeta').textContent = 'hash ' + s.hash + '\npos  ' + s.x + ', ' + s.y + ', ' + s.z
+        + '\nrot  ' + s.ex + ', ' + s.ey + ', ' + s.ez + '\ndist ' + s.d + 'm';
+    $('px').value = s.x; $('py').value = s.y; $('pz').value = s.z;
+    $('rx').value = s.ex; $('ry').value = s.ey; $('rz').value = s.ez;
+}
+
+// ---------- camera math ----------
+const NEAR = 0.05;
+
+function toCam(wx, wy, wz) {
+    const dx = wx - cam.x, dy = wy - cam.y, dz = wz - cam.z;
+    const sy = Math.sin(cam.yaw), cy = Math.cos(cam.yaw);
+    const x1 = dx * cy - dz * sy;
+    const z1 = dx * sy + dz * cy;
+    const sp = Math.sin(cam.pitch), cp = Math.cos(cam.pitch);
+    return { x: x1, y: dy * cp - z1 * sp, z: dy * sp + z1 * cp };
+}
+
+function camToScreen(c, w, h, f) {
+    if (c.z < NEAR) return null;
+    return { x: w / 2 + (c.x / c.z) * f, y: h / 2 - (c.y / c.z) * f, z: c.z };
+}
+
+function project(wx, wy, wz, w, h, f) {
+    return camToScreen(toCam(wx, wy, wz), w, h, f);
+}
+
+// screen pixel -> world ray direction
+function screenRay(mx, my, w, h, f) {
+    let x = (mx - w / 2) / f, y = -(my - h / 2) / f, z = 1;
+    const sp = Math.sin(cam.pitch), cp = Math.cos(cam.pitch);
+    let y1 = y * cp + z * sp;
+    let z1 = -y * sp + z * cp;
+    const sy = Math.sin(cam.yaw), cy = Math.cos(cam.yaw);
+    return {
+        x: x * cy + z1 * sy,
+        y: y1,
+        z: -x * sy + z1 * cy
+    };
+}
+
+// ---------- rendering ----------
+function colorFor(e) {
+    if (e.id === selId) return '#4f8fd9';
+    if (e.flags.includes('box')) return '#6fbf73';
+    if (e.flags.includes('mounted')) return '#c9784f';
+    if (e.flags.includes('fixture')) return '#7d8799';
+    return '#d9a441';
+}
+
+function draw() {
+    const w = canvas.width = canvas.clientWidth;
+    const h = canvas.height = canvas.clientHeight;
+    const f = (h / 2) / Math.tan(37.5 * Math.PI / 180); // 75 deg vfov
+    ctx.clearRect(0, 0, w, h);
+
+    // ground grid, 1m cells around the anchor
+    const gy = anchor.y;
+    const R = 40;
+    const ax = Math.round(anchor.x), az = Math.round(anchor.z);
+    ctx.lineWidth = 1;
+    const major = (v) => ((v % 5) + 5) % 5 === 0;
+    for (let i = -R; i <= R; i += 1) {
+        ctx.strokeStyle = major(ax + i) ? 'rgba(120,130,150,.28)' : 'rgba(120,130,150,.10)';
+        line3(ax + i, gy, az - R, ax + i, gy, az + R, w, h, f);
+        ctx.strokeStyle = major(az + i) ? 'rgba(120,130,150,.28)' : 'rgba(120,130,150,.10)';
+        line3(ax - R, gy, az + i, ax + R, gy, az + i, w, h, f);
+    }
+
+    // player marker
+    if (playerMark) {
+        const p = project(playerMark.x, playerMark.y + 0.9, playerMark.z, w, h, f);
+        if (p) {
+            ctx.strokeStyle = '#e0e4ea'; ctx.lineWidth = 1.5;
+            line3(playerMark.x, playerMark.y, playerMark.z, playerMark.x, playerMark.y + 1.7, playerMark.z, w, h, f);
+            ctx.fillStyle = '#e0e4ea';
+            ctx.font = '12px Segoe UI';
+            ctx.fillText(playerMark.name, p.x + 6, p.y);
+        }
+    }
+
+    // entities, far to near so close labels win
+    const order = entities.map(e => {
+        const pos = displayPos(e);
+        return { e, p: project(pos.x, pos.y, pos.z, w, h, f), pos };
+    }).filter(o => o.p).sort((a, b) => b.p.z - a.p.z);
+
+    hoverId = null;
+    for (const o of order) {
+        const { e, p, pos } = o;
+        const c = colorFor(e);
+        drawBox(e, pos, c, w, h, f);
+        const near = p.z < 25;
+        if (e.id === selId || near) {
+            ctx.fillStyle = e.id === selId ? '#cfe1f5' : 'rgba(215,218,224,.75)';
+            ctx.font = e.id === selId ? 'bold 12px Segoe UI' : '11px Segoe UI';
+            ctx.fillText(e.prefab + ' #' + e.id, p.x + 7, p.y - 7);
+        }
+    }
+
+    // pick hover: nearest marker to mouse within 22px (used by click)
+    if (mouse.inside) {
+        let best = null, bd = 22;
+        for (const o of order) {
+            const d = Math.hypot(o.p.x - mouse.x, o.p.y - mouse.y);
+            if (d < bd) { bd = d; best = o; }
+        }
+        if (best) {
+            hoverId = best.e.id;
+            canvas.style.cursor = 'pointer';
+            ctx.strokeStyle = 'rgba(217,164,65,.9)';
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.arc(best.p.x, best.p.y, 14, 0, Math.PI * 2);
+            ctx.stroke();
+        } else canvas.style.cursor = dragMode ? 'move' : 'crosshair';
+    }
+
+    // HUD
+    ctx.fillStyle = 'rgba(138,144,156,.9)';
+    ctx.font = '11px Consolas, monospace';
+    ctx.fillText('cam ' + cam.x.toFixed(1) + ', ' + cam.y.toFixed(1) + ', ' + cam.z.toFixed(1)
+        + '  yaw ' + Math.round(cam.yaw * 180 / Math.PI) + '°  speed ' + cam.speed.toFixed(0) + 'm/s'
+        + (dragMode ? '  [dragging ' + dragMode.toUpperCase() + ' — release key to commit]' : ''), 10, 16);
+}
+
+function displayPos(e) {
+    if (e.id === selId && dragPreview) return dragPreview;
+    return { x: e.x, y: e.y, z: e.z };
+}
+
+// segment clipped at the near plane, so grid lines that pass under the camera
+// still draw instead of vanishing when one endpoint falls behind the view
+function line3(x1, y1, z1, x2, y2, z2, w, h, f) {
+    let a = toCam(x1, y1, z1), b = toCam(x2, y2, z2);
+    if (a.z < NEAR && b.z < NEAR) return;
+    if (a.z < NEAR || b.z < NEAR) {
+        const t = (NEAR - a.z) / (b.z - a.z);
+        const m = { x: a.x + (b.x - a.x) * t, y: a.y + (b.y - a.y) * t, z: NEAR };
+        if (a.z < NEAR) a = m; else b = m;
+    }
+    const pa = camToScreen(a, w, h, f), pb = camToScreen(b, w, h, f);
+    if (!pa || !pb) return;
+    ctx.beginPath(); ctx.moveTo(pa.x, pa.y); ctx.lineTo(pb.x, pb.y); ctx.stroke();
+}
+
+// oriented wire box + a forward tick so yaw reads at a glance
+function drawBox(e, pos, color, w, h, f) {
+    const s = e.id === selId ? 0.45 : 0.35;
+    const yawR = (e.ey || 0) * Math.PI / 180;
+    const cyw = Math.cos(yawR), syw = Math.sin(yawR);
+    const rot = (x, z) => ({ x: x * cyw + z * syw, z: -x * syw + z * cyw });
+    const pts = [];
+    for (const [ux, uy, uz] of [[-1,0,-1],[1,0,-1],[1,0,1],[-1,0,1],[-1,2,-1],[1,2,-1],[1,2,1],[-1,2,1]]) {
+        const r = rot(ux * s, uz * s);
+        pts.push(project(pos.x + r.x, pos.y + uy * s, pos.z + r.z, w, h, f));
+    }
+    if (pts.some(p => !p)) { // partly behind camera: draw a dot if the center shows
+        const c = project(pos.x, pos.y + s, pos.z, w, h, f);
+        if (c) { ctx.fillStyle = color; ctx.fillRect(c.x - 2, c.y - 2, 4, 4); }
+        return;
+    }
+    ctx.strokeStyle = color;
+    ctx.lineWidth = e.id === selId ? 2 : 1;
+    const E = [[0,1],[1,2],[2,3],[3,0],[4,5],[5,6],[6,7],[7,4],[0,4],[1,5],[2,6],[3,7]];
+    ctx.beginPath();
+    for (const [a, b] of E) { ctx.moveTo(pts[a].x, pts[a].y); ctx.lineTo(pts[b].x, pts[b].y); }
+    ctx.stroke();
+    const fwd = rot(0, s * 1.7);
+    const c0 = project(pos.x, pos.y + s, pos.z, w, h, f);
+    const c1 = project(pos.x + fwd.x, pos.y + s, pos.z + fwd.z, w, h, f);
+    if (c0 && c1) { ctx.beginPath(); ctx.moveTo(c0.x, c0.y); ctx.lineTo(c1.x, c1.y); ctx.stroke(); }
+}
+
+// ---------- input ----------
+const mouse = { x: 0, y: 0, inside: false, downX: 0, downY: 0, downAt: 0, looking: false };
+
+canvas.addEventListener('mousemove', (ev) => {
+    const r = canvas.getBoundingClientRect();
+    const nx = ev.clientX - r.left, ny = ev.clientY - r.top;
+    if (mouse.looking) {
+        cam.yaw += (nx - mouse.x) * 0.004;
+        cam.pitch = Math.min(1.5, Math.max(-1.5, cam.pitch - (ny - mouse.y) * 0.004));
+    }
+    if (dragMode && sel()) dragTo(nx, ny);
+    mouse.x = nx; mouse.y = ny; mouse.inside = true;
+});
+canvas.addEventListener('mouseleave', () => { mouse.inside = false; mouse.looking = false; });
+canvas.addEventListener('mousedown', (ev) => {
+    mouse.downX = mouse.x; mouse.downY = mouse.y; mouse.downAt = Date.now();
+    if (!dragMode) mouse.looking = true;
+    ev.preventDefault();
+});
+window.addEventListener('mouseup', () => {
+    mouse.looking = false;
+    const quick = Date.now() - mouse.downAt < 350
+        && Math.hypot(mouse.x - mouse.downX, mouse.y - mouse.downY) < 5;
+    if (quick && mouse.inside && !dragMode) {
+        selId = hoverId;
+        dragPreview = null;
+        renderSel();
+    }
+});
+canvas.addEventListener('wheel', (ev) => {
+    cam.speed = Math.min(60, Math.max(1, cam.speed * (ev.deltaY < 0 ? 1.25 : 0.8)));
+    ev.preventDefault();
+}, { passive: false });
+canvas.addEventListener('contextmenu', (ev) => ev.preventDefault());
+
+function dragTo(mx, my) {
+    const s = sel(); if (!s) return;
+    const w = canvas.clientWidth, h = canvas.clientHeight;
+    const f = (h / 2) / Math.tan(37.5 * Math.PI / 180);
+    const base = dragPreview || { x: s.x, y: s.y, z: s.z };
+    if (dragMode === 'xz') {
+        const dir = screenRay(mx, my, w, h, f);
+        if (Math.abs(dir.y) < 1e-4) return;
+        const t = (base.y - cam.y) / dir.y;
+        if (t <= 0) return;
+        dragPreview = { x: cam.x + dir.x * t, y: base.y, z: cam.z + dir.z * t };
+    } else if (dragMode === 'y') {
+        const p = project(base.x, base.y, base.z, w, h, f);
+        if (!p) return;
+        dragPreview = { x: base.x, y: base.y - (my - mouse.y) * p.z / f, z: base.z };
+    }
+}
+
+window.addEventListener('keydown', (ev) => {
+    if (ev.target.tagName === 'INPUT' || ev.target.tagName === 'SELECT') return;
+    keys[ev.code] = true;
+    const s = sel();
+    if (ev.code === 'KeyG' && s && !dragMode) { dragMode = 'xz'; dragPreview = null; }
+    if (ev.code === 'KeyV' && s && !dragMode) { dragMode = 'y'; dragPreview = null; }
+    if (ev.code === 'Escape') { dragMode = null; dragPreview = null; selId = null; renderSel(); }
+    if (s && !dragMode) {
+        const step = parseFloat($('step').value) || 0.5;
+        // camera-relative ground nudges snapped to the nearest world axis
+        const fx = Math.sin(cam.yaw), fz = Math.cos(cam.yaw);
+        const axis = Math.abs(fx) > Math.abs(fz) ? [Math.sign(fx), 0] : [0, Math.sign(fz)];
+        const right = [axis[1], -axis[0]];
+        let dx = 0, dy = 0, dz = 0;
+        if (ev.code === 'ArrowUp') { dx = axis[0]; dz = axis[1]; }
+        else if (ev.code === 'ArrowDown') { dx = -axis[0]; dz = -axis[1]; }
+        else if (ev.code === 'ArrowRight') { dx = right[0]; dz = right[1]; }
+        else if (ev.code === 'ArrowLeft') { dx = -right[0]; dz = -right[1]; }
+        else if (ev.code === 'PageUp') dy = 1;
+        else if (ev.code === 'PageDown') dy = -1;
+        if (dx || dy || dz) {
+            moveSel(s.x + dx * step, s.y + dy * step, s.z + dz * step);
+            ev.preventDefault();
+        }
+    }
+});
+window.addEventListener('keyup', (ev) => {
+    keys[ev.code] = false;
+    if ((ev.code === 'KeyG' && dragMode === 'xz') || (ev.code === 'KeyV' && dragMode === 'y')) {
+        const s = sel();
+        if (s && dragPreview) moveSel(dragPreview.x, dragPreview.y, dragPreview.z);
+        dragMode = null;
+        // preview stays until the move response lands, then the record replaces it
+        setTimeout(() => { dragPreview = null; }, 600);
+    }
+});
+
+function tickCamera(dt) {
+    const sp = cam.speed * (keys.ShiftLeft || keys.ShiftRight ? 4 : 1) * dt;
+    const sy = Math.sin(cam.yaw), cy = Math.cos(cam.yaw);
+    if (keys.KeyW) { cam.x += sy * sp; cam.z += cy * sp; }
+    if (keys.KeyS) { cam.x -= sy * sp; cam.z -= cy * sp; }
+    if (keys.KeyA) { cam.x -= cy * sp; cam.z += sy * sp; }
+    if (keys.KeyD) { cam.x += cy * sp; cam.z -= sy * sp; }
+    if (keys.KeyR) cam.y += sp;
+    if (keys.KeyF) cam.y -= sp;
+}
+
+// ---------- side panel wiring ----------
+$('btnScan').onclick = () => rescan(false);
+$('btnScanHere').onclick = () => rescan(true);
+$('btnApplyPos').onclick = () => {
+    moveSel(parseFloat($('px').value), parseFloat($('py').value), parseFloat($('pz').value));
+};
+$('btnApplyRot').onclick = () => {
+    rotateSel(parseFloat($('rx').value), parseFloat($('ry').value), parseFloat($('rz').value));
+};
+for (const b of document.querySelectorAll('.yaw')) {
+    b.onclick = () => {
+        const s = sel(); if (!s) return;
+        rotateSel(s.ex, ((s.ey + parseFloat(b.dataset.d)) % 360 + 360) % 360, s.ez);
+    };
+}
+$('btnGround').onclick = () => {
+    const s = sel(); if (!s) return;
+    editCmd('/api/edit/ground', { id: s.id }, 'ground');
+};
+$('btnRefresh').onclick = async () => {
+    const s = sel(); if (!s) return;
+    await editCmd('/api/edit/info', { id: s.id }, 'refresh');
+};
+$('btnLookAt').onclick = () => {
+    const s = sel(); if (!s) return;
+    cam.x = s.x - Math.sin(cam.yaw) * 6;
+    cam.z = s.z - Math.cos(cam.yaw) * 6;
+    cam.y = s.y + 4;
+    cam.pitch = -0.55;
+};
+$('btnDeselect').onclick = () => { selId = null; dragPreview = null; renderSel(); };
+
+// ---------- to-string (one-shot export + clipboard) ----------
+// localhost is a secure context, so navigator.clipboard works over the tunnel;
+// the readonly box (auto-selected) is the fallback for a manual Ctrl+C.
+function clearStrBox() {
+    const box = $('strBox'); if (box) { box.style.display = 'none'; box.value = ''; }
+    const cp = $('btnCopyStr'); if (cp) cp.style.display = 'none';
+    const m = $('strMeta'); if (m) { m.textContent = ''; m.style.color = ''; }
+}
+async function copyStr(text) {
+    try { await navigator.clipboard.writeText(text); return true; } catch { return false; }
+}
+function showCopied(len, copied) {
+    $('strMeta').textContent = (copied ? 'copied ✓ ' : 'Ctrl+C to copy · ') + len + ' chars';
+    $('strMeta').style.color = copied ? 'var(--ok)' : 'var(--dim)';
+}
+$('btnToString').onclick = async () => {
+    const s = sel(); if (!s || busy) return;
+    busy = true;
+    try {
+        const j = await api('POST', '/api/edit/tostring', { id: s.id });
+        const box = $('strBox');
+        box.style.display = ''; box.value = j.string;
+        $('btnCopyStr').style.display = '';
+        box.focus(); box.select();
+        const copied = await copyStr(j.string);
+        showCopied(j.length, copied);
+        status('string: ' + (j.label || ('#' + s.id)) + (copied ? ' — on your clipboard' : ' — in the box'), 'good');
+    } catch (e) {
+        clearStrBox();
+        status('tostring: ' + e.message, 'err');
+    }
+    busy = false;
+};
+$('btnCopyStr').onclick = async () => {
+    const box = $('strBox'); if (!box.value) return;
+    box.focus(); box.select();
+    showCopied(box.value.length, await copyStr(box.value));
+};
+
+// Two clicks, and the confirm text comes from the SERVER's answer (the bare
+// call is a dry run that also runs the vetoes) - what you confirm is what the
+// server resolved, not what the page thinks is selected.
+let deleteArm = null; // { id, until }
+
+function disarmDelete() {
+    deleteArm = null;
+    const b = $('btnDelete');
+    if (b) { b.classList.remove('armed'); $('deleteHint').textContent = ''; }
+}
+
+$('btnDelete').onclick = async () => {
+    const s = sel(); if (!s || busy) return;
+    if (deleteArm && deleteArm.id === s.id && Date.now() < deleteArm.until) {
+        disarmDelete();
+        busy = true;
+        try {
+            const j = await api('POST', '/api/edit/delete', { id: s.id, confirm: true });
+            entities = entities.filter(e => e.id !== s.id);
+            selId = null; dragPreview = null; renderSel();
+            status('deleted: ' + j.data.deleted.prefab + ' #' + j.data.deleted.id, 'good');
+        } catch (e) { status('delete: ' + e.message, 'err'); }
+        busy = false;
+        return;
+    }
+    try {
+        const r = await fetch('/api/edit/delete', {
+            method: 'POST', headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ id: s.id })
+        });
+        const j = await r.json();
+        if (j.data && j.data.needsConfirm) {
+            const armedId = s.id;
+            deleteArm = { id: armedId, until: Date.now() + 6000 };
+            $('btnDelete').classList.add('armed');
+            $('deleteHint').textContent = 'click again: deletes ' + j.data.entity.prefab + ' #' + j.data.entity.id;
+            setTimeout(() => { if (deleteArm && deleteArm.id === armedId) disarmDelete(); }, 6000);
+        } else {
+            status('delete: ' + ((j.data && j.data.err) || j.error || 'refused'), 'err');
+        }
+    } catch (e) { status('delete: ' + e.message, 'err'); }
+};
+
+// info endpoint returns {entity} like move does — reuse editCmd via a tiny shim
+// (it posts /api/edit/info with {id}).
+
+// ---------- loops ----------
+let last = performance.now();
+function frame(now) {
+    tickCamera(Math.min((now - last) / 1000, 0.1));
+    last = now;
+    draw();
+    requestAnimationFrame(frame);
+}
+requestAnimationFrame(frame);
+
+setInterval(() => {
+    if ($('auto').checked && !dragMode && !busy && !document.hidden) {
+        rescan($('player').value === '');
+    }
+}, 2500);
+setInterval(() => { if (!document.hidden) loadPlayers(); }, 15000);
+
+(async () => {
+    const players = await loadPlayers();
+    status(players.length + ' player(s) online — scanning…');
+    await rescan($('player').value === '');
+})();
+</script>
+</body>
+</html>

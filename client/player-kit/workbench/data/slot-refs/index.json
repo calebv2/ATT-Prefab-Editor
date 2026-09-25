@@ -1,0 +1,1467 @@
+{
+    "generated":  "2026-07-19T09:33:13.8837090Z",
+    "source":  "Ethyn\u0027s Visual Slot Reference (community sheet)",
+    "prefabs":  {
+                    "Arrow_Shaft_Wooden":  {
+                                               "file":  "Arrow_Shaft_Wooden.png",
+                                               "slots":  [
+                                                             {
+                                                                 "color":  "red",
+                                                                 "comment":  "",
+                                                                 "hash":  38282,
+                                                                 "slot":  "Slot_Feather"
+                                                             },
+                                                             {
+                                                                 "color":  "green",
+                                                                 "comment":  "Same location as blue.",
+                                                                 "hash":  33560,
+                                                                 "slot":  "Slot_Deco"
+                                                             },
+                                                             {
+                                                                 "color":  "blue",
+                                                                 "comment":  "Same location as green.",
+                                                                 "hash":  13582,
+                                                                 "slot":  "Slot_Grass"
+                                                             }
+                                                         ]
+                                           },
+                    "Bag":  {
+                                "file":  "Bag.png",
+                                "slots":  [
+                                              {
+                                                  "color":  "red",
+                                                  "comment":  "",
+                                                  "hash":  31454,
+                                                  "slot":  "Slot_Bag_Pin_Collectible_Attach"
+                                              },
+                                              {
+                                                  "color":  "green",
+                                                  "comment":  "",
+                                                  "hash":  55164,
+                                                  "slot":  "Slot_Bag_Attach_1"
+                                              },
+                                              {
+                                                  "color":  "blue",
+                                                  "comment":  "",
+                                                  "hash":  36292,
+                                                  "slot":  "Slot_Bag_Tool_Attachment_1"
+                                              },
+                                              {
+                                                  "color":  "orange",
+                                                  "comment":  "",
+                                                  "hash":  30776,
+                                                  "slot":  "Slot_Bag_Attach_2"
+                                              },
+                                              {
+                                                  "color":  "pink",
+                                                  "comment":  "",
+                                                  "hash":  36386,
+                                                  "slot":  "Slot_Bag_Tool_Attachment_2"
+                                              }
+                                          ]
+                            },
+                    "Barrel_Bag":  {
+                                       "file":  "Barrel_Bag.png",
+                                       "slots":  [
+                                                     {
+                                                         "color":  "red",
+                                                         "comment":  "",
+                                                         "hash":  55164,
+                                                         "slot":  "Slot_Bag_Attach_1"
+                                                     },
+                                                     {
+                                                         "color":  "green",
+                                                         "comment":  "",
+                                                         "hash":  30776,
+                                                         "slot":  "Slot_Bag_Attach_2"
+                                                     }
+                                                 ]
+                                   },
+                    "Craft_Piece_Side_1Way":  {
+                                                  "file":  "Craft_Piece_Side_1Way.png",
+                                                  "slots":  [
+                                                                {
+                                                                    "color":  "red",
+                                                                    "comment":  "",
+                                                                    "hash":  7170,
+                                                                    "slot":  "Slot_AxeType"
+                                                                }
+                                                            ]
+                                              },
+                    "Craft_Piece_Side_2Way":  {
+                                                  "file":  "Craft_Piece_Side_2Way.png",
+                                                  "slots":  [
+                                                                {
+                                                                    "color":  "red",
+                                                                    "comment":  "",
+                                                                    "hash":  15316,
+                                                                    "slot":  "Slot_AxeType_1"
+                                                                },
+                                                                {
+                                                                    "color":  "green",
+                                                                    "comment":  "",
+                                                                    "hash":  15318,
+                                                                    "slot":  "Slot_AxeType_2"
+                                                                }
+                                                            ]
+                                              },
+                    "Craft_Piece_Side_4Way":  {
+                                                  "file":  "Craft_Piece_Side_4Way.png",
+                                                  "slots":  [
+                                                                {
+                                                                    "color":  "red",
+                                                                    "comment":  "",
+                                                                    "hash":  40654,
+                                                                    "slot":  "Slot_AxeType_1"
+                                                                },
+                                                                {
+                                                                    "color":  "green",
+                                                                    "comment":  "",
+                                                                    "hash":  19782,
+                                                                    "slot":  "Slot_AxeType_2"
+                                                                },
+                                                                {
+                                                                    "color":  "blue",
+                                                                    "comment":  "",
+                                                                    "hash":  18636,
+                                                                    "slot":  "Slot_AxeType_3"
+                                                                },
+                                                                {
+                                                                    "color":  "orange",
+                                                                    "comment":  "",
+                                                                    "hash":  17932,
+                                                                    "slot":  "Slot_AxeType_4"
+                                                                }
+                                                            ]
+                                              },
+                    "Craft_Piece_Side_Flat_1Way":  {
+                                                       "file":  "Craft_Piece_Side_Flat_1Way.png",
+                                                       "slots":  [
+                                                                     {
+                                                                         "color":  "red",
+                                                                         "comment":  "",
+                                                                         "hash":  39368,
+                                                                         "slot":  "Slot_EdgeType_1"
+                                                                     },
+                                                                     {
+                                                                         "color":  "green",
+                                                                         "comment":  "",
+                                                                         "hash":  38338,
+                                                                         "slot":  "Slot_EdgeType_2"
+                                                                     }
+                                                                 ]
+                                                   },
+                    "Craft_Piece_SideFlat_2Way":  {
+                                                      "file":  "Craft_Piece_SideFlat_2Way.png",
+                                                      "slots":  [
+                                                                    {
+                                                                        "color":  "red",
+                                                                        "comment":  "",
+                                                                        "hash":  57506,
+                                                                        "slot":  "Slot_EdgeType_1"
+                                                                    },
+                                                                    {
+                                                                        "color":  "green",
+                                                                        "comment":  "",
+                                                                        "hash":  39368,
+                                                                        "slot":  "Slot_EdgeType_2"
+                                                                    },
+                                                                    {
+                                                                        "color":  "blue",
+                                                                        "comment":  "",
+                                                                        "hash":  51674,
+                                                                        "slot":  "Slot_EdgeType_3"
+                                                                    },
+                                                                    {
+                                                                        "color":  "orange",
+                                                                        "comment":  "",
+                                                                        "hash":  51672,
+                                                                        "slot":  "Slot_EdgeType_4"
+                                                                    }
+                                                                ]
+                                                  },
+                    "Curled_Wooden_Handle":  {
+                                                 "file":  "Curled_Wooden_Handle.png",
+                                                 "slots":  [
+                                                               {
+                                                                   "color":  "red",
+                                                                   "comment":  "",
+                                                                   "hash":  34272,
+                                                                   "slot":  "Slot_Multi"
+                                                               },
+                                                               {
+                                                                   "color":  "green",
+                                                                   "comment":  "",
+                                                                   "hash":  34270,
+                                                                   "slot":  "Slot_Multi_1"
+                                                               },
+                                                               {
+                                                                   "color":  "blue",
+                                                                   "comment":  "",
+                                                                   "hash":  2108,
+                                                                   "slot":  "Slot_Multi_2"
+                                                               }
+                                                           ]
+                                             },
+                    "Forage_Basket_Bag":  {
+                                              "file":  "Forage_Basket_Bag.png",
+                                              "slots":  [
+                                                            {
+                                                                "color":  "red",
+                                                                "comment":  "",
+                                                                "hash":  55164,
+                                                                "slot":  "Slot_Bag_Attach_1"
+                                                            },
+                                                            {
+                                                                "color":  "green",
+                                                                "comment":  "",
+                                                                "hash":  30776,
+                                                                "slot":  "Slot_Bag_Attach_2"
+                                                            }
+                                                        ]
+                                          },
+                    "Guard_Fancy":  {
+                                        "file":  "Guard_Fancy.png",
+                                        "slots":  [
+                                                      {
+                                                          "color":  "red",
+                                                          "comment":  "",
+                                                          "hash":  39370,
+                                                          "slot":  "Slot_SwordType"
+                                                      }
+                                                  ]
+                                    },
+                    "Guard_Handle":  {
+                                         "file":  "Guard_Handle.png",
+                                         "slots":  [
+                                                       {
+                                                           "color":  "red",
+                                                           "comment":  "",
+                                                           "hash":  39370,
+                                                           "slot":  "Slot_End"
+                                                       }
+                                                   ]
+                                     },
+                    "Guard_Hemisphere":  {
+                                             "file":  "Guard_Hemisphere.png",
+                                             "slots":  [
+                                                           {
+                                                               "color":  "red",
+                                                               "comment":  "",
+                                                               "hash":  39370,
+                                                               "slot":  "Slot_SwordType"
+                                                           }
+                                                       ]
+                                         },
+                    "Guard_Pointy_Ends":  {
+                                              "file":  "Guard_Pointy_Ends.png",
+                                              "slots":  [
+                                                            {
+                                                                "color":  "red",
+                                                                "comment":  "",
+                                                                "hash":  31108,
+                                                                "slot":  "Slot_Multi"
+                                                            }
+                                                        ]
+                                          },
+                    "Guard_Round_Ends":  {
+                                             "file":  "Guard_Round_Ends.png",
+                                             "slots":  [
+                                                           {
+                                                               "color":  "red",
+                                                               "comment":  "",
+                                                               "hash":  39370,
+                                                               "slot":  "Slot_End"
+                                                           }
+                                                       ]
+                                         },
+                    "Guard_Straight_Ends":  {
+                                                "file":  "Guard_Straight_Ends.png",
+                                                "slots":  [
+                                                              {
+                                                                  "color":  "red",
+                                                                  "comment":  "",
+                                                                  "hash":  30024,
+                                                                  "slot":  "Slot_Multi"
+                                                              }
+                                                          ]
+                                            },
+                    "Guard":  {
+                                  "file":  "Guard.png",
+                                  "slots":  [
+                                                {
+                                                    "color":  "red",
+                                                    "comment":  "",
+                                                    "hash":  39370,
+                                                    "slot":  "Slot_SwordType"
+                                                }
+                                            ]
+                              },
+                    "Handle_Fist":  {
+                                        "file":  "Handle_Fist.png",
+                                        "slots":  [
+                                                      {
+                                                          "color":  "red",
+                                                          "comment":  "",
+                                                          "hash":  22992,
+                                                          "slot":  "Slot_Deco_1"
+                                                      },
+                                                      {
+                                                          "color":  "green",
+                                                          "comment":  "",
+                                                          "hash":  54114,
+                                                          "slot":  "Slot_Deco_2"
+                                                      },
+                                                      {
+                                                          "color":  "blue",
+                                                          "comment":  "",
+                                                          "hash":  22982,
+                                                          "slot":  "Slot_Deco_3"
+                                                      },
+                                                      {
+                                                          "color":  "orange",
+                                                          "comment":  "",
+                                                          "hash":  22990,
+                                                          "slot":  "Slot_Multi"
+                                                      },
+                                                      {
+                                                          "color":  "pink",
+                                                          "comment":  "",
+                                                          "hash":  23002,
+                                                          "slot":  "Slot_Deco_4"
+                                                      }
+                                                  ]
+                                    },
+                    "Handle_Large_Branch":  {
+                                                "file":  "Handle_Large_Branch.png",
+                                                "slots":  [
+                                                              {
+                                                                  "color":  "red",
+                                                                  "comment":  "Slightly offset from green.",
+                                                                  "hash":  55026,
+                                                                  "slot":  "Slot_Primitive_AxeType"
+                                                              },
+                                                              {
+                                                                  "color":  "green",
+                                                                  "comment":  "Slightly offset from red.",
+                                                                  "hash":  20330,
+                                                                  "slot":  "Slot_Multi"
+                                                              }
+                                                          ]
+                                            },
+                    "Handle_Large_Cool":  {
+                                              "file":  "Handle_Large_Cool.png",
+                                              "slots":  [
+                                                            {
+                                                                "color":  "red",
+                                                                "comment":  "Slightly above green.",
+                                                                "hash":  29320,
+                                                                "slot":  "Slot_Multi_1"
+                                                            },
+                                                            {
+                                                                "color":  "green",
+                                                                "comment":  "Slightly below red.",
+                                                                "hash":  43166,
+                                                                "slot":  "Slot_Multi_2"
+                                                            },
+                                                            {
+                                                                "color":  "blue",
+                                                                "comment":  "⚠️ Same location as orange. Verification needed!",
+                                                                "hash":  43172,
+                                                                "slot":  "Slot_EdgeType_Craft_1"
+                                                            },
+                                                            {
+                                                                "color":  "orange",
+                                                                "comment":  "⚠️ Same location as blue. Verification needed!",
+                                                                "hash":  64610,
+                                                                "slot":  "Slot_EdgeType_Craft_2"
+                                                            }
+                                                        ]
+                                          },
+                    "Handle_Long_Straight":  {
+                                                 "file":  "Handle_Long_Straight.png",
+                                                 "slots":  [
+                                                               {
+                                                                   "color":  "red",
+                                                                   "comment":  "Same location as blue.",
+                                                                   "hash":  63218,
+                                                                   "slot":  "Slot_Multi_1"
+                                                               },
+                                                               {
+                                                                   "color":  "green",
+                                                                   "comment":  "⚠️ Same location as orange. Verification needed!",
+                                                                   "hash":  63178,
+                                                                   "slot":  "Slot_Multi_2"
+                                                               },
+                                                               {
+                                                                   "color":  "blue",
+                                                                   "comment":  "Same location as red.",
+                                                                   "hash":  63270,
+                                                                   "slot":  "Slot_Straight_Short_Sword_Type_1"
+                                                               },
+                                                               {
+                                                                   "color":  "orange",
+                                                                   "comment":  "⚠️ Same location as green. Verification needed!",
+                                                                   "hash":  63318,
+                                                                   "slot":  "Slot_Straight_Short_Sword_Type_2"
+                                                               },
+                                                               {
+                                                                   "color":  "pink",
+                                                                   "comment":  "Slightly below red/blue. Slightly further below light grey.",
+                                                                   "hash":  53692,
+                                                                   "slot":  "Slot_EdgeType_Craft_1"
+                                                               },
+                                                               {
+                                                                   "color":  "purple",
+                                                                   "comment":  "Slightly below green/orange. Slightly further below dark grey.",
+                                                                   "hash":  53492,
+                                                                   "slot":  "Slot_EdgeType_Craft_2"
+                                                               },
+                                                               {
+                                                                   "color":  "light grey",
+                                                                   "comment":  "Slightly above red/blue. Slightly further above pink.",
+                                                                   "hash":  53060,
+                                                                   "slot":  "Slot_Multi_3"
+                                                               },
+                                                               {
+                                                                   "color":  "dark grey",
+                                                                   "comment":  "Slightly above green/orange. Slightly further above purple.",
+                                                                   "hash":  53074,
+                                                                   "slot":  "Slot_Multi_4"
+                                                               }
+                                                           ]
+                                             },
+                    "Handle_Medium_Branch":  {
+                                                 "file":  "Handle_Medium_Branch.png",
+                                                 "slots":  [
+                                                               {
+                                                                   "color":  "red",
+                                                                   "comment":  "Same location as green/blue.",
+                                                                   "hash":  29458,
+                                                                   "slot":  "Slot_Multi_1"
+                                                               },
+                                                               {
+                                                                   "color":  "green",
+                                                                   "comment":  "Same location as red/blue.",
+                                                                   "hash":  52880,
+                                                                   "slot":  "Slot_Multi_2"
+                                                               },
+                                                               {
+                                                                   "color":  "blue",
+                                                                   "comment":  "⚠️ Same location as red/green. Verification needed!",
+                                                                   "hash":  45470,
+                                                                   "slot":  "Slot_EdgeType_Craft"
+                                                               },
+                                                               {
+                                                                   "color":  "orange",
+                                                                   "comment":  "Similar location as pink, different angle.",
+                                                                   "hash":  15462,
+                                                                   "slot":  "Slot_Multi_3"
+                                                               },
+                                                               {
+                                                                   "color":  "pink",
+                                                                   "comment":  "Similar location as orange, different angle.",
+                                                                   "hash":  55836,
+                                                                   "slot":  "Slot_PommelType"
+                                                               }
+                                                           ]
+                                             },
+                    "Handle_Medium_Cool":  {
+                                               "file":  "Handle_Medium_Cool.png",
+                                               "slots":  [
+                                                             {
+                                                                 "color":  "red",
+                                                                 "comment":  "",
+                                                                 "hash":  57058,
+                                                                 "slot":  "Slot_EdgeType_Craft_1"
+                                                             },
+                                                             {
+                                                                 "color":  "green",
+                                                                 "comment":  "Slightly below blue/orange.",
+                                                                 "hash":  59436,
+                                                                 "slot":  "Slot_EdgeType_Craft_2"
+                                                             },
+                                                             {
+                                                                 "color":  "blue",
+                                                                 "comment":  "Same location as orange, slightly above green.",
+                                                                 "hash":  3558,
+                                                                 "slot":  "Slot_Multi_1"
+                                                             },
+                                                             {
+                                                                 "color":  "orange",
+                                                                 "comment":  "Same location as blue, slightly above green.",
+                                                                 "hash":  59224,
+                                                                 "slot":  "Slot_Multi_2"
+                                                             }
+                                                         ]
+                                           },
+                    "Handle_Medium_Curved":  {
+                                                 "file":  "Handle_Medium_Curved.png",
+                                                 "slots":  [
+                                                               {
+                                                                   "color":  "red",
+                                                                   "comment":  "Same location as green.",
+                                                                   "hash":  7860,
+                                                                   "slot":  "Slot_Multi"
+                                                               },
+                                                               {
+                                                                   "color":  "green",
+                                                                   "comment":  "Same location as red.",
+                                                                   "hash":  51182,
+                                                                   "slot":  "Slot_EdgeType_Craft"
+                                                               }
+                                                           ]
+                                             },
+                    "Handle_Medium_Ridged":  {
+                                                 "file":  "Handle_Medium_Ridged.png",
+                                                 "slots":  [
+                                                               {
+                                                                   "color":  "red",
+                                                                   "comment":  "",
+                                                                   "hash":  64914,
+                                                                   "slot":  "Slot_Pole_1"
+                                                               },
+                                                               {
+                                                                   "color":  "green",
+                                                                   "comment":  "",
+                                                                   "hash":  19996,
+                                                                   "slot":  "Slot_Pole_2"
+                                                               }
+                                                           ]
+                                             },
+                    "Handle_Medium_Standard":  {
+                                                   "file":  "Handle_Medium_Standard.png",
+                                                   "slots":  [
+                                                                 {
+                                                                     "color":  "red",
+                                                                     "comment":  "",
+                                                                     "hash":  20070,
+                                                                     "slot":  "Slot_Pole_1"
+                                                                 },
+                                                                 {
+                                                                     "color":  "green",
+                                                                     "comment":  "",
+                                                                     "hash":  64914,
+                                                                     "slot":  "Slot_Pole_2"
+                                                                 }
+                                                             ]
+                                               },
+                    "Handle_Medium_Straight":  {
+                                                   "file":  "Handle_Medium_Straight.png",
+                                                   "slots":  [
+                                                                 {
+                                                                     "color":  "red",
+                                                                     "comment":  "Same location as pink, slightly above blue.",
+                                                                     "hash":  63218,
+                                                                     "slot":  "Slot_Multi_1"
+                                                                 },
+                                                                 {
+                                                                     "color":  "green",
+                                                                     "comment":  "Same location as purple, slightly above orange.",
+                                                                     "hash":  63178,
+                                                                     "slot":  "Slot_Multi_2"
+                                                                 },
+                                                                 {
+                                                                     "color":  "blue",
+                                                                     "comment":  "Slightly below red/pink.",
+                                                                     "hash":  53692,
+                                                                     "slot":  "Slot_EdgeType_Craft_1"
+                                                                 },
+                                                                 {
+                                                                     "color":  "orange",
+                                                                     "comment":  "Slightly below green/purple.",
+                                                                     "hash":  53492,
+                                                                     "slot":  "Slot_EdgeType_Craft_2"
+                                                                 },
+                                                                 {
+                                                                     "color":  "pink",
+                                                                     "comment":  "Same location as red, slightly above blue.",
+                                                                     "hash":  53060,
+                                                                     "slot":  "Slot_Multi_3"
+                                                                 },
+                                                                 {
+                                                                     "color":  "purple",
+                                                                     "comment":  "Same location as green, slightly above orange.",
+                                                                     "hash":  53074,
+                                                                     "slot":  "Slot_Multi_4"
+                                                                 },
+                                                                 {
+                                                                     "color":  "light grey",
+                                                                     "comment":  "⚠️ Unknown location! Verification needed!",
+                                                                     "hash":  63270,
+                                                                     "slot":  "Slot_Straight_Short_Sword_Type_1"
+                                                                 },
+                                                                 {
+                                                                     "color":  "dark grey",
+                                                                     "comment":  "⚠️ Unknown location! Verification needed!",
+                                                                     "hash":  63318,
+                                                                     "slot":  "Slot_Straight_Short_Sword_Type_2"
+                                                                 }
+                                                             ]
+                                               },
+                    "Handle_Round_Fist":  {
+                                              "file":  "Handle_Round_Fist.png",
+                                              "slots":  [
+                                                            {
+                                                                "color":  "red",
+                                                                "comment":  "",
+                                                                "hash":  57746,
+                                                                "slot":  "Slot_Deco_1"
+                                                            },
+                                                            {
+                                                                "color":  "green",
+                                                                "comment":  "",
+                                                                "hash":  50738,
+                                                                "slot":  "Slot_Deco_2"
+                                                            },
+                                                            {
+                                                                "color":  "blue",
+                                                                "comment":  "",
+                                                                "hash":  38156,
+                                                                "slot":  "Slot_Deco_3"
+                                                            },
+                                                            {
+                                                                "color":  "orange",
+                                                                "comment":  "",
+                                                                "hash":  31482,
+                                                                "slot":  "Slot_Deco_4"
+                                                            },
+                                                            {
+                                                                "color":  "pink",
+                                                                "comment":  "",
+                                                                "hash":  54114,
+                                                                "slot":  "Slot_Multi"
+                                                            }
+                                                        ]
+                                          },
+                    "Handle_Short_C_Curve":  {
+                                                 "file":  "Handle_Short_C_Curve.png",
+                                                 "slots":  [
+                                                               {
+                                                                   "color":  "red",
+                                                                   "comment":  "",
+                                                                   "hash":  5686,
+                                                                   "slot":  "Slot_PommelType_1"
+                                                               },
+                                                               {
+                                                                   "color":  "green",
+                                                                   "comment":  "⚠️ Unknown location! Verification needed!",
+                                                                   "hash":  5714,
+                                                                   "slot":  "Slot_Large_SwordType_Craft_1"
+                                                               },
+                                                               {
+                                                                   "color":  "blue",
+                                                                   "comment":  "⚠️ Unknown location! Verification needed!",
+                                                                   "hash":  5626,
+                                                                   "slot":  "Slot_Multi_1"
+                                                               },
+                                                               {
+                                                                   "color":  "orange",
+                                                                   "comment":  "",
+                                                                   "hash":  5700,
+                                                                   "slot":  "Slot_PommelType_2"
+                                                               },
+                                                               {
+                                                                   "color":  "pink",
+                                                                   "comment":  "⚠️ Unknown location! Verification needed!",
+                                                                   "hash":  5628,
+                                                                   "slot":  "Slot_Large_SwordType_Craft_2"
+                                                               },
+                                                               {
+                                                                   "color":  "purple",
+                                                                   "comment":  "⚠️ Unknown location! Verification needed!",
+                                                                   "hash":  5624,
+                                                                   "slot":  "Slot_Multi_2"
+                                                               }
+                                                           ]
+                                             },
+                    "Handle_Short_Cool":  {
+                                              "file":  "Handle_Short_Cool.png",
+                                              "slots":  [
+                                                            {
+                                                                "color":  "red",
+                                                                "comment":  "Same location as green/blue.",
+                                                                "hash":  33946,
+                                                                "slot":  "Slot_Large_SwordType_Craft"
+                                                            },
+                                                            {
+                                                                "color":  "green",
+                                                                "comment":  "Same location as red/blue.",
+                                                                "hash":  48480,
+                                                                "slot":  "Slot_Multi"
+                                                            },
+                                                            {
+                                                                "color":  "blue",
+                                                                "comment":  "Same location as red/green.",
+                                                                "hash":  43890,
+                                                                "slot":  "Slot_EdgeType_Craft"
+                                                            }
+                                                        ]
+                                          },
+                    "Handle_Short_Pointy_End":  {
+                                                    "file":  "Handle_Short_Pointy_End.png",
+                                                    "slots":  [
+                                                                  {
+                                                                      "color":  "red",
+                                                                      "comment":  "Same location as green/blue.",
+                                                                      "hash":  9736,
+                                                                      "slot":  "Slot_Large_SwordType_Craft"
+                                                                  },
+                                                                  {
+                                                                      "color":  "green",
+                                                                      "comment":  "Same location as red/blue.",
+                                                                      "hash":  18472,
+                                                                      "slot":  "Slot_Multi"
+                                                                  },
+                                                                  {
+                                                                      "color":  "blue",
+                                                                      "comment":  "Same location as red/green.",
+                                                                      "hash":  14502,
+                                                                      "slot":  "Slot_EdgeType_Craft"
+                                                                  }
+                                                              ]
+                                                },
+                    "Handle_Short_S_Curve":  {
+                                                 "file":  "Handle_Short_S_Curve.png",
+                                                 "slots":  [
+                                                               {
+                                                                   "color":  "red",
+                                                                   "comment":  "",
+                                                                   "hash":  64914,
+                                                                   "slot":  "Slot_Mid_1"
+                                                               },
+                                                               {
+                                                                   "color":  "green",
+                                                                   "comment":  "",
+                                                                   "hash":  20238,
+                                                                   "slot":  "Slot_Mid_2"
+                                                               }
+                                                           ]
+                                             },
+                    "Handle_Short_Taper":  {
+                                               "file":  "Handle_Short_Taper.png",
+                                               "slots":  [
+                                                             {
+                                                                 "color":  "red",
+                                                                 "comment":  "",
+                                                                 "hash":  64914,
+                                                                 "slot":  "Slot_Mid_1"
+                                                             },
+                                                             {
+                                                                 "color":  "green",
+                                                                 "comment":  "",
+                                                                 "hash":  20296,
+                                                                 "slot":  "Slot_Mid_2"
+                                                             }
+                                                         ]
+                                           },
+                    "Handle_Short":  {
+                                         "file":  "Handle_Short.png",
+                                         "slots":  [
+                                                       {
+                                                           "color":  "red",
+                                                           "comment":  "",
+                                                           "hash":  30776,
+                                                           "slot":  "Slot_PommelType_1"
+                                                       },
+                                                       {
+                                                           "color":  "green",
+                                                           "comment":  "⚠️ Unknown location! Verification needed!",
+                                                           "hash":  54356,
+                                                           "slot":  "Slot_Large_SwordType_Craft_1"
+                                                       },
+                                                       {
+                                                           "color":  "blue",
+                                                           "comment":  "⚠️ Unknown location! Verification needed!",
+                                                           "hash":  6136,
+                                                           "slot":  "Slot_Multi_1"
+                                                       },
+                                                       {
+                                                           "color":  "orange",
+                                                           "comment":  "",
+                                                           "hash":  20654,
+                                                           "slot":  "Slot_PommelType_2"
+                                                       },
+                                                       {
+                                                           "color":  "pink",
+                                                           "comment":  "⚠️ Unknown location! Verification needed!",
+                                                           "hash":  6134,
+                                                           "slot":  "Slot_Large_SwordType_Craft_2"
+                                                       },
+                                                       {
+                                                           "color":  "purple",
+                                                           "comment":  "⚠️ Unknown location! Verification needed!",
+                                                           "hash":  6138,
+                                                           "slot":  "Slot_Multi_2"
+                                                       }
+                                                   ]
+                                     },
+                    "Handle_Spear":  {
+                                         "file":  "Handle_Spear.png",
+                                         "slots":  [
+                                                       {
+                                                           "color":  "red",
+                                                           "comment":  "",
+                                                           "hash":  64914,
+                                                           "slot":  "Slot_Pole"
+                                                       },
+                                                       {
+                                                           "color":  "green",
+                                                           "comment":  "",
+                                                           "hash":  4866,
+                                                           "slot":  "Slot_Deco"
+                                                       }
+                                                   ]
+                                     },
+                    "Handle_Tonfa":  {
+                                         "file":  "Handle_Tonfa.png",
+                                         "slots":  [
+                                                       {
+                                                           "color":  "red",
+                                                           "comment":  "",
+                                                           "hash":  47874,
+                                                           "slot":  "Slot_HammerType_End_Cap"
+                                                       },
+                                                       {
+                                                           "color":  "green",
+                                                           "comment":  "",
+                                                           "hash":  37414,
+                                                           "slot":  "Slot_Shield"
+                                                       },
+                                                       {
+                                                           "color":  "blue",
+                                                           "comment":  "⚠️ Unknown location! Verification needed!",
+                                                           "hash":  64782,
+                                                           "slot":  "Slot_Multi"
+                                                       },
+                                                       {
+                                                           "color":  "orange",
+                                                           "comment":  "⚠️ Unknown location! Verification needed!",
+                                                           "hash":  52822,
+                                                           "slot":  "Slot_EdgeType_Craft"
+                                                       }
+                                                   ]
+                                     },
+                    "Hebios_Guard":  {
+                                         "file":  "Hebios_Guard.png",
+                                         "slots":  [
+                                                       {
+                                                           "color":  "red",
+                                                           "comment":  "",
+                                                           "hash":  39370,
+                                                           "slot":  "Slot_SwordType"
+                                                       }
+                                                   ]
+                                     },
+                    "Hebios_Handle_Katana":  {
+                                                 "file":  "Hebios_Handle_Katana.png",
+                                                 "slots":  [
+                                                               {
+                                                                   "color":  "red",
+                                                                   "comment":  "Same location as green.",
+                                                                   "hash":  53492,
+                                                                   "slot":  "Slot_EdgeType_Craft"
+                                                               },
+                                                               {
+                                                                   "color":  "green",
+                                                                   "comment":  "Same location as red.",
+                                                                   "hash":  63318,
+                                                                   "slot":  "Slot_Straight_Short_Sword_Type"
+                                                               }
+                                                           ]
+                                             },
+                    "Hebios_Handle_Kunai":  {
+                                                "file":  "Hebios_Handle_Kunai.png",
+                                                "slots":  [
+                                                              {
+                                                                  "color":  "red",
+                                                                  "comment":  "",
+                                                                  "hash":  6136,
+                                                                  "slot":  "Slot_Multi"
+                                                              }
+                                                          ]
+                                            },
+                    "Hebios_Handle_Naginata":  {
+                                                   "file":  "Hebios_Handle_Naginata.png",
+                                                   "slots":  [
+                                                                 {
+                                                                     "color":  "red",
+                                                                     "comment":  "⚠️ Unknown location! Verification needed!",
+                                                                     "hash":  63218,
+                                                                     "slot":  "Slot_Multi_1"
+                                                                 },
+                                                                 {
+                                                                     "color":  "green",
+                                                                     "comment":  "Same location as orange, slightly above blue.",
+                                                                     "hash":  63270,
+                                                                     "slot":  "Slot_Straight_Short_Sword_Type"
+                                                                 },
+                                                                 {
+                                                                     "color":  "blue",
+                                                                     "comment":  "Slightly below green/orange.",
+                                                                     "hash":  53692,
+                                                                     "slot":  "Slot_EdgeType_Craft"
+                                                                 },
+                                                                 {
+                                                                     "color":  "orange",
+                                                                     "comment":  "Same location as blue, slightly above blue.",
+                                                                     "hash":  53060,
+                                                                     "slot":  "Slot_Multi_2"
+                                                                 }
+                                                             ]
+                                               },
+                    "Hebios_Handle_Wakizashi":  {
+                                                    "file":  "Hebios_Handle_Wakizashi.png",
+                                                    "slots":  [
+                                                                  {
+                                                                      "color":  "red",
+                                                                      "comment":  "",
+                                                                      "hash":  63318,
+                                                                      "slot":  "Slot_Straight_Short_Sword_Type"
+                                                                  }
+                                                              ]
+                                                },
+                    "Hoarder_Bag":  {
+                                        "file":  "Hoarder_Bag.png",
+                                        "slots":  [
+                                                      {
+                                                          "color":  "red",
+                                                          "comment":  "Located at far left (when wearing backpack).",
+                                                          "hash":  55164,
+                                                          "slot":  "Slot_Bag_Attach_1"
+                                                      },
+                                                      {
+                                                          "color":  "green",
+                                                          "comment":  "Located at far right (when wearing backpack).",
+                                                          "hash":  30776,
+                                                          "slot":  "Slot_Bag_Attach_2"
+                                                      },
+                                                      {
+                                                          "color":  "blue",
+                                                          "comment":  "",
+                                                          "hash":  59540,
+                                                          "slot":  "Slot_Bag_Pin_Collectible_Attach"
+                                                      },
+                                                      {
+                                                          "color":  "orange",
+                                                          "comment":  "Located at near right (when wearing backpack).",
+                                                          "hash":  10614,
+                                                          "slot":  "Slot_Bag_Attach_3"
+                                                      },
+                                                      {
+                                                          "color":  "pink",
+                                                          "comment":  "Located at centre right (when wearing backpack).",
+                                                          "hash":  1020,
+                                                          "slot":  "Slot_Bag_Tool_Attachment_1"
+                                                      },
+                                                      {
+                                                          "color":  "purple",
+                                                          "comment":  "Located at near left (when wearing backpack).",
+                                                          "hash":  10616,
+                                                          "slot":  "Slot_Bag_Attach_4"
+                                                      },
+                                                      {
+                                                          "color":  "light grey",
+                                                          "comment":  "Located at centre left (when wearing backpack).",
+                                                          "hash":  918,
+                                                          "slot":  "Slot_Bag_Tool_Attachment_2"
+                                                      }
+                                                  ]
+                                    },
+                    "Large_Guard_Rectangle":  {
+                                                  "file":  "Large_Guard_Rectangle.png",
+                                                  "slots":  [
+                                                                {
+                                                                    "color":  "red",
+                                                                    "comment":  "",
+                                                                    "hash":  51896,
+                                                                    "slot":  "Slot_Large_SwordType"
+                                                                }
+                                                            ]
+                                              },
+                    "Large_Guard_TShape":  {
+                                               "file":  "Large_Guard_TShape.png",
+                                               "slots":  [
+                                                             {
+                                                                 "color":  "red",
+                                                                 "comment":  "",
+                                                                 "hash":  23508,
+                                                                 "slot":  "Slot_Large_SwordType"
+                                                             }
+                                                         ]
+                                           },
+                    "Large_Guard_Wedge":  {
+                                              "file":  "Large_Guard_Wedge.png",
+                                              "slots":  [
+                                                            {
+                                                                "color":  "red",
+                                                                "comment":  "",
+                                                                "hash":  38966,
+                                                                "slot":  "Slot_Large_SwordType"
+                                                            }
+                                                        ]
+                                          },
+                    "Metal_Bow":  {
+                                      "file":  "Metal_Bow.png",
+                                      "slots":  [
+                                                    {
+                                                        "color":  "red",
+                                                        "comment":  "",
+                                                        "hash":  65334,
+                                                        "slot":  "Slot_Deco_1"
+                                                    },
+                                                    {
+                                                        "color":  "green",
+                                                        "comment":  "",
+                                                        "hash":  61122,
+                                                        "slot":  "Slot_Deco_2"
+                                                    },
+                                                    {
+                                                        "color":  "blue",
+                                                        "comment":  "",
+                                                        "hash":  252,
+                                                        "slot":  "Slot_Bow_Blade_1"
+                                                    },
+                                                    {
+                                                        "color":  "orange",
+                                                        "comment":  "",
+                                                        "hash":  10188,
+                                                        "slot":  "Slot_Bow_Blade_2"
+                                                    }
+                                                ]
+                                  },
+                    "Metal_Hammer_Head":  {
+                                              "file":  "Metal_Hammer_Head.png",
+                                              "slots":  [
+                                                            {
+                                                                "color":  "red",
+                                                                "comment":  "",
+                                                                "hash":  48318,
+                                                                "slot":  "Slot_Deco_1"
+                                                            },
+                                                            {
+                                                                "color":  "green",
+                                                                "comment":  "",
+                                                                "hash":  37872,
+                                                                "slot":  "Slot_Deco_2"
+                                                            }
+                                                        ]
+                                          },
+                    "Ore_Bag":  {
+                                    "file":  "Ore_Bag.png",
+                                    "slots":  [
+                                                  {
+                                                      "color":  "red",
+                                                      "comment":  "Located at near left (when wearing backpack).",
+                                                      "hash":  55164,
+                                                      "slot":  "Slot_Bag_Attach_1"
+                                                  },
+                                                  {
+                                                      "color":  "green",
+                                                      "comment":  "Located at near right (when wearing backpack).",
+                                                      "hash":  30776,
+                                                      "slot":  "Slot_Bag_Attach_2"
+                                                  },
+                                                  {
+                                                      "color":  "blue",
+                                                      "comment":  "",
+                                                      "hash":  62396,
+                                                      "slot":  "Slot_Bag_Attach_3"
+                                                  },
+                                                  {
+                                                      "color":  "orange",
+                                                      "comment":  "Located at far left (when wearing backpack).",
+                                                      "hash":  36292,
+                                                      "slot":  "Slot_Bag_Tool_Attachment_1"
+                                                  },
+                                                  {
+                                                      "color":  "pink",
+                                                      "comment":  "Located at far right (when wearing backpack).",
+                                                      "hash":  36386,
+                                                      "slot":  "Slot_Bag_Tool_Attachment_2"
+                                                  }
+                                              ]
+                                },
+                    "Phantom_Guard":  {
+                                          "file":  "Phantom_Guard.png",
+                                          "slots":  [
+                                                        {
+                                                            "color":  "red",
+                                                            "comment":  "",
+                                                            "hash":  39370,
+                                                            "slot":  "Slot_Multi"
+                                                        }
+                                                    ]
+                                      },
+                    "Rod_Long":  {
+                                     "file":  "Rod_Long.png",
+                                     "slots":  [
+                                                   {
+                                                       "color":  "red",
+                                                       "comment":  "",
+                                                       "hash":  31944,
+                                                       "slot":  "Slot_EdgeType_Craft"
+                                                   },
+                                                   {
+                                                       "color":  "green",
+                                                       "comment":  "",
+                                                       "hash":  37426,
+                                                       "slot":  "Slot_AxeType"
+                                                   },
+                                                   {
+                                                       "color":  "blue",
+                                                       "comment":  "",
+                                                       "hash":  53940,
+                                                       "slot":  "Slot_Multi"
+                                                   }
+                                               ]
+                                 },
+                    "Rod_Medium":  {
+                                       "file":  "Rod_Medium.png",
+                                       "slots":  [
+                                                     {
+                                                         "color":  "red",
+                                                         "comment":  "Same location as green/blue.",
+                                                         "hash":  31156,
+                                                         "slot":  "Slot_Multi_1"
+                                                     },
+                                                     {
+                                                         "color":  "green",
+                                                         "comment":  "Same location as red/blue.",
+                                                         "hash":  39008,
+                                                         "slot":  "Slot_Multi_2"
+                                                     },
+                                                     {
+                                                         "color":  "blue",
+                                                         "comment":  "Same location as red/green.",
+                                                         "hash":  35298,
+                                                         "slot":  "Slot_EdgeType_Craft"
+                                                     },
+                                                     {
+                                                         "color":  "orange",
+                                                         "comment":  "",
+                                                         "hash":  15522,
+                                                         "slot":  "Slot_AxeType"
+                                                     },
+                                                     {
+                                                         "color":  "pink",
+                                                         "comment":  "",
+                                                         "hash":  37438,
+                                                         "slot":  "Slot_Deco"
+                                                     }
+                                                 ]
+                                   },
+                    "Rod_Slim_40cm":  {
+                                          "file":  "Rod_Slim_40cm.png",
+                                          "slots":  [
+                                                        {
+                                                            "color":  "red",
+                                                            "comment":  "",
+                                                            "hash":  44690,
+                                                            "slot":  "Slot_Multi"
+                                                        }
+                                                    ]
+                                      },
+                    "Shield_Core_Bent_Middle":  {
+                                                    "file":  "Shield_Core_Bent_Middle.png",
+                                                    "slots":  [
+                                                                  {
+                                                                      "color":  "red",
+                                                                      "comment":  "",
+                                                                      "hash":  47874,
+                                                                      "slot":  "Slot_Shield_Part_1"
+                                                                  },
+                                                                  {
+                                                                      "color":  "green",
+                                                                      "comment":  "",
+                                                                      "hash":  8898,
+                                                                      "slot":  "Slot_Shield_Part_2"
+                                                                  }
+                                                              ]
+                                                },
+                    "Shield_Core_Circle_Middle":  {
+                                                      "file":  "Shield_Core_Circle_Middle.png",
+                                                      "slots":  [
+                                                                    {
+                                                                        "color":  "red",
+                                                                        "comment":  "",
+                                                                        "hash":  47874,
+                                                                        "slot":  "Slot_Shield_Part_1"
+                                                                    },
+                                                                    {
+                                                                        "color":  "green",
+                                                                        "comment":  "",
+                                                                        "hash":  8898,
+                                                                        "slot":  "Slot_Shield_Part_2"
+                                                                    }
+                                                                ]
+                                                  },
+                    "Shield_Core_Handle":  {
+                                               "file":  "Shield_Core_Handle.png",
+                                               "slots":  [
+                                                             {
+                                                                 "color":  "red",
+                                                                 "comment":  "",
+                                                                 "hash":  47874,
+                                                                 "slot":  "Slot_Shield_Handle"
+                                                             }
+                                                         ]
+                                           },
+                    "Shield_Core_Holed_Middle":  {
+                                                     "file":  "Shield_Core_Holed_Middle.png",
+                                                     "slots":  [
+                                                                   {
+                                                                       "color":  "red",
+                                                                       "comment":  "",
+                                                                       "hash":  47874,
+                                                                       "slot":  "Slot_Shield_Part_1"
+                                                                   },
+                                                                   {
+                                                                       "color":  "green",
+                                                                       "comment":  "",
+                                                                       "hash":  8898,
+                                                                       "slot":  "Slot_Shield_Part_2"
+                                                                   }
+                                                               ]
+                                                 },
+                    "Shield_Part_Half_Circle_Hole":  {
+                                                         "file":  "Shield_Part_Half_Circle_Hole.png",
+                                                         "slots":  [
+                                                                       {
+                                                                           "color":  "red",
+                                                                           "comment":  "Facing you when attached as Slot_Shield_Part_1, opposite of green.",
+                                                                           "hash":  25870,
+                                                                           "slot":  "Slot_Deco_1"
+                                                                       },
+                                                                       {
+                                                                           "color":  "green",
+                                                                           "comment":  "Facing away when attached as Slot_Shield_Part_1, opposite of red.",
+                                                                           "hash":  25868,
+                                                                           "slot":  "Slot_Deco_2"
+                                                                       },
+                                                                       {
+                                                                           "color":  "blue",
+                                                                           "comment":  "Facing you when attached as Slot_Shield_Part_1, opposite of orange.",
+                                                                           "hash":  52564,
+                                                                           "slot":  "Slot_Deco_3"
+                                                                       },
+                                                                       {
+                                                                           "color":  "orange",
+                                                                           "comment":  "Facing away when attached as Slot_Shield_Part_1, opposite of blue.",
+                                                                           "hash":  52566,
+                                                                           "slot":  "Slot_Deco_4"
+                                                                       },
+                                                                       {
+                                                                           "color":  "pink",
+                                                                           "comment":  "Facing you when attached as Slot_Shield_Part_1, opposite of purple.",
+                                                                           "hash":  55242,
+                                                                           "slot":  "Slot_Deco_5"
+                                                                       },
+                                                                       {
+                                                                           "color":  "purple",
+                                                                           "comment":  "Facing away when attached as Slot_Shield_Part_1, opposite of pink.",
+                                                                           "hash":  55244,
+                                                                           "slot":  "Slot_Deco_6"
+                                                                       },
+                                                                       {
+                                                                           "color":  "light grey",
+                                                                           "comment":  "Facing you when attached as Slot_Shield_Part_1, opposite of dark grey.",
+                                                                           "hash":  51508,
+                                                                           "slot":  "Slot_Deco_7"
+                                                                       },
+                                                                       {
+                                                                           "color":  "dark grey",
+                                                                           "comment":  "Facing away when attached as Slot_Shield_Part_1, opposite of light grey.",
+                                                                           "hash":  51506,
+                                                                           "slot":  "Slot_Deco_8"
+                                                                       }
+                                                                   ]
+                                                     },
+                    "Shield_Part_Half_Circle":  {
+                                                    "file":  "Shield_Part_Half_Circle.png",
+                                                    "slots":  [
+                                                                  {
+                                                                      "color":  "red",
+                                                                      "comment":  "Facing you when attached as Slot_Shield_Part_1, opposite of green.",
+                                                                      "hash":  25870,
+                                                                      "slot":  "Slot_Deco_1"
+                                                                  },
+                                                                  {
+                                                                      "color":  "green",
+                                                                      "comment":  "Facing away when attached as Slot_Shield_Part_1, opposite of red.",
+                                                                      "hash":  25868,
+                                                                      "slot":  "Slot_Deco_2"
+                                                                  },
+                                                                  {
+                                                                      "color":  "blue",
+                                                                      "comment":  "Facing you when attached as Slot_Shield_Part_1, opposite of orange.",
+                                                                      "hash":  55242,
+                                                                      "slot":  "Slot_Deco_3"
+                                                                  },
+                                                                  {
+                                                                      "color":  "orange",
+                                                                      "comment":  "Facing away when attached as Slot_Shield_Part_1, opposite of blue.",
+                                                                      "hash":  55244,
+                                                                      "slot":  "Slot_Deco_4"
+                                                                  },
+                                                                  {
+                                                                      "color":  "pink",
+                                                                      "comment":  "Facing you when attached as Slot_Shield_Part_1, opposite of purple.",
+                                                                      "hash":  53720,
+                                                                      "slot":  "Slot_Deco_5"
+                                                                  },
+                                                                  {
+                                                                      "color":  "purple",
+                                                                      "comment":  "Facing away when attached as Slot_Shield_Part_1, opposite of pink.",
+                                                                      "hash":  53718,
+                                                                      "slot":  "Slot_Deco_6"
+                                                                  },
+                                                                  {
+                                                                      "color":  "light grey",
+                                                                      "comment":  "Facing you when attached as Slot_Shield_Part_1, opposite of dark grey.",
+                                                                      "hash":  52564,
+                                                                      "slot":  "Slot_Deco_7"
+                                                                  },
+                                                                  {
+                                                                      "color":  "dark grey",
+                                                                      "comment":  "Facing away when attached as Slot_Shield_Part_1, opposite of light grey.",
+                                                                      "hash":  52566,
+                                                                      "slot":  "Slot_Deco_8"
+                                                                  },
+                                                                  {
+                                                                      "color":  "dark green",
+                                                                      "comment":  "Facing you when attached as Slot_Shield_Part_1, opposite of yellow.",
+                                                                      "hash":  51508,
+                                                                      "slot":  "Slot_Deco_9"
+                                                                  },
+                                                                  {
+                                                                      "color":  "yellow",
+                                                                      "comment":  "Facing away when attached as Slot_Shield_Part_1, opposite of dark green.",
+                                                                      "hash":  51506,
+                                                                      "slot":  "Slot_Deco_10"
+                                                                  }
+                                                              ]
+                                                },
+                    "Shield_Part_Half_Hole":  {
+                                                  "file":  "Shield_Part_Half_Hole.png",
+                                                  "slots":  [
+                                                                {
+                                                                    "color":  "red",
+                                                                    "comment":  "",
+                                                                    "hash":  20018,
+                                                                    "slot":  "Slot_Deco_1"
+                                                                },
+                                                                {
+                                                                    "color":  "green",
+                                                                    "comment":  "",
+                                                                    "hash":  854,
+                                                                    "slot":  "Slot_Deco_2"
+                                                                },
+                                                                {
+                                                                    "color":  "blue",
+                                                                    "comment":  "",
+                                                                    "hash":  63256,
+                                                                    "slot":  "Slot_Deco_3"
+                                                                },
+                                                                {
+                                                                    "color":  "orange",
+                                                                    "comment":  "",
+                                                                    "hash":  56752,
+                                                                    "slot":  "Slot_Deco_4"
+                                                                },
+                                                                {
+                                                                    "color":  "pink",
+                                                                    "comment":  "",
+                                                                    "hash":  52138,
+                                                                    "slot":  "Slot_Deco_5"
+                                                                },
+                                                                {
+                                                                    "color":  "purple",
+                                                                    "comment":  "",
+                                                                    "hash":  46580,
+                                                                    "slot":  "Slot_Deco_6"
+                                                                }
+                                                            ]
+                                              },
+                    "Shield_Part_Half_Point_01":  {
+                                                      "file":  "Shield_Part_Half_Point_01.png",
+                                                      "slots":  [
+                                                                    {
+                                                                        "color":  "red",
+                                                                        "comment":  "",
+                                                                        "hash":  26366,
+                                                                        "slot":  "Slot_Deco_1"
+                                                                    },
+                                                                    {
+                                                                        "color":  "green",
+                                                                        "comment":  "",
+                                                                        "hash":  26340,
+                                                                        "slot":  "Slot_Deco_2"
+                                                                    },
+                                                                    {
+                                                                        "color":  "blue",
+                                                                        "comment":  "",
+                                                                        "hash":  26368,
+                                                                        "slot":  "Slot_Deco_3"
+                                                                    },
+                                                                    {
+                                                                        "color":  "orange",
+                                                                        "comment":  "",
+                                                                        "hash":  26396,
+                                                                        "slot":  "Slot_Deco_4"
+                                                                    },
+                                                                    {
+                                                                        "color":  "pink",
+                                                                        "comment":  "",
+                                                                        "hash":  20420,
+                                                                        "slot":  "Slot_Deco_5"
+                                                                    }
+                                                                ]
+                                                  },
+                    "Stick":  {
+                                  "file":  "Stick.png",
+                                  "slots":  [
+                                                {
+                                                    "color":  "red",
+                                                    "comment":  "",
+                                                    "hash":  64914,
+                                                    "slot":  "Slot_Multi"
+                                                },
+                                                {
+                                                    "color":  "green",
+                                                    "comment":  "",
+                                                    "hash":  30294,
+                                                    "slot":  "Slot_Primitive_SwordType"
+                                                }
+                                            ]
+                              },
+                    "Timber_Bag":  {
+                                       "file":  "Timber_Bag.png",
+                                       "slots":  [
+                                                     {
+                                                         "color":  "red",
+                                                         "comment":  "",
+                                                         "hash":  55164,
+                                                         "slot":  "Slot_Bag_Attach_1"
+                                                     },
+                                                     {
+                                                         "color":  "green",
+                                                         "comment":  "",
+                                                         "hash":  30776,
+                                                         "slot":  "Slot_Bag_Attach_2"
+                                                     }
+                                                 ]
+                                   },
+                    "Wooden_Stake":  {
+                                         "file":  "Wooden_Stake.png",
+                                         "slots":  [
+                                                       {
+                                                           "color":  "red",
+                                                           "comment":  "",
+                                                           "hash":  11474,
+                                                           "slot":  "Slot_Multi"
+                                                       }
+                                                   ]
+                                     }
+                }
+}

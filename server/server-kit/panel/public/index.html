@@ -1,0 +1,241 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATT Prefab Editor — Panel</title>
+<style>
+  :root {
+    --bg: #14161a; --panel: #1c1f26; --edge: #2c313c; --ink: #d7dae0;
+    --dim: #8a909c; --accent: #d9a441; --ok: #6fbf73; --bad: #e06c5f; --sel: #4f8fd9;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 14px/1.45 "Segoe UI", system-ui, sans-serif; }
+  header { display: flex; align-items: baseline; gap: 12px; padding: 10px 16px;
+           border-bottom: 1px solid var(--edge); }
+  header h1 { font-size: 16px; margin: 0; color: var(--accent); letter-spacing: .04em; }
+  header .sub { color: var(--dim); font-size: 12px; }
+  #health { margin-left: auto; font-size: 12px; color: var(--dim); }
+  #health .dot { display: inline-block; width: 8px; height: 8px; border-radius: 50%;
+                 background: var(--dim); margin-right: 5px; }
+  #health.up .dot { background: var(--ok); } #health.down .dot { background: var(--bad); }
+
+  main { display: grid; grid-template-columns: minmax(320px, 1fr) minmax(380px, 1fr);
+         gap: 12px; padding: 12px 16px; max-width: 1200px; }
+  section { background: var(--panel); border: 1px solid var(--edge); border-radius: 6px;
+            padding: 12px; }
+  section h2 { margin: 0 0 8px; font-size: 12px; text-transform: uppercase;
+               letter-spacing: .08em; color: var(--dim); }
+  input, button { font: inherit; color: var(--ink); background: var(--bg);
+                  border: 1px solid var(--edge); border-radius: 4px; padding: 5px 8px; }
+  input:focus { outline: 1px solid var(--accent); }
+  button { cursor: pointer; }
+  button:hover { border-color: var(--accent); }
+  button.danger { color: var(--bad); }
+  button.danger:hover { border-color: var(--bad); }
+  .row { display: flex; gap: 6px; margin-bottom: 8px; flex-wrap: wrap; align-items: center; }
+  .row label { color: var(--dim); font-size: 12px; }
+  .num { width: 84px; }
+
+  #results { max-height: 420px; overflow-y: auto; border: 1px solid var(--edge);
+             border-radius: 4px; }
+  #results table { width: 100%; border-collapse: collapse; font-size: 13px; }
+  #results td { padding: 4px 8px; border-bottom: 1px solid var(--edge); }
+  #results tr:hover { background: #23272f; cursor: pointer; }
+  #results .hash { color: var(--dim); font-family: Consolas, monospace; }
+  #results .no { color: var(--dim); }
+  #results tr.picked { outline: 1px solid var(--accent); }
+
+  #log { height: 260px; overflow-y: auto; background: var(--bg); border: 1px solid var(--edge);
+         border-radius: 4px; padding: 8px; font: 12px/1.5 Consolas, monospace;
+         white-space: pre-wrap; word-break: break-word; grid-column: 1 / -1; }
+  #log .cmd { color: var(--sel); } #log .err { color: var(--bad); } #log .ok { color: var(--ok); }
+  .wide { grid-column: 1 / -1; }
+  .hint { color: var(--dim); font-size: 12px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<header>
+  <h1>ATT PREFAB EDITOR</h1>
+  <span class="sub">loopback console panel &middot; <a href="/editor" style="color:var(--accent)">3D editor</a></span>
+  <span id="health"><span class="dot"></span><span id="healthText">checking&hellip;</span></span>
+</header>
+<main>
+  <section>
+    <h2>Prefab search (vendored catalog)</h2>
+    <div class="row">
+      <input id="q" placeholder="name or hash &mdash; e.g. iron ore, 61652" style="flex:1" autofocus>
+      <label><input type="checkbox" id="spawnableOnly" checked> spawnable only</label>
+    </div>
+    <div id="results"><table><tbody id="resultRows"></tbody></table></div>
+    <div class="hint">Click a row to arm it for spawning. Names are canonical (underscored); search ignores separators.</div>
+  </section>
+
+  <section>
+    <h2>Spawn</h2>
+    <div class="row">
+      <label>player</label><input id="player" placeholder="name or id" style="width:140px">
+      <label>prefab</label><input id="prefab" placeholder="pick from search or type" style="flex:1">
+      <button id="btnSpawn">spawn</button>
+    </div>
+
+    <h2 style="margin-top:14px">Selection</h2>
+    <div class="row">
+      <label>id</label><input id="selId" class="num" placeholder="entity id">
+      <button id="btnSelect">select</button>
+      <button id="btnGet">select get</button>
+      <button id="btnSelDestroy" class="danger">select destroy</button>
+      <button id="btnDestroy" class="danger">wacky destroy id</button>
+    </div>
+    <div class="row">
+      <label>move</label>
+      <input id="mx" class="num" placeholder="x"><input id="my" class="num" placeholder="y">
+      <input id="mz" class="num" placeholder="z">
+      <button id="btnMove">move exact</button>
+    </div>
+    <div class="row">
+      <label>rotate</label>
+      <input id="rx" class="num" placeholder="x"><input id="ry" class="num" placeholder="y">
+      <input id="rz" class="num" placeholder="z">
+      <button id="btnRotate">rotate exact</button>
+    </div>
+
+    <h2 style="margin-top:14px">String library</h2>
+    <div class="row">
+      <label>capture id</label><input id="capId" class="num" placeholder="entity id">
+      <label>as</label><input id="capName" placeholder="name (a-z 0-9 - _)" style="width:150px">
+      <button id="btnCapture">select tostring &rarr; save</button>
+    </div>
+    <div class="row"><ul id="strings" style="margin:0;padding-left:18px;width:100%"></ul></div>
+    <div class="hint">Spawn uses the player field above. Strings replay the whole object (durability, contents, colors).</div>
+
+    <h2 style="margin-top:14px">Raw console</h2>
+    <div class="row">
+      <input id="raw" placeholder="any console command &mdash; enter to send" style="flex:1">
+      <button id="btnRaw">send</button>
+    </div>
+  </section>
+
+  <div id="log" class="wide"></div>
+</main>
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+const log = $('log');
+
+function say(kind, text) {
+  const div = document.createElement('div');
+  div.className = kind;
+  div.textContent = text;
+  log.appendChild(div);
+  log.scrollTop = log.scrollHeight;
+}
+
+async function api(method, path, body) {
+  const post = method !== 'GET';
+  const res = await fetch(path, {
+    method,
+    headers: post ? { 'Content-Type': 'application/json' } : undefined,
+    body: post ? JSON.stringify(body || {}) : undefined
+  });
+  const data = await res.json();
+  if (data.command) { say('cmd', '> ' + data.command); }
+  if (!res.ok || data.error) { say('err', data.error || ('HTTP ' + res.status)); return data; }
+  if (data.exception) { say('err', 'exception: ' + data.exception); return data; }
+  if (data.text != null) { say('ok', data.text); }
+  if (data.structured != null) { say('ok', JSON.stringify(data.structured, null, 1)); }
+  return data;
+}
+
+// ---- health ----
+(async () => {
+  try {
+    const h = await (await fetch('/api/health')).json();
+    const up = h.console && h.console.reachable;
+    $('health').className = up ? 'up' : 'down';
+    $('healthText').textContent = 'kid ' + h.kid + ' · console ' + h.consoleHost + ':' + h.consolePort
+      + (up ? ' up' : ' DOWN' + (h.console.error ? ' (' + h.console.error + ')' : ''))
+      + ' · ' + h.prefabs + ' prefabs';
+  } catch (e) {
+    $('health').className = 'down';
+    $('healthText').textContent = 'panel API unreachable';
+  }
+})();
+
+// ---- search ----
+let searchTimer = null;
+async function search() {
+  const q = $('q').value.trim();
+  const sp = $('spawnableOnly').checked ? '&spawnable=1' : '';
+  const data = await (await fetch('/api/prefabs?limit=100&q=' + encodeURIComponent(q) + sp)).json();
+  const tbody = $('resultRows');
+  tbody.innerHTML = '';
+  for (const p of data.results) {
+    const tr = document.createElement('tr');
+    tr.innerHTML = '<td>' + p.name + '</td><td class="hash">' + p.hash + '</td>'
+      + '<td class="' + (p.spawnable ? '' : 'no') + '">' + (p.spawnable ? 'spawnable' : '-') + '</td>';
+    tr.onclick = () => {
+      $('prefab').value = String(p.hash);
+      for (const r of tbody.children) { r.classList.remove('picked'); }
+      tr.classList.add('picked');
+      say('ok', 'armed: ' + p.name + ' (' + p.hash + ')');
+    };
+    tbody.appendChild(tr);
+  }
+}
+$('q').oninput = () => { clearTimeout(searchTimer); searchTimer = setTimeout(search, 150); };
+$('spawnableOnly').onchange = search;
+search();
+
+// ---- actions ----
+const val = (id) => $(id).value.trim();
+$('btnSpawn').onclick = () => api('POST', '/api/spawn', { player: val('player'), prefab: val('prefab') });
+$('btnSelect').onclick = () => api('POST', '/api/select', { id: val('selId') });
+$('btnGet').onclick = () => api('POST', '/api/select/get');
+$('btnMove').onclick = () => api('POST', '/api/select/move', { x: val('mx'), y: val('my'), z: val('mz') });
+$('btnRotate').onclick = () => api('POST', '/api/select/rotate', { x: val('rx'), y: val('ry'), z: val('rz') });
+$('btnSelDestroy').onclick = () => confirm('select destroy — destroy the selected entity?')
+  && api('POST', '/api/select/destroy');
+$('btnDestroy').onclick = () => confirm('wacky destroy ' + val('selId') + ' — destroy this entity?')
+  && api('POST', '/api/destroy', { id: val('selId') });
+$('btnRaw').onclick = () => { api('POST', '/api/command', { command: val('raw') }); $('raw').select(); };
+$('raw').addEventListener('keydown', (e) => { if (e.key === 'Enter') { $('btnRaw').onclick(); } });
+
+// ---- string library ----
+async function loadStrings() {
+  const data = await (await fetch('/api/strings')).json();
+  const ul = $('strings');
+  ul.innerHTML = '';
+  for (const s of data.strings) {
+    const li = document.createElement('li');
+    li.textContent = s.name + ' (' + s.length + ' chars) ';
+    const spawn = document.createElement('button');
+    spawn.textContent = 'spawn';
+    spawn.onclick = async () => { await api('POST', '/api/strings/spawn', { name: s.name, player: val('player') }); };
+    const del = document.createElement('button');
+    del.textContent = 'x';
+    del.className = 'danger';
+    del.style.marginLeft = '4px';
+    del.onclick = async () => {
+      if (!confirm('delete saved string "' + s.name + '"?')) { return; }
+      await api('POST', '/api/strings/delete', { name: s.name });
+      loadStrings();
+    };
+    li.appendChild(spawn); li.appendChild(del);
+    ul.appendChild(li);
+  }
+  if (data.strings.length === 0) {
+    const li = document.createElement('li');
+    li.textContent = 'library empty — capture an entity above';
+    ul.appendChild(li);
+  }
+}
+$('btnCapture').onclick = async () => {
+  const r = await api('POST', '/api/strings/capture', { id: val('capId'), name: val('capName') });
+  if (r.ok) { say('ok', 'saved "' + r.name + '" (' + r.length + ' chars)'); loadStrings(); }
+};
+loadStrings();
+</script>
+</body>
+</html>

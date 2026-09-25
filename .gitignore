@@ -1,0 +1,14 @@
+# Build outputs and release binaries (published as GitHub Release assets).
+**/*.dll
+**/*.pdb
+*.zip
+
+# Generated / installed files.
+**/node_modules/
+**/PrefabEditorTravel.txt
+**/PrefabEditorWorkAreas.txt
+Thumbs.db
+.DS_Store
+
+# The workbench reads the shared images from client/player-kit/dist.
+client/player-kit/workbench/data/item-images/

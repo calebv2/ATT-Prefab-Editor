@@ -1,0 +1,2139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ATT String Workbench</title>
+<style>
+  :root {
+    --bg: #101216; --panel: #181b21; --panel2: #1e222a; --edge: #2b303b;
+    --edge2: #39404e; --ink: #d9dce2; --dim: #8a909c; --faint: #666c78;
+    --accent: #d9a441; --accent-ink: #1a1508; --ok: #6fbf73; --bad: #e06c5f;
+    --warn: #e0b25f; --sel: #6aa5e8; --liquid: #9a7fd1;
+  }
+  * { box-sizing: border-box; }
+  html { scrollbar-color: #333a46 var(--bg); }
+  ::-webkit-scrollbar { width: 10px; height: 10px; }
+  ::-webkit-scrollbar-thumb { background: #333a46; border-radius: 5px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+         font: 14px/1.45 "Segoe UI", system-ui, sans-serif; padding-bottom: 190px; }
+
+  header { display: flex; align-items: center; gap: 12px; padding: 10px 18px;
+           border-bottom: 1px solid var(--edge);
+           background: linear-gradient(180deg, #1a1d24, #14161b); }
+  header .mark { font-size: 18px; color: var(--accent); }
+  header h1 { font-size: 15px; margin: 0; color: var(--accent); letter-spacing: .09em; font-weight: 600; }
+  header .chip { font-size: 11px; color: var(--dim); border: 1px solid var(--edge);
+                 border-radius: 20px; padding: 2px 10px; white-space: nowrap; }
+  header .spacer { flex: 1; }
+  #btnGear { border: none; background: none; color: var(--dim); font-size: 15px; padding: 2px 6px; }
+  #btnGear:hover { color: var(--accent); }
+
+  #settings { display: none; padding: 8px 18px; border-bottom: 1px solid var(--edge);
+              background: var(--panel); }
+  #settings.on { display: flex; gap: 10px; align-items: center; flex-wrap: wrap; }
+  #settings label { color: var(--dim); font-size: 12px; }
+  #settings .hint { color: var(--faint); font-size: 11px; }
+
+  /* tools left · editor centre · library right */
+  main { display: grid; grid-template-columns: 340px minmax(0, 1fr) 330px; gap: 14px;
+         padding: 14px 18px; max-width: 1720px; align-items: start; }
+  @media (max-width: 1180px) { main { grid-template-columns: 1fr; } }
+
+  input, select, button, textarea {
+    font: inherit; color: var(--ink); background: var(--bg);
+    border: 1px solid var(--edge); border-radius: 5px; padding: 4px 8px;
+    transition: border-color .12s, background .12s, color .12s;
+  }
+  input:focus, textarea:focus, select:focus { outline: none; border-color: var(--accent); }
+  button { cursor: pointer; background: var(--panel2); }
+  button:hover { border-color: var(--accent); color: var(--accent); }
+  button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+  button.primary:hover { filter: brightness(1.1); color: var(--accent-ink); }
+  button.danger { color: var(--bad); }
+  button.danger:hover { border-color: var(--bad); color: var(--bad); }
+  button.mini { font-size: 11px; padding: 2px 7px; border-radius: 4px; }
+  button:disabled { opacity: .45; cursor: default; }
+  button:disabled:hover { border-color: var(--edge); color: var(--ink); }
+
+  .row { display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap; align-items: center; }
+  .row label { color: var(--dim); font-size: 12px; }
+  .num { width: 78px; } .tiny { width: 58px; }
+
+  .bar, .card { background: var(--panel); border: 1px solid var(--edge); border-radius: 8px;
+         padding: 10px 12px; }
+  .bar { margin-bottom: 12px; }
+  .bar h2, .card h2 { margin: 0 0 6px; font-size: 11px; text-transform: uppercase;
+               letter-spacing: .1em; color: var(--dim); font-weight: 600; }
+
+  /* sidebar */
+  #side, #libside { position: sticky; top: 12px; max-height: calc(100vh - 210px); overflow-y: auto;
+          padding-right: 2px; }
+  @media (max-width: 1180px) { #side, #libside { position: static; max-height: none; } }
+  /* the "build from scratch" results render INLINE below the Start card (in the
+     spot the library used to sit) so they never overlap the search bar */
+  #newResults { position: static; z-index: auto; box-shadow: none; width: 100%;
+                max-height: 62vh; margin: 12px 0 0; border-color: var(--edge2); }
+
+  /* library cards */
+  .libCard { background: var(--panel2); border: 1px solid var(--edge); border-radius: 7px;
+             padding: 7px 9px; margin: 7px 0; transition: border-color .12s; }
+  .libCard:hover { border-color: var(--edge2); }
+  .libName { color: var(--accent); font-weight: 600; font-family: Consolas, monospace; font-size: 13px; }
+  .libMeta { color: var(--faint); font-size: 11px; margin-left: 6px; }
+  .libSum { color: var(--dim); font-size: 12px; margin: 3px 0 1px; display: flex; gap: 6px;
+            align-items: center; flex-wrap: wrap; }
+  .libNotes { color: var(--faint); font-size: 11px; font-style: italic; margin: 2px 0; }
+  .libBtns { display: flex; gap: 4px; margin-top: 5px; flex-wrap: wrap; }
+  .badge { font-size: 10px; border-radius: 3px; padding: 1px 6px; font-weight: 600; letter-spacing: .03em; }
+  .badge.warn { background: #3a2f16; color: var(--warn); border: 1px solid #57431f; }
+  .badge.bad { background: #3a1d19; color: var(--bad); border: 1px solid #5c2c25; }
+  .badge.ok { background: #1c3320; color: var(--ok); border: 1px solid #2c4f31; }
+  .tagChip { font-size: 10px; border-radius: 10px; padding: 1px 8px; cursor: pointer;
+             background: #20262f; color: var(--sel); border: 1px solid var(--edge2); }
+  .tagChip:hover { border-color: var(--sel); }
+
+  .swatch { display: inline-block; width: 14px; height: 14px; border-radius: 3px;
+            border: 1px solid var(--edge2); vertical-align: -2px; }
+
+  /* item thumbnails (Hazy's Item List harvest) */
+  .thumb { object-fit: contain; background: rgba(0,0,0,.25); border: 1px solid var(--edge);
+           border-radius: 5px; flex: none; }
+  .t48 { width: 48px; height: 48px; }
+  .t44 { width: 44px; height: 44px; }
+  .t26 { width: 26px; height: 26px; vertical-align: middle; margin-right: 7px; }
+
+  /* assembly preview */
+  #pv { margin-bottom: 10px; }
+  .pvWrap { display: flex; gap: 20px; align-items: flex-start; flex-wrap: wrap; }
+  .pvRoot { text-align: center; }
+  .pvRoot img { width: 150px; height: 150px; object-fit: contain; background: rgba(0,0,0,.28);
+                border: 1px solid var(--edge2); border-radius: 10px; }
+  .pvName { font-size: 12px; color: var(--accent); margin-top: 4px; }
+  .pvKids { border-left: 2px solid var(--edge2); padding-left: 14px; flex: 1; min-width: 260px; }
+  .pvKid { display: flex; gap: 10px; align-items: center; margin: 7px 0; position: relative; }
+  .pvKid::before { content: ''; position: absolute; left: -14px; top: 50%; width: 12px;
+                   height: 2px; background: var(--edge2); }
+  .pvKid img { width: 52px; height: 52px; object-fit: contain; background: rgba(0,0,0,.28);
+               border: 1px solid var(--edge); border-radius: 6px; }
+  .pvSlot { color: var(--dim); font-size: 11px; font-family: Consolas, monospace; min-width: 140px; }
+  .pvKidName { font-size: 12px; }
+  .pvMore { color: var(--faint); font-size: 11px; }
+
+  /* editor tree */
+  .card { margin: 0 0 10px; }
+  .card .card { border-color: var(--edge2); margin: 8px 0 8px 16px; background: var(--panel2); }
+  .prefabTitle { color: var(--accent); font-weight: 600; }
+  .hashDim { color: var(--faint); font-family: Consolas, monospace; font-size: 12px; }
+  .comp { border: 1px solid var(--edge); border-left: 3px solid var(--edge2); border-radius: 5px;
+          padding: 5px 9px; margin: 6px 0; background: rgba(0,0,0,.12); }
+  .comp.liquid { border-left-color: var(--liquid); }
+  .comp .cname { color: var(--sel); font-weight: 600; font-size: 13px; }
+  .comp .chev { color: var(--faint); font-size: 11px; width: 12px; display: inline-block;
+                transition: transform .12s; }
+  .comp .head { cursor: pointer; user-select: none; }
+  .propGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+              gap: 4px 14px; margin-top: 4px; }
+  .propGrid label { display: flex; align-items: center; gap: 6px; font-size: 12px;
+                    color: var(--dim); justify-content: space-between; }
+  .propGrid input[type=number], .propGrid input[type=text] { width: 110px; }
+  textarea.jsonEdit { width: 100%; font: 12px Consolas, monospace; min-height: 40px; }
+  .kidToggle { color: var(--dim); font-size: 12px; cursor: pointer; user-select: none;
+               margin: 6px 0 0; }
+  .kidToggle:hover { color: var(--accent); }
+  .empty { border: 1px dashed var(--edge2); border-radius: 8px; color: var(--faint);
+           padding: 40px 20px; text-align: center; font-size: 13px; }
+
+  /* output bar */
+  #out { position: fixed; left: 0; right: 0; bottom: 0; background: var(--panel);
+         border-top: 2px solid var(--accent); padding: 8px 18px; box-shadow: 0 -8px 24px rgba(0,0,0,.35); }
+  #outStr { width: 100%; height: 46px; font: 11px Consolas, monospace; }
+  #err { color: var(--bad); font-size: 12px; min-height: 15px; }
+  #stat { color: var(--ok); font-size: 12px; }
+  #rt { font-size: 11px; }
+  .results { position: absolute; z-index: 5; background: var(--panel2); border: 1px solid var(--accent);
+             border-radius: 5px; max-height: 240px; overflow-y: auto; min-width: 280px;
+             box-shadow: 0 6px 18px rgba(0,0,0,.5); }
+  .results div { padding: 3px 9px; cursor: pointer; font-size: 13px; }
+  .results div:hover { background: #262b35; color: var(--accent); }
+  .muted { color: var(--dim); font-size: 12px; }
+
+  /* editor toolbar: view tabs + undo + preflight */
+  #etools { margin: 0 0 10px; }
+  .vtab { border-radius: 5px 5px 0 0; }
+  .vtab.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+  #pfBadge { cursor: pointer; }
+
+  /* blocks view */
+  .blk { border: 1px solid var(--edge2); border-radius: 8px; background: var(--panel2);
+         padding: 6px 8px; margin: 6px 0; }
+  .blk.sel { outline: 2px solid var(--accent); }
+  .blkHead { display: flex; gap: 7px; align-items: center; cursor: pointer; user-select: none; }
+  .blkHead[draggable=true] { cursor: grab; }
+  .blkName { color: var(--accent); font-weight: 600; font-size: 13px; }
+  .blkDetail { border-top: 1px dashed var(--edge2); margin-top: 6px; padding-top: 6px; }
+  .sockets { margin: 6px 0 0 14px; }
+  .socket { border: 1px dashed var(--edge2); border-radius: 7px; padding: 4px 8px; margin: 5px 0;
+            transition: border-color .12s, background .12s; }
+  .socket .sockLabel { color: var(--dim); font-size: 11px; font-family: Consolas, monospace; }
+  .socket.dropHot { border-color: var(--accent); background: rgba(217,164,65,.07); }
+  .socket.ghost { display: none; }
+  body.dragging .socket.ghost { display: block; }
+  .socket .blk { margin: 5px 0 2px; }
+  #shelfBar { display: flex; gap: 8px; align-items: center; flex-wrap: wrap;
+              border: 1px solid var(--edge); border-radius: 8px; background: var(--panel);
+              padding: 6px 10px; margin: 0 0 8px; }
+  .shelfItem { display: flex; gap: 5px; align-items: center; border: 1px solid var(--edge2);
+               border-radius: 6px; padding: 2px 7px; background: var(--panel2); cursor: grab;
+               font-size: 12px; }
+  #trash { border: 1px dashed var(--edge2); border-radius: 8px; color: var(--faint);
+           padding: 4px 12px; font-size: 12px; margin-left: auto; transition: all .12s; }
+  #trash.dropHot { border-color: var(--bad); color: var(--bad); background: rgba(224,108,95,.08); }
+
+  /* preflight modal */
+  #pfWrap { display: none; position: fixed; inset: 0; background: rgba(8,9,12,.62);
+            z-index: 20; align-items: center; justify-content: center; }
+  #pfWrap.on { display: flex; }
+  #pfDlg { background: var(--panel); border: 1px solid var(--edge2); border-radius: 10px;
+           padding: 16px 18px; width: min(640px, 92vw); max-height: 88vh; overflow-y: auto;
+           box-shadow: 0 14px 44px rgba(0,0,0,.6); }
+  #pfDlg h2 { margin: 0 0 10px; font-size: 13px; color: var(--accent); letter-spacing: .06em; }
+  .pfRow { display: flex; gap: 9px; align-items: baseline; margin: 4px 0; font-size: 13px; }
+  .pfIcon { width: 16px; flex: none; text-align: center; }
+
+  /* export dialog */
+  #dlgWrap { display: none; position: fixed; inset: 0; background: rgba(8,9,12,.62);
+             z-index: 20; align-items: center; justify-content: center; }
+  #dlgWrap.on { display: flex; }
+
+  /* slot-reference modal */
+  #srWrap { display: none; position: fixed; inset: 0; background: rgba(8,9,12,.62);
+            z-index: 20; align-items: center; justify-content: center; }
+  #srWrap.on { display: flex; }
+  #srDlg { background: var(--panel); border: 1px solid var(--edge2); border-radius: 10px;
+           padding: 16px 18px; width: min(860px, 94vw); max-height: 92vh; overflow-y: auto;
+           box-shadow: 0 14px 44px rgba(0,0,0,.6); }
+  #srDlg h2 { margin: 0 0 10px; font-size: 13px; color: var(--accent); letter-spacing: .06em; }
+  #srBody img { max-width: 100%; max-height: 56vh; object-fit: contain; display: block;
+                margin: 0 auto 10px; border: 1px solid var(--edge2); border-radius: 8px;
+                background: rgba(0,0,0,.25); }
+  .srRow { display: flex; gap: 10px; align-items: center; margin: 4px 0; font-size: 13px; }
+  .srChip { width: 16px; height: 16px; border-radius: 4px; border: 1px solid var(--edge2); flex: none; }
+  .srSlot { font-family: Consolas, monospace; color: var(--sel); min-width: 260px; }
+  .srHash { font-family: Consolas, monospace; color: var(--faint); font-size: 12px; }
+  #dlg { background: var(--panel); border: 1px solid var(--edge2); border-radius: 10px;
+         padding: 16px 18px; width: min(620px, 92vw); box-shadow: 0 14px 44px rgba(0,0,0,.6); }
+  #dlg h2 { margin: 0 0 10px; font-size: 13px; color: var(--accent); letter-spacing: .06em; }
+  #dlgPrev { width: 100%; height: 170px; font: 11px Consolas, monospace; }
+
+  /* catalog browser (items + slot maps) — sits UNDER the other modals so the
+     slot-reference viewer can open on top of it */
+  #bwWrap { display: none; position: fixed; inset: 0; background: rgba(8,9,12,.62);
+            z-index: 19; align-items: center; justify-content: center; }
+  #bwWrap.on { display: flex; }
+  #bwDlg { background: var(--panel); border: 1px solid var(--edge2); border-radius: 10px;
+           width: min(1240px, 96vw); height: 92vh; display: flex; flex-direction: column;
+           padding: 12px 14px; box-shadow: 0 14px 44px rgba(0,0,0,.6); }
+  #bwTop { display: flex; gap: 7px; align-items: center; flex-wrap: wrap; margin-bottom: 8px; }
+  #bwSearch { flex: 1; min-width: 200px; }
+  #bwBody { flex: 1; overflow-y: auto; padding-right: 2px; }
+  #bwGrid { display: grid; grid-template-columns: repeat(auto-fill, minmax(212px, 1fr)); gap: 8px; }
+  .bwCard { background: var(--panel2); border: 1px solid var(--edge); border-radius: 8px;
+            padding: 8px; display: flex; flex-direction: column; gap: 5px;
+            transition: border-color .12s; }
+  .bwCard:hover { border-color: var(--edge2); }
+  .bwImg { width: 100%; height: 96px; object-fit: contain; background: rgba(0,0,0,.25);
+           border-radius: 6px; }
+  .bwNoImg { width: 100%; height: 96px; display: flex; align-items: center; justify-content: center;
+             color: var(--faint); background: rgba(0,0,0,.15); border-radius: 6px; font-size: 11px; }
+  .bwName { font-size: 13px; font-weight: 600; line-height: 1.25; overflow-wrap: anywhere; }
+  .bwSub { font-size: 11px; color: var(--dim); font-family: Consolas, monospace; }
+  .bwCat { font-size: 10px; color: var(--sel); }
+  .bwRow { display: flex; gap: 4px; align-items: center; flex-wrap: wrap; margin-top: auto; }
+  .bwMapImg { width: 100%; height: 150px; object-fit: contain; background: rgba(0,0,0,.25);
+              border-radius: 6px; cursor: pointer; }
+  .star { border: none; background: none; color: var(--faint); font-size: 15px; padding: 0 3px;
+          margin-left: auto; }
+  .star:hover { color: var(--accent); border: none; background: none; }
+  .star.on { color: var(--accent); }
+  .bwTab.on { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); font-weight: 600; }
+  .chipBtn { font-size: 11px; border-radius: 12px; padding: 2px 9px; }
+  .chipBtn.on { border-color: var(--accent); color: var(--accent); }
+  #bwCount { color: var(--faint); font-size: 11px; }
+  #recentRow .tagChip, #libRecent .tagChip { font-size: 11px; }
+
+  /* diff modal */
+  #diffWrap { display: none; position: fixed; inset: 0; background: rgba(8,9,12,.62);
+              z-index: 20; align-items: center; justify-content: center; }
+  #diffWrap.on { display: flex; }
+  #diffDlg { background: var(--panel); border: 1px solid var(--edge2); border-radius: 10px;
+             padding: 16px 18px; width: min(760px, 94vw); max-height: 88vh; overflow-y: auto;
+             box-shadow: 0 14px 44px rgba(0,0,0,.6); }
+  #diffDlg h2 { margin: 0 0 10px; font-size: 13px; color: var(--accent); letter-spacing: .06em; }
+  #diffBody { margin: 10px 0; }
+  .diffRow { display: flex; gap: 8px; align-items: baseline; margin: 3px 0; font-size: 12.5px;
+             font-family: Consolas, monospace; }
+  .diffKind { font-size: 10px; text-transform: uppercase; letter-spacing: .05em; min-width: 74px;
+              color: var(--faint); flex: none; }
+  .diffKind.component { color: var(--sel); } .diffKind.prop { color: var(--warn); }
+  .diffKind.root { color: var(--accent); } .diffKind.children { color: var(--liquid); }
+
+  /* batch-edit action bar + selection checkboxes */
+  #batchBar { border: 1px solid var(--accent); border-radius: 8px; background: rgba(217,164,65,.06);
+              padding: 6px 10px; margin: 0 0 10px; gap: 8px; align-items: center; }
+  #batchBar label { color: var(--dim); font-size: 12px; }
+  .selBox { margin-right: 4px; transform: scale(1.15); vertical-align: middle; }
+  body.selecting .card .card { cursor: pointer; }
+
+  /* recipe controls in the liquid designer */
+  .recipeRow { border-top: 1px dashed var(--liquid); margin-top: 7px; padding-top: 7px; }
+
+  /* connection dot (full build) */
+  #connDot { width: 9px; height: 9px; border-radius: 50%; background: var(--faint);
+             display: inline-block; vertical-align: middle; margin-right: 5px; }
+  #connDot.up { background: var(--ok); } #connDot.down { background: var(--bad); }
+  #connChip { font-size: 11px; color: var(--dim); border: 1px solid var(--edge);
+              border-radius: 20px; padding: 2px 10px; white-space: nowrap; }
+</style>
+</head>
+<body>
+<header>
+  <span class="mark">&#9874;</span>
+  <h1>TAVERN STRING WORKBENCH</h1>
+  <span class="chip">local only</span>
+  <span class="chip" id="chipPanel" title="spawns go through your SSH tunnel to the web panel">panel: &hellip;</span>
+  <span class="chip" id="connChip" style="display:none" title="live check of the web panel through your tunnel"><span id="connDot"></span><span id="connText">panel?</span></span>
+  <span class="spacer"></span>
+  <button id="btnGear" title="settings">&#9881;</button>
+</header>
+
+<div id="settings">
+  <label>panel url</label>
+  <input id="panelUrl" style="width:220px" placeholder="http://127.0.0.1:1766">
+  <span class="hint">the web panel the web panel through your tunnel: <code>ssh -L 1766:127.0.0.1:1766 &lt;vps&gt;</code> &mdash; loopback only, by rulemdash; local server: <code>http://127.0.0.1:1766</code>; remote server: tunnel in with <code>ssh -L 1766:127.0.0.1:1766 user@your-server</code>. Loopback only, by rule</span>
+</div>
+
+<main>
+  <div id="side">
+    <div class="bar">
+      <h2>Start</h2>
+      <div class="row">
+        <input id="pasteStr" placeholder="paste a save string" style="flex:1">
+        <button id="btnDecode" class="primary">decode</button>
+      </div>
+      <div class="row">
+        <input id="newSearch" placeholder="or build from scratch (potion, chest, sword&hellip;)" style="flex:1" autocomplete="off">
+        <button id="btnBrowse" title="browse every prefab visually — Ctrl+K">browse</button>
+      </div>
+      <div class="row" id="recentRow" style="display:none"></div>
+      <div class="row">
+        <input id="capId" class="num" placeholder="entity id" autocomplete="off"
+               title="the in-game editor's part picker shows it; so does `edit near`">
+        <button id="btnCapture" title="pull a LIVE spawned entity into the workbench (blueprint string, over your panel tunnel)">&#8646; capture from game</button>
+      </div>
+    </div>
+    <div id="newResults" class="results" style="display:none"></div>
+  </div>
+
+  <div>
+    <div id="etools" class="row">
+      <button id="tabForm" class="mini vtab" title="precise field-by-field editing">FORM</button>
+      <button id="tabBlocks" class="mini vtab" title="drag pieces together, edit in place">BLOCKS</button>
+      <span id="viewHint" class="muted" style="font-size:11px"></span>
+      <span style="flex:1"></span>
+      <button id="btnMulti" class="mini" title="select several docked pieces and edit them together">&#9776; select</button>
+      <span id="pfBadge" title="preflight: everything provable without the game"></span>
+      <button id="btnUndo" class="mini" title="Ctrl+Z">&#8630; undo</button>
+      <button id="btnRedo" class="mini" title="Ctrl+Y">&#8631; redo</button>
+      <button id="btnClear" class="mini danger" title="reset the workbench for a fresh start (library saves stay)">&#10005; clear</button>
+      <span id="liveChip"></span>
+    </div>
+    <div id="batchBar" class="row" style="display:none"></div>
+    <div id="pv"></div>
+    <div id="tree"></div>
+  </div>
+
+  <div id="libside">
+    <div class="bar">
+      <h2>Library</h2>
+      <div class="row">
+        <input id="libSearch" placeholder="filter — name, notes, prefab, #tag" style="flex:1" autocomplete="off">
+        <button id="btnLibFav" class="mini chipBtn" title="show only starred">&#9733;</button>
+      </div>
+      <div id="libRecent" class="row" style="display:none"></div>
+      <div id="libList"></div>
+      <div class="row" style="margin-top:8px">
+        <button id="btnLibExport" class="mini" title="download the whole library as json — your authored strings live only on this disk">&#11015; backup</button>
+        <button id="btnLibImport" class="mini" title="merge a backup back in — local entries always win">&#11014; import</button>
+        <button id="btnDiff" class="mini" title="compare two saved strings side by side">&#8646; diff</button>
+        <input id="libFile" type="file" accept=".json,application/json" style="display:none">
+        <span class="muted" id="libCount"></span>
+      </div>
+    </div>
+  </div>
+</main>
+
+<div id="diffWrap">
+  <div id="diffDlg">
+    <h2>DIFF — compare two strings</h2>
+    <div class="row">
+      <select id="diffA" style="flex:1"></select>
+      <span class="muted">vs</span>
+      <select id="diffB" style="flex:1"></select>
+    </div>
+    <div id="diffBody"></div>
+    <div class="row" style="justify-content: flex-end">
+      <span class="muted" style="flex:1">roots compared: prefab, transform, components, prop values, child count</span>
+      <button id="btnDiffClose">close</button>
+    </div>
+  </div>
+</div>
+
+<div id="pfWrap">
+  <div id="pfDlg">
+    <h2>PREFLIGHT — provable without the game</h2>
+    <div id="pfBody"></div>
+    <div class="row" style="justify-content: flex-end">
+      <span class="muted" style="flex:1">in-game behavior stays the spawn button's job</span>
+      <button id="btnPfClose">close</button>
+    </div>
+  </div>
+</div>
+
+<div id="out">
+  <div class="row" style="margin:0 0 2px; justify-content: space-between;">
+    <span id="err"></span>
+    <span id="rt"></span>
+  </div>
+  <div class="row" style="margin:2px 0">
+    <textarea id="outStr" readonly placeholder="the encoded save string appears here after you decode or create something"></textarea>
+  </div>
+  <div class="row" style="margin:2px 0">
+    <button id="btnCopy">copy string</button>
+    <button id="btnCopyCmd">copy spawn cmd</button>
+    <label style="margin-left:10px">player</label><input id="player" style="width:110px" placeholder="name">
+    <button id="btnSpawn" class="primary">&#9889; spawn in game</button>
+    <button id="btnReplace" title="push this edit back onto a live entity at its exact spot (edit replace — the capture &rarr; edit &rarr; replace loop)">&#8646; replace in game</button>
+    <button id="btnShopDoc">&rarr; shop item</button>
+    <label style="margin-left:14px">save as</label><input id="saveName" class="num" placeholder="name">
+    <input id="saveNotes" style="width:150px" placeholder="notes (optional)">
+    <button id="btnSave">save to library</button>
+    <span id="stat"></span>
+  </div>
+</div>
+
+<div id="bwWrap">
+  <div id="bwDlg">
+    <div id="bwTop">
+      <button id="bwTabItems" class="mini bwTab">ITEMS</button>
+      <button id="bwTabMaps" class="mini bwTab">SLOT MAPS</button>
+      <input id="bwSearch" placeholder="search — name, item code, hash, category, slot&hellip;" autocomplete="off">
+      <select id="bwCat"><option value="">all categories</option></select>
+      <button id="bwSpawnable" class="mini chipBtn" title="only prefabs on the spawn list">spawnable</button>
+      <button id="bwImgs" class="mini chipBtn" title="only prefabs with a preview image">with image</button>
+      <button id="bwFavs" class="mini chipBtn" title="only starred prefabs">&#9733; favorites</button>
+      <span id="bwCount"></span>
+      <button id="btnBwClose" title="Esc">close</button>
+    </div>
+    <div id="bwBody">
+      <div id="bwRecent" class="row" style="display:none"></div>
+      <div id="bwGrid"></div>
+      <div id="bwMore" class="row" style="justify-content:center; padding:10px"></div>
+    </div>
+  </div>
+</div>
+
+<div id="srWrap">
+  <div id="srDlg">
+    <h2 id="srTitle">SLOT REFERENCE</h2>
+    <div id="srBody"></div>
+    <div class="row" style="justify-content: flex-end">
+      <span class="muted" style="flex:1">from Ethyn's Visual Slot Reference (community)</span>
+      <button id="btnSrClose">close</button>
+    </div>
+  </div>
+</div>
+
+<div id="dlgWrap">
+  <div id="dlg">
+    <h2>SHOP-CATALOG EXPORT</h2>
+    <div class="row">
+      <label>format</label>
+      <select id="exFormat">
+        <option value="tshop">tablet shop (tablet-shop.json)</option>
+        <option value="shop">physical shop (shops.json)</option>
+      </select>
+      <label>id</label><input id="exId" class="num" style="width:130px">
+      <label>title</label><input id="exTitle" style="width:170px">
+    </div>
+    <div class="row">
+      <label>price (gold)</label><input id="exPrice" class="tiny" type="number" min="1" value="10">
+      <span id="exQtyWrap"><label>max qty</label><input id="exQty" class="tiny" type="number" min="1" max="10" value="1"></span>
+      <span id="exDescWrap" style="display:none"><label>description</label><input id="exDesc" style="width:220px"></span>
+    </div>
+    <div class="row"><textarea id="dlgPrev" readonly></textarea></div>
+    <div class="row" style="justify-content: flex-end">
+      <span id="dlgErr" style="color:var(--bad); font-size:12px; flex:1"></span>
+      <button id="btnDlgCopy" class="primary">copy JSON</button>
+      <button id="btnDlgClose">close</button>
+    </div>
+  </div>
+</div>
+
+<script>
+'use strict';
+const $ = (id) => document.getElementById(id);
+let DOC = null;      // { docId, view, string, summary, roundTrip }
+let SHARE_MODE = false;   // set from /api/enums; hides every in-game control
+let ENUMS = { materials: [], presets: [], components: [], effects: [], appearances: [], chunks: [] };
+
+// collapse state survives re-renders (the tree redraws after every op)
+const openComps = new Set();   // 'path|Component'
+const openKids = new Set();    // 'path'
+
+// ---------- tiny helpers ----------
+function el(tag, attrs, ...kids) {
+  const e = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs || {})) {
+    if (k === 'class') { e.className = v; }
+    else if (k.startsWith('on')) { e[k] = v; }
+    else { e.setAttribute(k, v); }
+  }
+  for (const kid of kids) {
+    if (kid == null) { continue; }
+    e.appendChild(typeof kid === 'string' ? document.createTextNode(kid) : kid);
+  }
+  return e;
+}
+function setErr(msg) { $('err').textContent = msg || ''; }
+function stat(msg) { $('stat').textContent = msg || ''; if (msg) { setTimeout(() => { if ($('stat').textContent === msg) { $('stat').textContent = ''; } }, 6000); } }
+function pretty(name) { return String(name || '').replace(/_/g, ' '); }
+function slug(name) {
+  return String(name || '').toLowerCase().replace(/[^a-z0-9_-]+/g, '-').replace(/^-+|-+$/g, '').slice(0, 40) || 'item';
+}
+// Colour in the save format is a 0..1 float per channel (s34). Legacy strings
+// still decode with 0-255 values, so scale by the TRIPLET exactly like the
+// server's setLiquid does: any channel over 1 means the whole colour is
+// already 0-255. Screen bytes only — what we send back stays 0-255.
+function color255(color) {
+  const rgb = ['r', 'g', 'b'].map((k) => Number(color && color[k]) || 0);
+  const scale = rgb.some((v) => v > 1) ? 1 : 255;
+  return rgb.map((v) => Math.max(0, Math.min(255, Math.round(v * scale))));
+}
+function colorHex(color) {
+  return '#' + color255(color).map((x) => x.toString(16).padStart(2, '0')).join('');
+}
+function swatchFor(color) {
+  const a = Math.max(0.25, Math.min(1, color.a == null ? 1 : color.a));
+  const [r, g, b] = color255(color);
+  return el('span', { class: 'swatch', style: 'background: rgba(' + r + ',' + g + ',' + b + ',' + a + ')' });
+}
+function thumbImg(hash, cls) {
+  const img = el('img', { class: 'thumb ' + cls, src: '/api/item-image/' + hash });
+  img.onerror = () => { img.style.display = 'none'; };
+  return img;
+}
+function liquidLine(liq) {
+  const bits = [];
+  if (!liq) { return null; }
+  const wrap = el('span', { class: 'libSum', style: 'margin:0' });
+  if (liq.custom) {
+    wrap.appendChild(swatchFor(liq.color));
+    const effs = (liq.effects || []).map((e) => (e.name || ('#' + e.hash)) + (e.mult === 1 ? '' : ' ×' + e.mult));
+    bits.push(effs.length ? effs.join(', ') : 'custom brew');
+    if (liq.skin) { bits.push('skin'); }
+    if (liq.chunks) { bits.push(liq.chunks + ' chunk' + (liq.chunks > 1 ? 's' : '')); }
+  } else {
+    bits.push(liq.presetName || ('preset #' + liq.presetHash));
+  }
+  if (liq.level != null) { bits.push('lvl ' + (liq.level >= 99999999 ? '∞' : liq.level)); }
+  wrap.appendChild(el('span', {}, bits.join(' · ')));
+  return wrap;
+}
+
+// ---------- api ----------
+async function api(method, path, body) {
+  const res = await fetch(path, {
+    method,
+    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    body: body ? JSON.stringify(body) : undefined
+  });
+  const data = await res.json();
+  if (!res.ok || data.error) { setErr(data.error || ('HTTP ' + res.status)); throw new Error(data.error || res.status); }
+  setErr('');
+  return data;
+}
+
+function refresh(data) {
+  if (data.docId) {
+    DOC = { docId: data.docId };
+    // a fresh doc that is NOT a capture breaks the live-entity link
+    if (!data.entityId) { GAME = null; renderLiveChip(); }
+  }
+  DOC.view = data.view;
+  DOC.string = data.string;
+  DOC.summary = data.summary;
+  DOC.roundTrip = data.roundTrip;
+  $('outStr').value = data.string || '';
+  if (data.encodeError) { setErr('encode failed: ' + data.encodeError); }
+  saveRecovery();
+  renderVerify(data);
+  renderTree();
+  schedulePreflight();
+}
+
+// ---------- crash / refresh recovery ----------
+// The decoded doc lives server-side and dies on restart; persist the encoded
+// string locally after every edit so a closed tab or a bounced server doesn't
+// lose the build. Restored by re-decoding — no session survives, the string does.
+function saveRecovery() {
+  try {
+    if (DOC && DOC.string) {
+      localStorage.setItem('wb_recovery', JSON.stringify({ string: DOC.string, at: Date.now() }));
+    }
+  } catch { /* storage full/blocked — non-fatal */ }
+}
+function clearRecovery() { try { localStorage.removeItem('wb_recovery'); } catch { /* ignore */ } }
+function offerRestore() {
+  if (DOC) { return; }
+  let r;
+  try { r = JSON.parse(localStorage.getItem('wb_recovery') || 'null'); } catch { r = null; }
+  RECOVERY = r && r.string ? r : null;
+  renderTree();   // the empty state renders the restore offer when RECOVERY is set
+}
+let RECOVERY = null;
+async function doRestore() {
+  if (!RECOVERY) { return; }
+  try {
+    refresh(await api('POST', '/api/decode', { string: RECOVERY.string }));
+    RECOVERY = null;
+    stat('restored your last build');
+  } catch { setErr('could not restore — the saved string no longer decodes'); }
+}
+
+function renderVerify(data) {
+  const rt = $('rt');
+  rt.innerHTML = '';
+  if (!data || !data.string) { return; }
+  if (data.roundTrip === 'stable') {
+    rt.appendChild(el('span', { class: 'badge ok', title: 'this string re-decodes and re-encodes byte-identical' }, '✓ byte-stable'));
+  } else if (data.roundTrip === 'unstable') {
+    rt.appendChild(el('span', { class: 'badge warn', title: 're-encoding this string gives different bytes - it will still normalize on first save' }, '⚠ re-encode differs'));
+  } else if (data.roundTrip) {
+    rt.appendChild(el('span', { class: 'badge bad' }, '✗ does not re-decode'));
+  }
+}
+
+// one op at a time, always re-render from the authoritative server view
+let opChain = Promise.resolve();
+function op(path, opName, args) {
+  opChain = opChain.then(async () => {
+    try { refresh(await api('POST', '/api/op', { docId: DOC.docId, path, op: opName, args })); }
+    catch (e) { /* error already shown */ }
+  });
+  return opChain;
+}
+
+// ---------- settings ----------
+$('btnGear').onclick = () => $('settings').classList.toggle('on');
+$('panelUrl').value = localStorage.getItem('wb_panelUrl') || 'http://127.0.0.1:1766';
+$('player').value = localStorage.getItem('wb_player') || '';
+$('panelUrl').onchange = () => { localStorage.setItem('wb_panelUrl', $('panelUrl').value.trim()); chipPanel(); };
+$('player').onchange = () => localStorage.setItem('wb_player', $('player').value.trim());
+function chipPanel() { $('chipPanel').textContent = 'panel: ' + ($('panelUrl').value.trim() || 'http://127.0.0.1:1766').replace(/^http:\/\//, ''); }
+chipPanel();
+
+function playerOrWarn() {
+  const p = $('player').value.trim();
+  if (!p) { setErr('set a player name first (output bar)'); $('player').focus(); return null; }
+  return p;
+}
+
+// ---------- view switcher + undo + preflight ----------
+let VIEW = localStorage.getItem('wb_view') || 'form';
+let SEL = null;              // expanded block (blocks view), by path key
+let SHELF = [];              // working clipboard of pieces (localStorage)
+try { SHELF = JSON.parse(localStorage.getItem('wb_shelf') || '[]'); } catch { /* fresh */ }
+function shelfSave() { localStorage.setItem('wb_shelf', JSON.stringify(SHELF.slice(0, 12))); }
+
+function syncTabs() {
+  $('tabForm').classList.toggle('on', VIEW === 'form');
+  $('tabBlocks').classList.toggle('on', VIEW === 'blocks');
+  const hint = $('viewHint');
+  if (hint) { hint.textContent = VIEW === 'blocks' ? 'drag pieces between sockets' : 'precise field-by-field editing'; }
+}
+function setView(v) { VIEW = v; localStorage.setItem('wb_view', v); syncTabs(); renderTree(); }
+$('tabForm').onclick = () => setView('form');
+$('tabBlocks').onclick = () => setView('blocks');
+
+async function doUndo() { if (!DOC) { return; } try { refresh(await api('POST', '/api/undo', { docId: DOC.docId })); } catch { /* shown */ } }
+async function doRedo() { if (!DOC) { return; } try { refresh(await api('POST', '/api/redo', { docId: DOC.docId })); } catch { /* shown */ } }
+$('btnUndo').onclick = doUndo;
+$('btnRedo').onclick = doRedo;
+document.addEventListener('keydown', (e) => {
+  if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) { return; }
+  if (e.ctrlKey && !e.shiftKey && e.key.toLowerCase() === 'z') { e.preventDefault(); doUndo(); }
+  else if (e.ctrlKey && (e.key.toLowerCase() === 'y' || (e.shiftKey && e.key.toLowerCase() === 'z'))) { e.preventDefault(); doRedo(); }
+});
+
+let pfTimer = null, PF = null;
+function schedulePreflight() {
+  clearTimeout(pfTimer);
+  if (!DOC || !DOC.docId) { $('pfBadge').innerHTML = ''; PF = null; return; }
+  pfTimer = setTimeout(async () => {
+    try {
+      PF = await api('GET', '/api/preflight?docId=' + DOC.docId);
+      const b = $('pfBadge');
+      b.innerHTML = '';
+      const cls = PF.ok ? (PF.warns ? 'warn' : 'ok') : 'bad';
+      const txt = PF.ok ? (PF.warns ? '⚠ preflight: ' + PF.warns : '✓ preflight') : '✗ preflight';
+      b.appendChild(el('span', { class: 'badge ' + cls }, txt));
+    } catch { /* session gone */ }
+  }, 300);
+}
+$('pfBadge').onclick = () => {
+  if (!PF) { return; }
+  const body = $('pfBody');
+  body.innerHTML = '';
+  for (const c of PF.checks) {
+    body.appendChild(el('div', { class: 'pfRow' },
+      el('span', { class: 'pfIcon', style: 'color: var(--' + (c.level === 'pass' ? 'ok' : c.level === 'warn' ? 'warn' : 'bad') + ')' },
+        c.level === 'pass' ? '✓' : c.level === 'warn' ? '⚠' : '✗'),
+      el('span', {}, c.text)));
+  }
+  $('pfWrap').classList.add('on');
+};
+$('btnPfClose').onclick = () => $('pfWrap').classList.remove('on');
+$('pfWrap').onclick = (e) => { if (e.target === $('pfWrap')) { $('pfWrap').classList.remove('on'); } };
+
+function dragPayload(e) {
+  try { return JSON.parse(e.dataTransfer.getData('text/plain')); } catch { return null; }
+}
+function dropTarget(elm, onDrop) {
+  elm.ondragover = (e) => { e.preventDefault(); e.stopPropagation(); elm.classList.add('dropHot'); };
+  elm.ondragleave = () => elm.classList.remove('dropHot');
+  elm.ondrop = (e) => {
+    e.preventDefault(); e.stopPropagation();
+    elm.classList.remove('dropHot');
+    document.body.classList.remove('dragging');
+    const p = dragPayload(e);
+    if (p) { onDrop(p); }
+  };
+}
+function makeDraggable(elm, payload) {
+  elm.setAttribute('draggable', 'true');
+  elm.ondragstart = (e) => {
+    e.stopPropagation();
+    document.body.classList.add('dragging');
+    e.dataTransfer.setData('text/plain', JSON.stringify(payload));
+  };
+  elm.ondragend = () => document.body.classList.remove('dragging');
+}
+
+async function shelfCopy(path) {
+  const r = await api('GET', '/api/substring?docId=' + DOC.docId + '&path=' + path.join(','));
+  SHELF.unshift({ name: r.name, hash: r.hash, img: r.img, string: r.string });
+  if (SHELF.length > 12) { SHELF.length = 12; }
+  shelfSave();
+  renderTree();
+  stat('"' + r.name + '" copied to the shelf');
+}
+
+// ---------- catalog browser ----------
+// One fetch of the enriched catalog, then every keystroke filters locally —
+// search is instant because it never leaves the page.
+// opens showing only spawnable prefabs — most builds start from those, and it
+// hides the ~500 obscure internal nodes that clutter the first screen
+const BW = { list: null, refs: null, tab: 'items', q: '', cat: '',
+             spawnOnly: true, imgOnly: false, favOnly: false, shown: 120 };
+const PAGE = 120;
+function loadSet(key) { try { return new Set(JSON.parse(localStorage.getItem(key) || '[]')); } catch { return new Set(); } }
+function loadArr(key) { try { return JSON.parse(localStorage.getItem(key) || '[]'); } catch { return []; } }
+let FAVS = loadSet('wb_favs');            // catalog favourites
+let RECENT = loadArr('wb_recent');        // recent catalog builds
+let LIBFAVS = loadSet('wb_libfavs');      // library favourites
+let LIBRECENT = loadArr('wb_librecent');  // recently loaded library entries
+function favToggle(name) {
+  if (FAVS.has(name)) { FAVS.delete(name); } else { FAVS.add(name); }
+  localStorage.setItem('wb_favs', JSON.stringify([...FAVS]));
+}
+function recentPush(name) {
+  RECENT = [name, ...RECENT.filter((n) => n !== name)].slice(0, 10);
+  localStorage.setItem('wb_recent', JSON.stringify(RECENT));
+  renderRecents();
+}
+function libFavToggle(name) {
+  if (LIBFAVS.has(name)) { LIBFAVS.delete(name); } else { LIBFAVS.add(name); }
+  localStorage.setItem('wb_libfavs', JSON.stringify([...LIBFAVS]));
+}
+function libRecentPush(name) {
+  LIBRECENT = [name, ...LIBRECENT.filter((n) => n !== name)].slice(0, 8);
+  localStorage.setItem('wb_librecent', JSON.stringify(LIBRECENT));
+}
+const norm = (s) => String(s || '').toLowerCase().replace(/[_\s()'-]/g, '');
+
+// a neutral glyph when there's no photo — keyed loosely off the category so a
+// blank card still hints what it is
+const CAT_GLYPH = [
+  [/cook|food|stew|liquid|potion/i, '🍲'], [/weapon|sword|blade|axe|mace|spear/i, '⚔'],
+  [/arch|arrow|bow|quiver/i, '🏹'], [/shield/i, '🛡'], [/ore|ingot|crystal|resource|metal/i, '⛏'],
+  [/plant|seed|crop|tree|flower/i, '🌿'], [/creature|mob|drop/i, '🐾'], [/craft|piece|part/i, '🧩'],
+  [/backpack|bag|pouch/i, '🎒'], [/tool/i, '🔧'], [/rust/i, '🪓'], [/seasonal/i, '🎁']
+];
+function catGlyph(category) {
+  for (const [re, g] of CAT_GLYPH) { if (re.test(category || '')) { return g; } }
+  return '📦';
+}
+
+// every "start a build" path funnels here so recents stay honest
+async function startBuild(name) {
+  refresh(await api('POST', '/api/new', { prefab: name }));
+  recentPush(name);
+}
+
+// shared catalog load — the browser AND the inline searches all filter this one
+// local list, so there is a single search behaviour everywhere
+async function bwEnsureLoaded() {
+  if (BW.list) { return; }
+  const [items, refs] = await Promise.all([
+    api('GET', '/api/browser/prefabs'), api('GET', '/api/browser/slot-refs')]);
+  BW.list = items.prefabs;
+  for (const p of BW.list) { p.key = [p.name, p.label, p.alias, p.category].map(norm).join('|'); }
+  BW.refs = refs.refs;
+  for (const r of BW.refs) { r.key = norm(r.name) + '|' + r.slots.map((s) => norm(s.slot)).join('|'); }
+  const cats = [...new Set(BW.list.map((p) => p.category).filter(Boolean))].sort();
+  for (const c of cats) { $('bwCat').appendChild(el('option', { value: c }, c)); }
+}
+
+// local prefab search (shared by the Start field and the dock-a-child field)
+function localPrefabSearch(q, limit, spawnableFirst) {
+  const k = norm(q);
+  const asNum = /^\d+$/.test(String(q || '').trim()) ? String(q).trim() : null;
+  const out = (BW.list || []).filter((p) =>
+    !k ? true : (p.key.includes(k) || (asNum && String(p.hash).startsWith(asNum))));
+  out.sort((a, b) => ((b.spawnable ? 1 : 0) - (a.spawnable ? 1 : 0)) || a.name.localeCompare(b.name));
+  return out.slice(0, limit || 24);
+}
+
+function renderRecents() {
+  const row = $('recentRow');
+  row.innerHTML = '';
+  row.style.display = RECENT.length ? '' : 'none';
+  if (!RECENT.length) { return; }
+  row.appendChild(el('span', { class: 'muted' }, 'recent'));
+  for (const name of RECENT.slice(0, 5)) {
+    row.appendChild(el('span', { class: 'tagChip', title: 'start a new ' + name,
+      onclick: () => startBuild(name) }, pretty(name)));
+  }
+}
+
+async function bwOpen(tab, query) {
+  await bwEnsureLoaded();
+  if (tab) { BW.tab = tab; }
+  if (query != null) { BW.q = query; $('bwSearch').value = query; BW.shown = PAGE; }
+  $('bwWrap').classList.add('on');
+  renderBrowser();
+  $('bwSearch').focus();
+  $('bwSearch').select();
+}
+function bwClose() { $('bwWrap').classList.remove('on'); }
+
+function bwMatches() {
+  const q = norm(BW.q);
+  const asNum = /^\d+$/.test(BW.q.trim()) ? BW.q.trim() : null;
+  if (BW.tab === 'maps') {
+    return BW.refs.filter((r) => !q || r.key.includes(q));
+  }
+  const out = BW.list.filter((p) =>
+    (!BW.spawnOnly || p.spawnable) &&
+    (!BW.imgOnly || p.img) &&
+    (!BW.favOnly || FAVS.has(p.name)) &&
+    (!BW.cat || p.category === BW.cat) &&
+    (!q || p.key.includes(q) || (asNum && String(p.hash).startsWith(asNum))));
+  out.sort((a, b) => ((FAVS.has(b.name) ? 1 : 0) - (FAVS.has(a.name) ? 1 : 0))
+    || a.name.localeCompare(b.name));
+  return out;
+}
+
+function noImgTile(category) {
+  return el('div', { class: 'bwNoImg', title: 'no picture harvested for this one',
+    style: 'font-size:34px' }, catGlyph(category));
+}
+function bwItemCard(p) {
+  const card = el('div', { class: 'bwCard' });
+  if (p.img) {
+    const img = el('img', { class: 'bwImg', src: '/api/item-image/' + p.hash, loading: 'lazy' });
+    img.onerror = () => { img.replaceWith(noImgTile(p.category)); };
+    card.appendChild(img);
+  } else {
+    card.appendChild(noImgTile(p.category));
+  }
+  const star = el('button', { class: 'star' + (FAVS.has(p.name) ? ' on' : ''),
+    title: 'pin to favorites', onclick: () => { favToggle(p.name); renderBrowser(); } },
+    FAVS.has(p.name) ? '★' : '☆');
+  card.appendChild(el('div', { style: 'display:flex; align-items:flex-start' },
+    el('div', {},
+      el('div', { class: 'bwName' }, p.label || pretty(p.name)),
+      p.label && norm(p.label) !== norm(p.name)
+        ? el('div', { class: 'bwSub' }, p.name) : null,
+      el('div', { class: 'bwSub' }, 'code #' + p.hash
+        + (p.spawnable ? '' : ' · not on spawn list')),
+      p.category ? el('div', { class: 'bwCat' }, p.category) : null),
+    star));
+  const row = el('div', { class: 'bwRow' },
+    el('button', { class: 'mini primary', title: 'start a new workbench with this prefab',
+      onclick: async () => { await startBuild(p.name); bwClose(); } }, '⚒ workbench'),
+    DOC && DOC.view ? el('button', { class: 'mini', title: 'dock into the current build (default slot)',
+      onclick: async () => { await op([], 'addChild', { slot: null, prefab: p.name });
+        stat(p.name + ' docked into ' + (DOC.view ? DOC.view.name : 'the build')); } }, '+ dock') : null,
+    el('button', { class: 'mini', title: 'copy the item code / hash',
+      onclick: () => { navigator.clipboard.writeText(String(p.hash)); stat('#' + p.hash + ' copied'); } }, 'code'),
+    p.pouchable ? el('button', { class: 'mini', title: 'build a pouch of these (one docked item + a count)',
+      onclick: () => makePouch(p.name) }, '🎒 pouch') : null,
+    p.slotRef ? el('button', { class: 'mini', title: 'annotated slot map',
+      onclick: () => openSlotRef(p.name) }, 'map ⓘ') : null);
+  card.appendChild(row);
+  return card;
+}
+
+// pouch: fold of the old sidebar panel — a pouchable item's card offers it
+async function makePouch(name) {
+  const raw = prompt('How many ' + pretty(name) + ' in the pouch?', '5');
+  if (raw == null) { return; }
+  const quantity = parseInt(raw, 10);
+  if (!Number.isInteger(quantity) || quantity < 1) { return setErr('pouch count must be a whole number ≥ 1'); }
+  try {
+    const data = await api('POST', '/api/pouch', { item: name, quantity });
+    refresh(data);
+    recentPush(name);
+    bwClose();
+    stat('pouch of ' + quantity + '× ' + pretty(name) + (data.note ? ' — ' + data.note : ''));
+  } catch { /* shown */ }
+}
+
+function bwMapCard(r) {
+  const card = el('div', { class: 'bwCard' });
+  if (r.hasImage) {
+    const img = el('img', { class: 'bwMapImg', src: '/api/slot-ref/' + encodeURIComponent(r.name),
+      loading: 'lazy', title: 'open full size', onclick: () => openSlotRef(r.name) });
+    img.onerror = () => { img.replaceWith(el('div', { class: 'bwNoImg' }, 'no image')); };
+    card.appendChild(img);
+  } else {
+    card.appendChild(el('div', { class: 'bwNoImg' }, 'legend only'));
+  }
+  card.appendChild(el('div', { class: 'bwName' }, pretty(r.name)));
+  card.appendChild(el('div', { class: 'bwSub' },
+    r.slots.length + ' slot' + (r.slots.length === 1 ? '' : 's') + ' — '
+    + r.slots.slice(0, 3).map((s) => s.slot).join(', ') + (r.slots.length > 3 ? ', …' : '')));
+  card.appendChild(el('div', { class: 'bwRow' },
+    el('button', { class: 'mini primary', onclick: () => openSlotRef(r.name) }, 'open map'),
+    el('button', { class: 'mini', title: 'start a new workbench with this prefab',
+      onclick: async () => { await startBuild(r.name); bwClose(); } }, '⚒ workbench')));
+  return card;
+}
+
+function renderBrowser() {
+  $('bwTabItems').classList.toggle('on', BW.tab === 'items');
+  $('bwTabMaps').classList.toggle('on', BW.tab === 'maps');
+  const itemsOnly = BW.tab === 'items';
+  $('bwCat').style.display = itemsOnly ? '' : 'none';
+  $('bwSpawnable').style.display = itemsOnly ? '' : 'none';
+  $('bwImgs').style.display = itemsOnly ? '' : 'none';
+  $('bwFavs').style.display = itemsOnly ? '' : 'none';
+  $('bwSpawnable').classList.toggle('on', BW.spawnOnly);
+  $('bwImgs').classList.toggle('on', BW.imgOnly);
+  $('bwFavs').classList.toggle('on', BW.favOnly);
+
+  const rec = $('bwRecent');
+  rec.innerHTML = '';
+  rec.style.display = 'none';
+  if (itemsOnly && RECENT.length && !BW.q) {
+    rec.style.display = '';
+    rec.appendChild(el('span', { class: 'muted' }, 'recent'));
+    for (const name of RECENT) {
+      rec.appendChild(el('span', { class: 'tagChip', onclick: async () => { await startBuild(name); bwClose(); } },
+        pretty(name)));
+    }
+  }
+
+  const matches = bwMatches();
+  const grid = $('bwGrid');
+  grid.innerHTML = '';
+  for (const m of matches.slice(0, BW.shown)) {
+    grid.appendChild(itemsOnly ? bwItemCard(m) : bwMapCard(m));
+  }
+  $('bwCount').textContent = matches.length + (itemsOnly ? ' item' : ' map') + (matches.length === 1 ? '' : 's');
+  const more = $('bwMore');
+  more.innerHTML = '';
+  if (matches.length > BW.shown) {
+    more.appendChild(el('button', { class: 'mini',
+      onclick: () => { BW.shown += PAGE; renderBrowser(); } },
+      'show ' + Math.min(PAGE, matches.length - BW.shown) + ' more of ' + (matches.length - BW.shown)));
+  }
+}
+
+// scrolling to the bottom auto-clicks "show more"
+new IntersectionObserver((entries) => {
+  if (entries.some((e) => e.isIntersecting) && $('bwWrap').classList.contains('on')) {
+    const btn = $('bwMore').querySelector('button');
+    if (btn) { btn.click(); }
+  }
+}, { root: null }).observe(document.getElementById('bwMore'));
+
+$('btnBrowse').onclick = () => bwOpen('items');
+$('btnBwClose').onclick = bwClose;
+$('bwWrap').onclick = (e) => { if (e.target === $('bwWrap')) { bwClose(); } };
+$('bwTabItems').onclick = () => { BW.tab = 'items'; BW.shown = PAGE; renderBrowser(); };
+$('bwTabMaps').onclick = () => { BW.tab = 'maps'; BW.shown = PAGE; renderBrowser(); };
+$('bwSearch').oninput = () => { BW.q = $('bwSearch').value; BW.shown = PAGE; renderBrowser(); };
+$('bwCat').onchange = () => { BW.cat = $('bwCat').value; BW.shown = PAGE; renderBrowser(); };
+$('bwSpawnable').onclick = () => { BW.spawnOnly = !BW.spawnOnly; BW.shown = PAGE; renderBrowser(); };
+$('bwImgs').onclick = () => { BW.imgOnly = !BW.imgOnly; BW.shown = PAGE; renderBrowser(); };
+$('bwFavs').onclick = () => { BW.favOnly = !BW.favOnly; BW.shown = PAGE; renderBrowser(); };
+
+// ---------- clear workbench ----------
+$('btnClear').onclick = () => {
+  // guard on the doc itself, not DOC.string — a doc whose last edit broke
+  // encoding has string=null and is the MOST fragile thing to wipe silently
+  if (DOC && DOC.view
+      && !confirm('Clear the workbench? Unsaved edits are gone (library saves stay).')) { return; }
+  DOC = null;
+  SEL = null;
+  GAME = null;
+  RECOVERY = null;
+  clearRecovery();
+  if (MULTI) { SELSET.clear(); renderBatchBar(); }
+  renderLiveChip();
+  $('outStr').value = '';
+  $('saveName').value = '';
+  $('saveNotes').value = '';
+  $('pasteStr').value = '';
+  $('capId').value = '';
+  setErr('');
+  $('rt').innerHTML = '';
+  renderTree();
+  schedulePreflight();
+  stat('workbench cleared');
+};
+
+// ---------- keyboard: Ctrl+K / "/" opens the browser, Esc closes the top layer
+document.addEventListener('keydown', (e) => {
+  if (e.ctrlKey && e.key.toLowerCase() === 'k') { e.preventDefault(); bwOpen(); return; }
+  if (e.key === 'Escape') {
+    const a = document.activeElement;
+    const typing = a && /^(INPUT|TEXTAREA|SELECT)$/.test(a.tagName);
+    for (const id of ['srWrap', 'pfWrap', 'diffWrap', 'dlgWrap', 'bwWrap']) {
+      if ($(id).classList.contains('on')) {
+        // don't nuke half-typed shop-export config on a reflexive Esc — its
+        // fields hold real state; the read-only overlays and the browser's
+        // throwaway search box are fine to close mid-focus
+        if (id === 'dlgWrap' && typing && $(id).contains(a)) { return; }
+        $(id).classList.remove('on');
+        return;
+      }
+    }
+    return;
+  }
+  if (e.target && /^(INPUT|TEXTAREA|SELECT)$/.test(e.target.tagName)) { return; }
+  if (e.key === '/') { e.preventDefault(); bwOpen(); }
+});
+
+// ---------- start bar ----------
+$('btnDecode').onclick = async () => {
+  const s = $('pasteStr').value.trim();
+  if (!s) { return setErr('paste a string first'); }
+  refresh(await api('POST', '/api/decode', { string: s }));
+  $('pasteStr').value = '';
+};
+$('pasteStr').onkeydown = (e) => { if (e.key === 'Enter') { $('btnDecode').click(); } };
+
+// The Start "build from scratch" field feeds the SAME catalog browser — one
+// search surface everywhere. Type + Enter (or the browse button) opens it
+// filtered; a quick local dropdown handles the fast "I know the name" pick.
+let searchTimer = null;
+$('newSearch').oninput = () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(async () => {
+    const q = $('newSearch').value.trim();
+    const box = $('newResults');
+    if (!q) { box.style.display = 'none'; return; }
+    await bwEnsureLoaded();
+    box.innerHTML = '';
+    box.appendChild(el('div', { style: 'display:flex; align-items:center; color:var(--faint); font-size:11px; border-bottom:1px solid var(--edge)' },
+      el('span', { style: 'flex:1' }, 'results for "' + q + '"'),
+      el('span', { style: 'cursor:pointer; padding:0 4px', title: 'dismiss',
+        onclick: () => { box.style.display = 'none'; } }, '✕')));
+    for (const p of localPrefabSearch(q, 12, true)) {
+      const d = document.createElement('div');
+      if (p.img) { d.appendChild(thumbImg(p.hash, 't26')); }
+      d.appendChild(document.createTextNode((p.label || p.name) + '  #' + p.hash + (p.spawnable ? '' : '  (not on spawn list)')));
+      d.onclick = async () => { box.style.display = 'none'; $('newSearch').value = ''; await startBuild(p.name); };
+      makeDraggable(d, { kind: 'catalog', name: p.name });   // drag into a blocks-view socket
+      box.appendChild(d);
+    }
+    const more = el('div', { style: 'color:var(--accent); border-top:1px solid var(--edge)',
+      onclick: () => { box.style.display = 'none'; bwOpen('items', q); } }, 'open full browser →');
+    box.appendChild(more);
+    box.style.display = 'block';
+  }, 120);
+};
+$('newSearch').onkeydown = (e) => {
+  if (e.key === 'Enter') { $('newResults').style.display = 'none'; bwOpen('items', $('newSearch').value.trim()); $('newSearch').value = ''; }
+};
+
+// ---------- library ----------
+let LIBDATA = [];
+async function loadLibrary() {
+  const data = await api('GET', '/api/library');
+  LIBDATA = data.strings.sort((a, b) => a.name.localeCompare(b.name));
+  renderLibrary();
+}
+
+let libFavOnly = false;
+function renderLibrary() {
+  const list = $('libList');
+  list.innerHTML = '';
+  const q = $('libSearch').value.trim().toLowerCase();
+  // favourites first, then alphabetical
+  const ordered = [...LIBDATA].sort((a, b) =>
+    ((LIBFAVS.has(b.name) ? 1 : 0) - (LIBFAVS.has(a.name) ? 1 : 0)) || a.name.localeCompare(b.name));
+  let shown = 0;
+  for (const s of ordered) {
+    if (libFavOnly && !LIBFAVS.has(s.name)) { continue; }
+    if (q) {
+      if (q.startsWith('#')) {
+        if (!(s.tags || []).includes(q.slice(1))) { continue; }
+      } else {
+        const hay = (s.name + ' ' + (s.notes || '') + ' ' + (s.tags || []).join(' ')
+          + ' ' + (s.summary ? s.summary.name : '')).toLowerCase();
+        if (!hay.includes(q)) { continue; }
+      }
+    }
+    shown++;
+    list.appendChild(libCard(s));
+  }
+  if (!LIBDATA.length) {
+    list.appendChild(el('div', { class: 'muted' }, 'empty — save something from the editor below'));
+  } else if (!shown) {
+    list.appendChild(el('div', { class: 'muted' }, libFavOnly ? 'no starred strings yet' : 'nothing matches "' + q + '"'));
+  }
+  $('libCount').textContent = LIBDATA.length
+    ? (q || libFavOnly ? shown + ' of ' + LIBDATA.length : LIBDATA.length + ' saved') : '';
+  renderLibRecents();
+}
+$('libSearch').oninput = renderLibrary;
+$('btnLibFav').onclick = () => { libFavOnly = !libFavOnly; $('btnLibFav').classList.toggle('on', libFavOnly); renderLibrary(); };
+
+function renderLibRecents() {
+  const row = $('libRecent');
+  row.innerHTML = '';
+  const names = LIBRECENT.filter((n) => LIBDATA.some((s) => s.name === n)).slice(0, 5);
+  row.style.display = names.length ? '' : 'none';
+  if (!names.length) { return; }
+  row.appendChild(el('span', { class: 'muted' }, 'recent'));
+  for (const n of names) {
+    row.appendChild(el('span', { class: 'tagChip', title: 'load ' + n, onclick: () => libLoadByName(n) }, n));
+  }
+}
+async function libLoadByName(name) {
+  const item = await api('POST', '/api/library/get', { name });
+  refresh(await api('POST', '/api/decode', { string: item.string }));
+  $('saveName').value = name;
+  $('saveNotes').value = item.notes || '';
+  libRecentPush(name);
+  renderLibRecents();
+}
+
+$('btnLibExport').onclick = () => {
+  const a = el('a', { href: '/api/library/export', download: '' });
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  stat('library backup downloading');
+};
+$('btnLibImport').onclick = () => $('libFile').click();
+$('libFile').onchange = () => {
+  const f = $('libFile').files[0];
+  if (!f) { return; }
+  const rd = new FileReader();
+  rd.onload = async () => {
+    try {
+      let parsed = JSON.parse(rd.result);
+      if (Array.isArray(parsed)) { parsed = { strings: parsed }; }
+      const r = await api('POST', '/api/library/import', parsed);
+      stat('import: +' + r.added + ' added, ' + r.renamed + ' renamed, ' + r.skipped + ' skipped');
+      loadLibrary();
+    } catch (e) { setErr('import failed: ' + e.message); }
+    $('libFile').value = '';
+  };
+  rd.readAsText(f);
+};
+
+function libCard(s) {
+  const card = el('div', { class: 'libCard' });
+  const head = el('div', { style: 'display:flex; align-items:center; gap:8px' },
+    s.summary && s.summary.img ? thumbImg(s.summary.hash, 't44') : null,
+    el('span', { class: 'libName' }, s.name),
+    el('span', { class: 'libMeta' }, s.length + ' chars'),
+    el('span', { style: 'flex:1' }),
+    el('button', { class: 'star' + (LIBFAVS.has(s.name) ? ' on' : ''), title: 'star',
+      onclick: () => { libFavToggle(s.name); renderLibrary(); } }, LIBFAVS.has(s.name) ? '★' : '☆'));
+  if (s.summary && s.summary.legacyAlpha) {
+    head.appendChild(el('span', { class: 'badge warn', style: 'margin-left:6px',
+      title: 'authored before the s22 alpha fix (255-scale alpha renders broken in-game) - load, fix alpha, re-save' }, '255-alpha'));
+  }
+  if (s.decodeError) {
+    head.appendChild(el('span', { class: 'badge bad', style: 'margin-left:6px', title: s.decodeError }, 'undecodable'));
+  }
+  card.appendChild(head);
+
+  if (s.summary) {
+    const sum = el('div', { class: 'libSum' },
+      el('span', {}, s.summary.name),
+      s.summary.children ? el('span', { class: 'libMeta' },
+        '+' + s.summary.children + ' docked' +
+        (s.summary.childNames.length ? ' (' + s.summary.childNames.join(', ')
+          + (s.summary.children > s.summary.childNames.length ? ', …' : '') + ')' : '')) : null);
+    card.appendChild(sum);
+    const liq = liquidLine(s.summary.liquid);
+    if (liq) { card.appendChild(liq); }
+  }
+  if (s.notes) { card.appendChild(el('div', { class: 'libNotes' }, s.notes)); }
+  if (s.tags && s.tags.length) {
+    const tr = el('div', { class: 'row', style: 'gap:4px; margin:3px 0 0' });
+    for (const t of s.tags) {
+      tr.appendChild(el('span', { class: 'tagChip', onclick: () => { $('libSearch').value = '#' + t; renderLibrary(); } }, '#' + t));
+    }
+    card.appendChild(tr);
+  }
+
+  const btns = el('div', { class: 'libBtns' },
+    el('button', { class: 'mini', onclick: () => libLoadByName(s.name) }, 'load'),
+    SHARE_MODE ? null : el('button', { class: 'mini', onclick: async () => {
+      const player = playerOrWarn();
+      if (!player) { return; }
+      await doSpawn({ player, name: s.name }, s.name);
+    } }, '⚡ spawn'),
+    el('button', { class: 'mini', onclick: async () => {
+      const item = await api('POST', '/api/library/get', { name: s.name });
+      navigator.clipboard.writeText(item.string);
+      stat('"' + s.name + '" copied (' + item.string.length + ' chars)');
+    } }, 'copy'),
+    el('button', { class: 'mini', onclick: () => openExport({ name: s.name, summary: s.summary }) }, 'shop'),
+    el('button', { class: 'mini', onclick: async () => {
+      const notes = prompt('notes for "' + s.name + '":', s.notes || '');
+      if (notes === null) { return; }
+      await api('POST', '/api/library/notes', { name: s.name, notes });
+      loadLibrary();
+    } }, 'notes'),
+    el('button', { class: 'mini', onclick: async () => {
+      const tags = prompt('tags for "' + s.name + '" (comma-separated):', (s.tags || []).join(', '));
+      if (tags === null) { return; }
+      await api('POST', '/api/library/tags', { name: s.name, tags });
+      loadLibrary();
+    } }, 'tags'),
+    el('button', { class: 'mini', onclick: async () => {
+      const to = prompt('rename "' + s.name + '" to:', s.name);
+      if (!to || to === s.name) { return; }
+      try { await api('POST', '/api/library/rename', { name: s.name, to }); loadLibrary(); }
+      catch (e) { /* shown */ }
+    } }, 'rename'),
+    el('button', { class: 'mini danger', onclick: async () => {
+      if (!confirm('delete "' + s.name + '" from the library?')) { return; }
+      await api('POST', '/api/library/delete', { name: s.name });
+      loadLibrary();
+    } }, '×'));
+  card.appendChild(btns);
+  return card;
+}
+
+$('btnSave').onclick = async () => {
+  if (!DOC || !DOC.string) { return setErr('nothing to save yet'); }
+  const name = $('saveName').value.trim();
+  if (!name) { return setErr('give it a name first'); }
+  await api('POST', '/api/library/save', { name, string: DOC.string, notes: $('saveNotes').value });
+  stat('saved "' + name + '"');
+  loadLibrary();
+};
+$('btnCopy').onclick = () => {
+  if (!DOC || !DOC.string) { return; }
+  navigator.clipboard.writeText(DOC.string);
+  stat('string copied (' + DOC.string.length + ' chars)');
+};
+$('btnCopyCmd').onclick = () => {
+  if (!DOC || !DOC.string) { return; }
+  const player = $('player').value.trim() || '<player>';
+  navigator.clipboard.writeText('spawn string ' + player + ' ' + DOC.string);
+  stat('spawn command copied');
+};
+
+// ---------- in-game round trip: capture -> edit -> replace ----------
+// GAME remembers which live entity the current doc came from, and follows the
+// successor id after every replace (edit replace mints a new entity id).
+let GAME = null;   // { id }
+
+function renderLiveChip() {
+  const c = $('liveChip');
+  c.innerHTML = '';
+  if (GAME) {
+    c.appendChild(el('span', { class: 'badge ok',
+      title: 'this doc was captured from a live entity — "replace in game" pushes the edit back at its exact spot' },
+      '⇄ live #' + GAME.id));
+  }
+}
+
+$('btnCapture').onclick = async () => {
+  const id = $('capId').value.trim();
+  if (!id) { return setErr('enter the entity id first — the in-game editor shows it, so does `edit near`'); }
+  const btn = $('btnCapture');
+  btn.disabled = true;
+  stat('capturing #' + id + '…');
+  try {
+    const r = await api('POST', '/api/capture', { id, panelUrl: $('panelUrl').value.trim() || undefined });
+    if (r.ok) {
+      refresh(r);
+      GAME = { id: r.entityId };
+      renderLiveChip();
+      if (r.label && !$('saveName').value) { $('saveName').value = slug(r.label); }
+      stat('captured #' + r.entityId + (r.label ? ' — ' + r.label : '') + ' — edit, then "replace in game"');
+    } else { setErr(r.error || 'capture failed'); }
+  } catch { /* shown */ }
+  btn.disabled = false;
+};
+$('capId').onkeydown = (e) => { if (e.key === 'Enter') { $('btnCapture').click(); } };
+
+$('btnReplace').onclick = async () => {
+  if (!DOC || !DOC.string) { return setErr('nothing to push yet'); }
+  let id = GAME && GAME.id;
+  if (!id) {
+    const raw = prompt('replace which live entity id? (capture sets this automatically)');
+    if (!raw || !raw.trim()) { return; }
+    id = raw.trim();
+  }
+  const btn = $('btnReplace');
+  btn.disabled = true;
+  stat('replacing #' + id + '…');
+  try {
+    const r = await api('POST', '/api/replace', { id, string: DOC.string, panelUrl: $('panelUrl').value.trim() || undefined });
+    if (r.ok) {
+      GAME = { id: r.newId || id };
+      renderLiveChip();
+      stat('replaced — the live entity is now #' + GAME.id + (r.note ? ' (' + r.note + ')' : ''));
+    } else { setErr(r.error || 'replace failed'); }
+  } catch { /* shown */ }
+  btn.disabled = false;
+};
+
+// ---------- spawn in game ----------
+async function doSpawn(body, label) {
+  body.panelUrl = $('panelUrl').value.trim() || undefined;
+  const btn = $('btnSpawn');
+  btn.disabled = true;
+  stat('spawning' + (label ? ' "' + label + '"' : '') + '…');
+  try {
+    const r = await api('POST', '/api/spawn', body);
+    if (r.ok) { stat((r.text || 'spawned').trim().split(/\r?\n/)[0]); }
+    else { setErr(r.error || 'spawn failed'); $('stat').textContent = ''; }
+  } catch (e) { /* shown */ }
+  btn.disabled = false;
+}
+$('btnSpawn').onclick = async () => {
+  if (!DOC || !DOC.string) { return setErr('nothing to spawn yet'); }
+  const player = playerOrWarn();
+  if (!player) { return; }
+  await doSpawn({ player, string: DOC.string }, DOC.summary && DOC.summary.name);
+};
+
+// ---------- shop export dialog ----------
+let EX = null; // { name } (library) or { docId } (current doc)
+function openExport(src) {
+  EX = src.name ? { name: src.name } : { docId: DOC.docId };
+  const sum = src.summary || (DOC && DOC.summary) || {};
+  $('exId').value = src.name || slug($('saveName').value.trim() || sum.name);
+  $('exTitle').value = pretty(sum.name || $('exId').value);
+  $('exPrice').value = 10;
+  $('exQty').value = 1;
+  $('exDesc').value = '';
+  $('dlgErr').textContent = '';
+  $('dlgWrap').classList.add('on');
+  exPreview();
+}
+function exBody() {
+  const b = {
+    format: $('exFormat').value,
+    id: $('exId').value.trim(),
+    title: $('exTitle').value.trim(),
+    price: parseInt($('exPrice').value, 10)
+  };
+  if (b.format === 'tshop') { b.maxQty = parseInt($('exQty').value, 10); }
+  else { b.description = $('exDesc').value.trim(); }
+  return { ...b, ...EX };
+}
+let exTimer = null;
+async function exPreview() {
+  $('exQtyWrap').style.display = $('exFormat').value === 'tshop' ? '' : 'none';
+  $('exDescWrap').style.display = $('exFormat').value === 'shop' ? '' : 'none';
+  clearTimeout(exTimer);
+  exTimer = setTimeout(async () => {
+    try {
+      const r = await api('POST', '/api/export/shop', exBody());
+      $('dlgPrev').value = r.json;
+      $('dlgErr').textContent = '';
+    } catch (e) { $('dlgPrev').value = ''; $('dlgErr').textContent = e.message; setErr(''); }
+  }, 200);
+}
+for (const id of ['exFormat', 'exId', 'exTitle', 'exPrice', 'exQty', 'exDesc']) { $(id).oninput = exPreview; }
+$('btnDlgCopy').onclick = () => {
+  if (!$('dlgPrev').value) { return; }
+  navigator.clipboard.writeText($('dlgPrev').value);
+  stat('shop JSON copied — paste into ' + ($('exFormat').value === 'tshop' ? 'tablet-shop.json items[]' : 'shops.json products[]'));
+  $('dlgWrap').classList.remove('on');
+};
+$('btnDlgClose').onclick = () => $('dlgWrap').classList.remove('on');
+$('dlgWrap').onclick = (e) => { if (e.target === $('dlgWrap')) { $('dlgWrap').classList.remove('on'); } };
+$('btnShopDoc').onclick = () => {
+  if (!DOC || !DOC.string) { return setErr('nothing to export yet'); }
+  openExport({});
+};
+
+// ---------- slot-reference modal ----------
+async function openSlotRef(name) {
+  const info = await api('GET', '/api/slot-info/' + encodeURIComponent(name));
+  $('srTitle').textContent = 'SLOT REFERENCE — ' + name;
+  const body = $('srBody');
+  body.innerHTML = '';
+  if (info.hasImage) { body.appendChild(el('img', { src: '/api/slot-ref/' + encodeURIComponent(name) })); }
+  for (const s of info.slots) {
+    body.appendChild(el('div', { class: 'srRow' },
+      el('span', { class: 'srChip', style: 'background:' + (s.color || 'gray') }),
+      el('span', { class: 'srSlot' }, s.slot),
+      el('span', { class: 'srHash' }, '#' + s.hash),
+      s.comment ? el('span', { class: 'muted' }, s.comment) : null));
+  }
+  $('srWrap').classList.add('on');
+}
+$('btnSrClose').onclick = () => $('srWrap').classList.remove('on');
+$('srWrap').onclick = (e) => { if (e.target === $('srWrap')) { $('srWrap').classList.remove('on'); } };
+
+// ---------- tree rendering ----------
+function numIn(value, cls, onchange, step) {
+  return el('input', { type: 'number', class: cls || 'num', value: value == null ? '' : value,
+    step: step || 'any', onchange: (e) => onchange(parseFloat(e.target.value)) });
+}
+function boolIn(value, onchange) {
+  const i = el('input', { type: 'checkbox', onchange: (e) => onchange(e.target.checked) });
+  i.checked = !!value;
+  return i;
+}
+
+// A <select> of named hashes (+ 'custom hash…' prompt) so nobody edits raw
+// numbers. Unknown current values render as '#<hash>' and stay selectable.
+function hashSel(list, current, onPick, noneLabel) {
+  const sel = el('select', {});
+  if (noneLabel) sel.appendChild(el('option', { value: '0' }, noneLabel));
+  let known = current === 0 && !!noneLabel;
+  for (const it of list) {
+    const o = el('option', { value: String(it.hash) }, it.name);
+    if (it.hash === current) { o.selected = true; known = true; }
+    sel.appendChild(o);
+  }
+  if (!known) {
+    const o = el('option', { value: String(current) }, '#' + current);
+    o.selected = true;
+    sel.appendChild(o);
+  }
+  sel.appendChild(el('option', { value: 'custom' }, 'custom hash…'));
+  sel.onchange = () => {
+    if (sel.value === 'custom') {
+      const raw = prompt('hash (number):', String(current));
+      const h = parseInt(raw, 10);
+      if (!isNaN(h) && h >= 0) onPick(h); else sel.value = String(current);
+    } else {
+      onPick(parseInt(sel.value, 10));
+    }
+  };
+  return sel;
+}
+
+function renderTree() {
+  const root = $('tree');
+  root.innerHTML = '';
+  renderPreview();
+  if (!DOC || !DOC.view) {
+    const box = el('div', { class: 'empty' },
+      el('div', {}, 'decode a string, search, or pick something from the catalog — the editor lands here'));
+    if (RECOVERY) {
+      const when = Math.round((Date.now() - RECOVERY.at) / 60000);
+      box.appendChild(el('div', { style: 'margin-top:12px' },
+        el('button', { class: 'primary', onclick: doRestore },
+          '↺ restore your last build' + (when >= 1 ? ' (' + when + ' min ago)' : '')),
+        el('button', { class: 'mini', style: 'margin-left:6px', onclick: () => { RECOVERY = null; clearRecovery(); renderTree(); } }, 'dismiss')));
+    }
+    box.appendChild(el('div', { style: 'margin-top:14px; font-size:12px; color:var(--dim)' }, 'start from a template'));
+    const tpl = el('div', { class: 'row', style: 'justify-content:center; gap:6px; flex-wrap:wrap; margin-top:6px' });
+    for (const t of TEMPLATES) {
+      tpl.appendChild(el('button', { class: 'mini', title: t.desc, onclick: () => runTemplate(t) }, t.label));
+    }
+    box.appendChild(tpl);
+    box.appendChild(el('div', { style: 'margin-top:14px' },
+      el('button', { class: 'primary', onclick: () => bwOpen('items') }, 'browse the catalog')));
+    box.appendChild(el('div', { class: 'muted', style: 'margin-top:8px' }, 'Ctrl+K works anywhere'));
+    root.appendChild(box);
+    return;
+  }
+  if (VIEW === 'blocks') { renderBlocks(root); }
+  else { root.appendChild(renderNode(DOC.view, [])); }
+}
+
+// ---------- blocks view (drag pieces between sockets; click to edit in place) ----------
+function renderBlocks(root) {
+  const bar = el('div', { id: 'shelfBar' }, el('span', { class: 'muted' }, 'shelf'));
+  if (!SHELF.length) {
+    bar.appendChild(el('span', { class: 'muted' }, '(empty — "copy" a piece, then drag it onto any socket)'));
+  }
+  SHELF.forEach((it, i) => {
+    const chip = el('span', { class: 'shelfItem' },
+      it.img ? thumbImg(it.hash, 't26') : null,
+      it.name,
+      el('button', { class: 'mini danger', onclick: () => { SHELF.splice(i, 1); shelfSave(); renderTree(); } }, '×'));
+    makeDraggable(chip, { kind: 'shelf', string: it.string });
+    bar.appendChild(chip);
+  });
+  const trash = el('span', { id: 'trash' }, '🗑 drop a piece here to remove it');
+  dropTarget(trash, (p) => {
+    if (p.kind === 'node') { op(p.fromParent, 'removeChild', { index: p.index }); }
+  });
+  bar.appendChild(trash);
+  root.appendChild(bar);
+  root.appendChild(renderBlock(DOC.view, []));
+}
+
+function renderBlock(v, path) {
+  const key = path.join('.');
+  const blk = el('div', { class: 'blk' + (SEL === key ? ' sel' : '') });
+
+  const head = el('div', { class: 'blkHead' },
+    v.img ? thumbImg(v.hash, 't26') : null,
+    el('span', { class: 'blkName' }, v.name),
+    el('span', { class: 'hashDim' }, '#' + v.hash),
+    v.slotRef ? el('button', { class: 'mini', title: 'annotated slot map',
+      onclick: (e) => { e.stopPropagation(); openSlotRef(v.name); } }, 'ⓘ') : null,
+    el('span', { style: 'flex:1' }),
+    el('button', { class: 'mini', title: 'copy this piece to the shelf',
+      onclick: (e) => { e.stopPropagation(); shelfCopy(path); } }, 'copy'),
+    path.length ? el('button', { class: 'mini', title: 'duplicate in place',
+      onclick: (e) => { e.stopPropagation(); op([], 'duplicateChild', { parent: path.slice(0, -1), index: path[path.length - 1] }); } }, 'dup') : null,
+    path.length ? el('button', { class: 'mini danger', title: 'remove',
+      onclick: (e) => { e.stopPropagation(); op(path.slice(0, -1), 'removeChild', { index: path[path.length - 1] }); } }, '×') : null
+  );
+  head.onclick = () => { SEL = SEL === key ? null : key; renderTree(); };
+  if (path.length) {
+    makeDraggable(head, { kind: 'node', fromParent: path.slice(0, -1), index: path[path.length - 1] });
+  }
+  blk.appendChild(head);
+
+  if (SEL === key) {
+    const det = el('div', { class: 'blkDetail' });
+    appendDetail(det, v, path, key);
+    blk.appendChild(det);
+  }
+
+  // sockets: every declared slot, plus the default slot
+  const socks = el('div', { class: 'sockets' });
+  const byHash = new Map();
+  v.children.forEach((ch, i) => {
+    if (!byHash.has(ch.parentHash)) { byHash.set(ch.parentHash, []); }
+    byHash.get(ch.parentHash).push({ ch, i });
+  });
+  const declared = new Set();
+  for (const s of v.slots) {
+    declared.add(s.hash);
+    socks.appendChild(socket(path, s.key, byHash.get(s.hash) || []));
+  }
+  const rest = [];
+  for (const [h, list] of byHash) { if (!declared.has(h)) { rest.push(...list); } }
+  socks.appendChild(socket(path, null, rest));
+  blk.appendChild(socks);
+  return blk;
+}
+
+function socket(path, slotKey, entries) {
+  const ghost = !entries.length && slotKey === null;   // empty default socket shows only mid-drag
+  const s = el('div', { class: 'socket' + (ghost ? ' ghost' : '') },
+    el('span', { class: 'sockLabel' }, (slotKey || 'default') + (entries.length ? '' : ' — drop a piece here')));
+  for (const e2 of entries) { s.appendChild(renderBlock(e2.ch.view, path.concat(e2.i))); }
+  dropTarget(s, (p) => {
+    if (p.kind === 'node') {
+      op([], 'moveChild', { fromParent: p.fromParent, index: p.index, toParent: path, slot: slotKey });
+    } else if (p.kind === 'catalog') {
+      op(path, 'addChild', { slot: slotKey, prefab: p.name });
+    } else if (p.kind === 'shelf') {
+      op([], 'addChildString', { parent: path, slot: slotKey, string: p.string });
+    }
+  });
+  return s;
+}
+
+// the picture of what this string assembles to: root image + docked parts by slot
+function renderPreview() {
+  const pv = $('pv');
+  pv.innerHTML = '';
+  if (!DOC || !DOC.view) { return; }
+  const v = DOC.view;
+  if (!v.img && !v.children.some((ch) => ch.view.img)) { return; }  // nothing visual to show
+
+  const card = el('div', { class: 'bar' }, el('h2', {}, 'Assembly'));
+  const wrap = el('div', { class: 'pvWrap' });
+
+  const rootBox = el('div', { class: 'pvRoot' });
+  if (v.img) { rootBox.appendChild(thumbImg(v.hash, '')); }
+  rootBox.appendChild(el('div', { class: 'pvName' }, v.name));
+  wrap.appendChild(rootBox);
+
+  if (v.children.length) {
+    const kids = el('div', { class: 'pvKids' });
+    for (const ch of v.children) {
+      const kid = el('div', { class: 'pvKid' },
+        el('span', { class: 'pvSlot' }, ch.slotName || ('#' + ch.parentHash)));
+      if (ch.view.img) { kid.appendChild(thumbImg(ch.view.hash, '')); }
+      kid.appendChild(el('span', { class: 'pvKidName' }, ch.view.name));
+      if (ch.view.children.length) {
+        kid.appendChild(el('span', { class: 'pvMore' }, '+' + ch.view.children.length + ' inside'));
+      }
+      kids.appendChild(kid);
+    }
+    wrap.appendChild(kids);
+  }
+  card.appendChild(wrap);
+  pv.appendChild(card);
+}
+
+function renderNode(v, path) {
+  const card = el('div', { class: 'card' });
+  const pkey = path.join('.');
+
+  // header
+  const head = el('div', { class: 'row' },
+    (MULTI && path.length) ? (() => {
+      const cb = el('input', { type: 'checkbox', class: 'selBox' });
+      cb.checked = SELSET.has(selKey(path));
+      cb.onclick = (e) => { e.stopPropagation(); selToggle(path); };
+      return cb;
+    })() : null,
+    v.img ? thumbImg(v.hash, 't48') : null,
+    el('span', { class: 'prefabTitle' }, v.name),
+    el('span', { class: 'hashDim' }, '#' + v.hash),
+    v.slotRef ? el('button', { class: 'mini', title: "annotated slot map (Ethyn's Visual Slot Reference)",
+      onclick: () => openSlotRef(v.name) }, 'slots ⓘ') : null,
+    v.unknownComponents ? el('span', { class: 'muted' },
+      v.unknownComponents + ' unknown component(s) preserved as-is') : null
+  );
+  if (path.length === 0 && DOC.summary && DOC.summary.legacyAlpha) {
+    head.appendChild(el('span', { class: 'badge warn' }, '255-alpha'));
+    head.appendChild(el('button', { class: 'mini',
+      title: 'one pass through the liquid designer rescales alpha to the 0-1 float the game wants',
+      onclick: () => {
+        const lc = v.components.find((c) => c.name === 'LiquidContainer');
+        if (lc && lc.props.customData) { op(path, 'setLiquid', { customData: lc.props.customData }); }
+      } }, 'fix alpha'));
+  }
+  if (path.length > 0) {
+    head.appendChild(el('button', { class: 'danger mini', style: 'margin-left:auto',
+      onclick: () => op(path.slice(0, -1), 'removeChild', { index: path[path.length - 1] })
+    }, 'remove'));
+  }
+  card.appendChild(head);
+  appendDetail(card, v, path, pkey);
+
+  // children (collapsed above 6 unless toggled open)
+  const many = v.children.length > 6;
+  const open = !many || openKids.has(pkey);
+  if (v.children.length) {
+    if (many) {
+      const tog = el('div', { class: 'kidToggle', onclick: () => {
+        if (openKids.has(pkey)) { openKids.delete(pkey); } else { openKids.add(pkey); }
+        renderTree();
+      } }, (open ? '▾ ' : '▸ ') + v.children.length + ' docked children' + (open ? '' : ' — click to show'));
+      card.appendChild(tog);
+    }
+    if (open) {
+      for (let i = 0; i < v.children.length; i++) {
+        const ch = v.children[i];
+        const childCard = renderNode(ch.view, path.concat(i));
+        childCard.insertBefore(
+          el('div', { class: 'muted' }, 'docked at: ' + (ch.slotName || ('hash ' + ch.parentHash))),
+          childCard.firstChild
+        );
+        card.appendChild(childCard);
+      }
+    }
+  }
+
+  // add child
+  card.appendChild(addChildRow(v, path));
+  return card;
+}
+
+// the per-piece editors (quick actions + components) — shared by the form
+// view's cards and the blocks view's edit-in-place expansion
+function appendDetail(card, v, path, pkey) {
+  const qa = el('div', { class: 'row' },
+    el('label', {}, 'durability'), numIn(v.integrity, 'tiny', (x) => op(path, 'setIntegrity', { value: x }), '0.05'),
+    el('label', {}, 'material'), materialSel(v.material, path),
+    el('label', {}, 'scale'), numIn(v.scale, 'tiny', (x) => op(path, 'setScale', { value: x }), '0.1'),
+    el('label', {}, 'servings'), numIn(v.servings, 'tiny', (x) => op(path, 'setServings', { value: x })),
+    el('label', {}, 'on fire'), boolIn(v.onFire, (x) => op(path, 'setOnFire', { value: x })),
+    el('label', {}, 'frozen in place'), boolIn(v.kinematic, (x) => op(path, 'setKinematic', { value: x }))
+  );
+  card.appendChild(qa);
+
+  // components (collapsible; the liquid designer opens by default)
+  const compWrap = el('div', {});
+  for (const c of v.components) {
+    compWrap.appendChild(c.name === 'LiquidContainer' ? liquidCard(c, path) : componentCard(c, path, pkey));
+  }
+  card.appendChild(compWrap);
+
+  // add component (+ paste a copied one)
+  const compSel = el('select', {});
+  compSel.appendChild(el('option', { value: '' }, '+ add component…'));
+  for (const name of ENUMS.components) {
+    if (v.components.some((c) => c.name === name)) { continue; }
+    compSel.appendChild(el('option', { value: name }, name));
+  }
+  compSel.onchange = () => { if (compSel.value) { op(path, 'addComponent', { name: compSel.value }); } };
+  const addRow = el('div', { class: 'row' }, compSel);
+  if (COMPCLIP) {
+    addRow.appendChild(el('button', { class: 'mini',
+      title: 'paste the ' + COMPCLIP.name + ' you copied (replaces any existing one here)',
+      onclick: () => pasteComponent(path) }, '⎘ paste ' + COMPCLIP.name));
+  }
+  card.appendChild(addRow);
+}
+
+function materialSel(current, path) {
+  const s = el('select', {});
+  s.appendChild(el('option', { value: '' }, current ? current : '(default)'));
+  for (const m of ENUMS.materials) {
+    if (m === current) { continue; }
+    s.appendChild(el('option', { value: m }, m));
+  }
+  s.onchange = () => { if (s.value) { op(path, 'setMaterial', { name: s.value }); } };
+  return s;
+}
+
+function componentCard(c, path, pkey) {
+  const key = pkey + '|' + c.name;
+  const open = openComps.has(key);
+  const box = el('div', { class: 'comp' });
+  const propCount = Object.keys(c.props).length;
+  const head = el('div', { class: 'row head', onclick: (e) => {
+    if (e.target.tagName === 'BUTTON') { return; }
+    if (openComps.has(key)) { openComps.delete(key); } else { openComps.add(key); }
+    renderTree();
+  } },
+    el('span', { class: 'chev' }, open ? '▾' : '▸'),
+    el('span', { class: 'cname' }, c.name),
+    el('span', { class: 'muted' }, 'v' + c.version + ' · ' + propCount + ' prop' + (propCount === 1 ? '' : 's')),
+    el('button', { class: 'mini', style: 'margin-left:auto', title: 'copy this component to paste onto another prefab',
+      onclick: () => copyComponent(c) }, '⎘ copy'),
+    el('button', { class: 'danger mini',
+      onclick: () => op(path, 'removeComponent', { name: c.name }) }, 'remove')
+  );
+  box.appendChild(head);
+  if (!open) { return box; }
+
+  const grid = el('div', { class: 'propGrid' });
+  for (const [prop, val] of Object.entries(c.props)) {
+    if (typeof val === 'boolean') {
+      grid.appendChild(el('label', {}, prop, boolIn(val, (x) => op(path, 'setComponentProp', { component: c.name, prop, value: x }))));
+    } else if (typeof val === 'number') {
+      grid.appendChild(el('label', {}, prop, numIn(val, 'num', (x) => op(path, 'setComponentProp', { component: c.name, prop, value: x }))));
+    } else {
+      // arrays / objects / null: raw JSON editor
+      const ta = el('textarea', { class: 'jsonEdit' });
+      ta.value = JSON.stringify(val);
+      ta.onchange = () => {
+        try { op(path, 'setComponentProp', { component: c.name, prop, value: JSON.parse(ta.value) }); }
+        catch { setErr(prop + ': not valid JSON'); }
+      };
+      grid.appendChild(el('label', { style: 'grid-column: 1 / -1; flex-direction: column; align-items: stretch' }, prop, ta));
+    }
+  }
+  box.appendChild(grid);
+  return box;
+}
+
+// The special-cased liquid designer: presets, color, effects, food chunks.
+function liquidCard(c, path) {
+  const p = c.props;
+  const box = el('div', { class: 'comp liquid' });
+  box.appendChild(el('div', { class: 'row' },
+    el('span', { class: 'cname' }, 'LiquidContainer'),
+    el('span', { class: 'muted' }, 'the liquid designer'),
+    el('button', { class: 'mini', style: 'margin-left:auto', title: 'copy this LiquidContainer to paste onto another prefab',
+      onclick: () => copyComponent(c) }, '⎘ copy'),
+    el('button', { class: 'danger mini',
+      onclick: () => op(path, 'removeComponent', { name: 'LiquidContainer' }) }, 'remove')
+  ));
+
+  const send = (extra) => op(path, 'setLiquid', extra);
+
+  // recipe library: apply a saved brew, or save this one
+  const recRow = el('div', { class: 'row recipeRow' }, el('label', {}, 'recipe'));
+  const recSel = el('select', {});
+  recSel.appendChild(el('option', { value: '' }, RECIPES.length ? 'apply a saved brew…' : '(no saved recipes yet)'));
+  for (const r of RECIPES) { recSel.appendChild(el('option', { value: r.name }, r.name)); }
+  recSel.onchange = () => { if (recSel.value) { applyRecipe(recSel.value, path); recSel.value = ''; } };
+  recRow.appendChild(recSel);
+  recRow.appendChild(el('button', { class: 'mini', title: 'save the current brew as a reusable recipe',
+    onclick: () => { if (p.isCustom && p.customData) { saveRecipe(p.customData); } else { setErr('switch to a custom brew first, then save it'); } } }, '+ save as recipe'));
+  if (RECIPES.length) {
+    const del = el('select', { class: 'mini', title: 'delete a saved recipe' });
+    del.appendChild(el('option', { value: '' }, 'manage…'));
+    for (const r of RECIPES) { del.appendChild(el('option', { value: r.name }, '🗑 ' + r.name)); }
+    del.onchange = () => { if (del.value) { deleteRecipe(del.value); del.value = ''; } };
+    recRow.appendChild(del);
+  }
+  box.appendChild(recRow);
+
+  // basics
+  box.appendChild(el('div', { class: 'row' },
+    el('label', {}, 'has content'), boolIn(p.hasContent, (x) => send({ hasContent: x })),
+    el('label', {}, 'level'), numIn(p.contentLevel, 'tiny', (x) => send({ contentLevel: x })),
+    el('button', { class: 'mini', title: 'never runs out (level 99999999 - the community "infinite" trick)',
+      onclick: () => send({ contentLevel: 99999999 }) }, '∞'),
+    el('label', {}, 'can add'), boolIn(p.canAddTo, (x) => send({ canAddTo: x })),
+    el('label', {}, 'can pour out'), boolIn(p.canRemoveFrom, (x) => send({ canRemoveFrom: x }))
+  ));
+
+  // preset vs custom
+  const presetSel = el('select', {});
+  presetSel.appendChild(el('option', { value: 'custom' }, 'custom brew'));
+  for (const pr of ENUMS.presets) {
+    const o = el('option', { value: String(pr.hash) }, pr.name + ' (preset)');
+    if (!p.isCustom && p.presetHash === pr.hash) { o.selected = true; }
+    presetSel.appendChild(o);
+  }
+  if (p.isCustom) { presetSel.value = 'custom'; }
+  presetSel.onchange = () => {
+    if (presetSel.value === 'custom') {
+      send({ isCustom: true, presetHash: 0, hasContent: true,
+        customData: p.customData || { color: { r: 128, g: 32, b: 200, a: 1 }, isConsumableThroughSkin: false,
+          visualDataHash: 0, effects: [], foodChunks: [] } });
+    } else {
+      send({ isCustom: false, presetHash: parseInt(presetSel.value, 10), hasContent: true, customData: null });
+    }
+  };
+  box.appendChild(el('div', { class: 'row' }, el('label', {}, 'liquid'), presetSel));
+
+  // custom data editor
+  const cd = p.customData;
+  if (p.isCustom && cd) {
+    const color = cd.color || { r: 255, g: 255, b: 255, a: 1 };
+    const sendCd = (mut) => {
+      const next = JSON.parse(JSON.stringify(cd));
+      mut(next);
+      send({ customData: next });
+    };
+    const hex = colorHex(color);
+    const picker = el('input', { type: 'color', value: hex, onchange: (e) => {
+      const v = e.target.value;
+      sendCd((n) => { n.color = { r: parseInt(v.slice(1, 3), 16), g: parseInt(v.slice(3, 5), 16), b: parseInt(v.slice(5, 7), 16), a: color.a == null ? 1 : color.a }; });
+    } });
+    box.appendChild(el('div', { class: 'row' },
+      el('label', {}, 'color'), picker,
+      el('span', { class: 'swatch', style: 'background:' + hex }),
+      el('label', { title: 'the save format wants 0-1 floats for r, g, b AND a; 255-style input rescales on save (s34: 0-255 rgb used to pass through and clamp to white in-game)' }, 'alpha (0-1)'),
+      numIn(color.a, 'tiny', (x) => sendCd((n) => { n.color.a = x; })),
+      el('label', {}, 'absorb through skin'), boolIn(cd.isConsumableThroughSkin, (x) => sendCd((n) => { n.isConsumableThroughSkin = x; }))
+    ));
+
+    // look when poured / in an open container
+    box.appendChild(el('div', { class: 'row' },
+      el('label', {}, 'look'),
+      hashSel(ENUMS.appearances, cd.visualDataHash || 0,
+        (h) => sendCd((n) => { n.visualDataHash = h; }), '(plain)')
+    ));
+
+    // effects, by name
+    const effWrap = el('div', {});
+    (cd.effects || []).forEach((eff, i) => {
+      effWrap.appendChild(el('div', { class: 'row' },
+        el('label', {}, 'effect'),
+        hashSel(ENUMS.effects, eff ? eff.hash : 0,
+          (h) => sendCd((n) => { n.effects[i] = { hash: h, strengthMultiplier: (eff && eff.strengthMultiplier) || 1 }; })),
+        el('label', {}, 'strength'),
+        numIn(eff ? eff.strengthMultiplier : 1, 'tiny', (x) => sendCd((n) => { n.effects[i] = { hash: (eff && eff.hash) || 0, strengthMultiplier: x }; })),
+        el('button', { class: 'danger mini', onclick: () => sendCd((n) => { n.effects.splice(i, 1); }) }, 'x')
+      ));
+    });
+    effWrap.appendChild(el('div', { class: 'row' },
+      el('button', { class: 'mini', onclick: () => sendCd((n) => { n.effects = n.effects || []; n.effects.push({ hash: 48456, strengthMultiplier: 1 }); }) }, '+ effect'),
+      el('span', { class: 'muted' }, 'negative strength = debuff (Speed ×-100 is the community slowness pot); ×0 disables')
+    ));
+    box.appendChild(effWrap);
+
+    // food chunks floating in the liquid (stew-style visuals)
+    const chWrap = el('div', {});
+    (cd.foodChunks || []).forEach((ch, i) => {
+      chWrap.appendChild(el('div', { class: 'row' },
+        el('label', {}, 'chunk'),
+        hashSel(ENUMS.chunks, ch || 0, (h) => sendCd((n) => { n.foodChunks[i] = h; })),
+        el('button', { class: 'danger mini', onclick: () => sendCd((n) => { n.foodChunks.splice(i, 1); }) }, 'x')
+      ));
+    });
+    chWrap.appendChild(el('div', { class: 'row' },
+      el('button', { class: 'mini', onclick: () => sendCd((n) => { n.foodChunks = n.foodChunks || []; n.foodChunks.push(13596); }) }, '+ chunk'),
+      el('span', { class: 'muted' }, 'visible when poured into bowls/ladles')
+    ));
+    box.appendChild(chWrap);
+  }
+  return box;
+}
+
+function addChildRow(v, path) {
+  const row = el('div', { class: 'row', style: 'position:relative' });
+  const slotSel = el('select', {});
+  slotSel.appendChild(el('option', { value: '' }, 'default slot'));
+  for (const s of v.slots) { slotSel.appendChild(el('option', { value: s.key }, s.key)); }
+  const search = el('input', { placeholder: '+ dock a child prefab (search)', autocomplete: 'off', style: 'flex:1' });
+  const results = el('div', { class: 'results', style: 'display:none; top:32px' });
+  let t = null;
+  search.oninput = () => {
+    clearTimeout(t);
+    t = setTimeout(async () => {
+      if (!search.value.trim()) { results.style.display = 'none'; return; }
+      await bwEnsureLoaded();   // same local catalog as everywhere else
+      results.innerHTML = '';
+      for (const p of localPrefabSearch(search.value.trim(), 20, true)) {
+        const d = document.createElement('div');
+        if (p.img) { d.appendChild(thumbImg(p.hash, 't26')); }
+        d.appendChild(document.createTextNode((p.label || p.name) + '  #' + p.hash));
+        d.onclick = () => {
+          results.style.display = 'none';
+          search.value = '';
+          op(path, 'addChild', { slot: slotSel.value || null, prefab: p.name });
+        };
+        results.appendChild(d);
+      }
+      results.style.display = results.children.length ? 'block' : 'none';
+    }, 120);
+  };
+  row.appendChild(el('label', {}, 'slot'));
+  row.appendChild(slotSel);
+  row.appendChild(search);
+  row.appendChild(results);
+  return row;
+}
+
+// ---------- starter templates ----------
+// One-click builds off the catalog + liquid catalogs, so the empty screen
+// teaches by example. Hashes are looked up by name at run time.
+function presetHash(re) { const p = (ENUMS.presets || []).find((x) => re.test(x.name)); return p ? p.hash : null; }
+function effectHash(re) { const e = (ENUMS.effects || []).find((x) => re.test(x.name)); return e ? e.hash : null; }
+
+const TEMPLATES = [
+  { label: '🧪 Health Potion', desc: 'Potion_Medium filled with the Health preset',
+    build: async () => { await startBuild('Potion_Medium');
+      await op([], 'setLiquid', { isCustom: false, hasContent: true, presetHash: presetHash(/health/i), contentLevel: 100 }); } },
+  { label: '💧 Infinite Water', desc: 'Gourd canteen of never-ending water',
+    build: async () => { await startBuild('Gourd_Canteen');
+      await op([], 'setLiquid', { isCustom: false, hasContent: true, presetHash: presetHash(/water/i), contentLevel: 99999999 }); } },
+  { label: '☠ Poison Brew', desc: 'Potion_Medium, green, poison-over-time',
+    build: async () => { await startBuild('Potion_Medium');
+      await op([], 'setLiquid', { isCustom: true, hasContent: true, presetHash: 0, contentLevel: 100,
+        customData: { color: { r: 0.15, g: 0.8, b: 0.1, a: 1 }, isConsumableThroughSkin: false, visualDataHash: 0,
+          effects: [{ hash: effectHash(/poison/i) || 29250, strengthMultiplier: 1 }], foodChunks: [] } }); } },
+  { label: '⚡ Speed Potion', desc: 'Potion_Small, custom, a Speed effect',
+    build: async () => { await startBuild('Potion_Small');
+      await op([], 'setLiquid', { isCustom: true, hasContent: true, presetHash: 0, contentLevel: 100,
+        customData: { color: { r: 0.9, g: 0.8, b: 0.1, a: 1 }, isConsumableThroughSkin: false, visualDataHash: 0,
+          effects: [{ hash: effectHash(/speed/i) || 6764, strengthMultiplier: 1 }], foodChunks: [] } }); } },
+  { label: '🎒 Flint Pouch ×30', desc: 'A pouch holding thirty flint',
+    build: async () => { refresh(await api('POST', '/api/pouch', { item: 'Flint', quantity: 30 })); recentPush('Flint'); } }
+];
+async function runTemplate(t) {
+  try { await t.build(); stat('built ' + t.label.replace(/^\S+\s/, '')); }
+  catch (e) { setErr('template failed: ' + e.message); }
+}
+
+// ---------- recipe library (saved liquid brews) ----------
+let RECIPES = [];
+async function loadRecipes() { try { RECIPES = (await api('GET', '/api/recipes')).recipes || []; } catch { RECIPES = []; } }
+async function applyRecipe(name, path) {
+  const r = await api('POST', '/api/recipes/get', { name });
+  await op(path, 'setLiquid', { isCustom: true, hasContent: true, presetHash: 0, customData: r.customData });
+  stat('applied recipe "' + name + '"');
+}
+async function saveRecipe(customData) {
+  const name = prompt('save this brew as a recipe named:');
+  if (!name) { return; }
+  try { await api('POST', '/api/recipes/save', { name, customData }); await loadRecipes(); renderTree(); stat('recipe "' + name.toLowerCase() + '" saved'); }
+  catch (e) { setErr(e.message); }
+}
+async function deleteRecipe(name) {
+  if (!confirm('delete recipe "' + name + '"?')) { return; }
+  await api('POST', '/api/recipes/delete', { name }); await loadRecipes(); renderTree();
+}
+
+// ---------- component clipboard (copy a component onto another prefab) ----------
+let COMPCLIP = null;
+try { COMPCLIP = JSON.parse(localStorage.getItem('wb_compclip') || 'null'); } catch { COMPCLIP = null; }
+function copyComponent(c) {
+  COMPCLIP = { name: c.name, version: c.version, props: c.props };
+  try { localStorage.setItem('wb_compclip', JSON.stringify(COMPCLIP)); } catch { /* ignore */ }
+  stat('copied ' + c.name + ' — paste it onto any prefab');
+  renderTree();
+}
+function pasteComponent(path) {
+  if (!COMPCLIP) { return; }
+  op(path, 'putComponent', { name: COMPCLIP.name, version: COMPCLIP.version, props: COMPCLIP.props });
+}
+
+// ---------- diff ----------
+function diffOptions(sel, pick) {
+  sel.innerHTML = '';
+  if (DOC && DOC.string) { sel.appendChild(el('option', { value: '@doc' }, '◆ current build')); }
+  for (const s of LIBDATA) { sel.appendChild(el('option', { value: s.name }, s.name)); }
+  if (pick) { sel.value = pick; }
+}
+async function diffStringFor(v) {
+  if (v === '@doc') { return DOC.string; }
+  return (await api('POST', '/api/library/get', { name: v })).string;
+}
+async function runDiff() {
+  const body = $('diffBody');
+  body.innerHTML = '';
+  try {
+    const a = await diffStringFor($('diffA').value), b = await diffStringFor($('diffB').value);
+    const r = await api('POST', '/api/diff', { a, b });
+    if (r.same) { body.appendChild(el('div', { class: 'muted' }, 'identical — no differences in the roots')); return; }
+    body.appendChild(el('div', { class: 'muted', style: 'margin-bottom:6px' }, r.diffs.length + ' difference(s), left → right'));
+    for (const d of r.diffs) {
+      body.appendChild(el('div', { class: 'diffRow' },
+        el('span', { class: 'diffKind ' + d.kind }, d.kind), el('span', {}, d.text)));
+    }
+  } catch (e) { body.appendChild(el('div', { class: 'muted' }, 'diff failed: ' + e.message)); }
+}
+$('btnDiff').onclick = () => {
+  if (!LIBDATA.length && !(DOC && DOC.string)) { return setErr('save a couple of strings first'); }
+  diffOptions($('diffA'), DOC && DOC.string ? '@doc' : (LIBDATA[0] && LIBDATA[0].name));
+  diffOptions($('diffB'), LIBDATA[0] ? LIBDATA[0].name : '@doc');
+  $('diffWrap').classList.add('on');
+  runDiff();
+};
+$('diffA').onchange = runDiff;
+$('diffB').onchange = runDiff;
+$('btnDiffClose').onclick = () => $('diffWrap').classList.remove('on');
+$('diffWrap').onclick = (e) => { if (e.target === $('diffWrap')) { $('diffWrap').classList.remove('on'); } };
+
+// ---------- multi-select / batch edit ----------
+let MULTI = false;
+const SELSET = new Map();   // pathKey -> path array
+function multiClear() { SELSET.clear(); renderBatchBar(); }
+function toggleMulti() {
+  MULTI = !MULTI;
+  SELSET.clear();
+  $('btnMulti').classList.toggle('on', MULTI);
+  document.body.classList.toggle('selecting', MULTI);
+  // checkboxes live in the FORM tree, so switch there when selecting
+  if (MULTI && VIEW !== 'form') { setView('form'); }
+  renderBatchBar();
+  renderTree();
+}
+$('btnMulti').onclick = toggleMulti;
+function selKey(path) { return path.join('.'); }
+function selToggle(path) {
+  const k = selKey(path);
+  if (SELSET.has(k)) { SELSET.delete(k); } else { SELSET.set(k, path); }
+  renderBatchBar();
+}
+function renderBatchBar() {
+  const bar = $('batchBar');
+  bar.innerHTML = '';
+  bar.style.display = MULTI ? 'flex' : 'none';
+  if (!MULTI) { return; }
+  const n = SELSET.size;
+  bar.appendChild(el('span', { class: 'muted' }, n ? n + ' selected' : 'tick pieces below to select'));
+  const each = (fn) => { for (const p of SELSET.values()) { fn(p); } };
+  const scaleBtn = el('button', { class: 'mini', onclick: () => {
+    const v = parseFloat(prompt('set scale on ' + n + ' piece(s):', '1'));
+    if (isFinite(v)) { each((p) => op(p, 'setScale', { value: v })); } } }, 'scale…');
+  const matSel = el('select', { class: 'mini' });
+  matSel.appendChild(el('option', { value: '' }, 'material…'));
+  for (const m of ENUMS.materials) { matSel.appendChild(el('option', { value: m }, m)); }
+  matSel.onchange = () => { if (matSel.value) { each((p) => op(p, 'setMaterial', { name: matSel.value })); matSel.value = ''; } };
+  const fireBtn = el('button', { class: 'mini', onclick: () => each((p) => op(p, 'setOnFire', { value: true })) }, 'set on fire');
+  const dupBtn = el('button', { class: 'mini', onclick: () => {
+    each((p) => { if (p.length) { op([], 'duplicateChild', { parent: p.slice(0, -1), index: p[p.length - 1] }); } });
+  } }, 'duplicate');
+  const rmBtn = el('button', { class: 'mini danger', onclick: () => {
+    // remove deepest / highest-index first so earlier paths stay valid
+    const paths = [...SELSET.values()].filter((p) => p.length)
+      .sort((a, b) => b.length - a.length || b[b.length - 1] - a[a.length - 1]);
+    for (const p of paths) { op(p.slice(0, -1), 'removeChild', { index: p[p.length - 1] }); }
+    SELSET.clear();
+  } }, 'remove');
+  bar.appendChild(scaleBtn); bar.appendChild(matSel); bar.appendChild(fireBtn);
+  bar.appendChild(dupBtn); bar.appendChild(rmBtn);
+  bar.appendChild(el('button', { class: 'mini', style: 'margin-left:auto', onclick: multiClear }, 'clear selection'));
+}
+
+// ---------- share mode ----------
+// The shipped build has no mod + tunnel, so hide every control that reaches the
+// game server; the pure string workstation (browse/build/edit/library/export/
+// copy) is all that's left. Clipboard copies stay — they need nothing.
+function applyShareMode(share) {
+  SHARE_MODE = !!share;
+  if (!share) { startConnPoll(); return; }   // full build: run the live panel dot
+  document.body.classList.add('share');
+  for (const id of ['btnSpawn', 'btnReplace', 'btnCapture', 'capId', 'liveChip',
+                    'chipPanel', 'connChip', 'btnGear', 'settings']) {
+    const e = $(id);
+    if (e) { e.style.display = 'none'; }
+  }
+  // the in-game capture row in the Start card has no other controls — drop it
+  const capRow = $('capId') && $('capId').closest('.row');
+  if (capRow) { capRow.style.display = 'none'; }
+  const chip = document.querySelector('header .chip');
+  if (chip) { chip.textContent = 'runs offline'; }
+}
+
+// ---------- connection indicator (full build only) ----------
+// A live dot that pings the panel through the tunnel, so you know before you
+// click whether spawn/capture/replace will actually reach the server.
+let connTimer = null;
+async function pingPanel() {
+  try {
+    const r = await api('GET', '/api/panel/ping?panelUrl=' + encodeURIComponent($('panelUrl').value.trim() || ''));
+    const dot = $('connDot'), txt = $('connText'), chip = $('connChip');
+    chip.style.display = '';
+    dot.className = r.ok ? 'up' : 'down';
+    txt.textContent = r.ok ? 'panel up' : 'panel offline';
+    chip.title = r.ok ? 'panel reachable at ' + (r.origin || '') : 'no panel — is the SSH tunnel up? ' + (r.error || '');
+  } catch { /* server gone; leave the dot */ }
+}
+function startConnPoll() {
+  $('connChip').style.display = '';
+  pingPanel();
+  clearInterval(connTimer);
+  connTimer = setInterval(pingPanel, 15000);
+}
+
+// ---------- boot ----------
+(async () => {
+  ENUMS = await api('GET', '/api/enums');
+  applyShareMode(ENUMS.share);
+  syncTabs();
+  loadLibrary();
+  loadRecipes();
+  renderRecents();
+  renderTree();
+  offerRestore();
+  $('pasteStr').focus();
+})();
+</script>
+</body>
+</html>

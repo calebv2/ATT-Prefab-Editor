@@ -1,0 +1,14 @@
+{
+  "name": "att-string-workbench",
+  "version": "2.5.0",
+  "private": true,
+  "description": "Local save-string builder/editor for A Township Tale.",
+  "main": "server.js",
+  "scripts": {
+    "start": "node server.js",
+    "test": "node ../test/workbench-test.js"
+  },
+  "dependencies": {
+    "att-string-transcoder": "3.1.2"
+  }
+}

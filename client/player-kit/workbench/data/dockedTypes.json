@@ -1,0 +1,4 @@
+{
+  "_note": "PickupDock.dockedTypeHash per prefab. This is a RUNTIME type hash, not the prefab hash (Flint's prefab is 39484, its docked type is 42570) — it appears in no catalog we vendor, so every entry here was captured from a real pouch. To add one: dock the item into a pouch in-game, copy the pouch string, run `node tools/pouch.js --decode \"<string>\"`, and paste the mapping it prints. Keys starting with _ are ignored.",
+  "Flint": 42570
+}

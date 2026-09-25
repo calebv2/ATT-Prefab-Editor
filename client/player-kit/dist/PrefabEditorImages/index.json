@@ -1,0 +1,4578 @@
+{
+  "generated": "2026-07-19T09:23:49.211Z",
+  "source": "Hazy's Item List (community sheet)",
+  "items": {
+    "80": {
+      "name": "FeatherRedTraining",
+      "file": null
+    },
+    "190": {
+      "name": "WoodcutS0S0S30",
+      "file": null
+    },
+    "232": {
+      "name": "WoodcutWedgeAshen",
+      "file": null
+    },
+    "260": {
+      "name": "BrokenBoxPiece",
+      "file": "260.png"
+    },
+    "290": {
+      "name": "WoodcutWedgeBurnt",
+      "file": null
+    },
+    "546": {
+      "name": "TreeSpawnerAnyRedwood",
+      "file": null
+    },
+    "570": {
+      "name": "TreeSpawnerAnyBirch",
+      "file": null
+    },
+    "680": {
+      "name": "BurnableRootHangingShortWavy",
+      "file": null
+    },
+    "682": {
+      "name": "CeilingLantern",
+      "file": null
+    },
+    "716": {
+      "name": "ChiselingCollection",
+      "file": null
+    },
+    "878": {
+      "name": "BlueberryTree",
+      "file": "878.png"
+    },
+    "902": {
+      "name": "AppleCoreRipe",
+      "file": "902.png"
+    },
+    "960": {
+      "name": "KaKarimataArrow",
+      "file": "960.png"
+    },
+    "1002": {
+      "name": "RuinsHandTouchActivator",
+      "file": "1002.png"
+    },
+    "1038": {
+      "name": "BlueberryTreeStage2",
+      "file": null
+    },
+    "1040": {
+      "name": "BlueberryTreeStage3",
+      "file": null
+    },
+    "1056": {
+      "name": "FixedLightBagAttachment",
+      "file": "1056.png"
+    },
+    "1080": {
+      "name": "ChristmasGiftMailBox03",
+      "file": "1080.png"
+    },
+    "1150": {
+      "name": "ShortSwordTraining",
+      "file": null
+    },
+    "1178": {
+      "name": "WoodcutBirchLeafClumpC1C11",
+      "file": null
+    },
+    "1266": {
+      "name": "GarlicLeaves",
+      "file": "1266.png"
+    },
+    "1274": {
+      "name": "CraftPieceSide1Way",
+      "file": "1274.png"
+    },
+    "1330": {
+      "name": "MRKSmallLever",
+      "file": null
+    },
+    "1512": {
+      "name": "WoodcutRedwoodLeafClumpT4D30C4",
+      "file": null
+    },
+    "1528": {
+      "name": "WoodcutRedwoodLeafClumpT2D30C5C6",
+      "file": null
+    },
+    "1546": {
+      "name": "WoodcutWalnutLeafClumpC3C4E",
+      "file": null
+    },
+    "1574": {
+      "name": "PotatoFullBurnt",
+      "file": null
+    },
+    "1600": {
+      "name": "HebiosSaiBladePartFull",
+      "file": null
+    },
+    "1736": {
+      "name": "PommelSquashed",
+      "file": "1736.png"
+    },
+    "1774": {
+      "name": "WoodcutRedwoodLeafClumpT4D30C3",
+      "file": null
+    },
+    "1792": {
+      "name": "WoodcutWalnutLeafClumpC2C2E",
+      "file": null
+    },
+    "1798": {
+      "name": "ArrowLightBeamEffect",
+      "file": null
+    },
+    "1850": {
+      "name": "TrainingShortSwordBladeCOLD",
+      "file": null
+    },
+    "1898": {
+      "name": "timberBlock_2Long",
+      "file": "1898.png"
+    },
+    "1900": {
+      "name": "timberBlock_3Long",
+      "file": "1900.png"
+    },
+    "1960": {
+      "name": "TurabadaSilverDestroyVariant",
+      "file": "1960.png"
+    },
+    "2000": {
+      "name": "AppleHalfCooked",
+      "file": "2000.png"
+    },
+    "2226": {
+      "name": "LockboxDocks",
+      "file": null
+    },
+    "2356": {
+      "name": "FlintTraining",
+      "file": null
+    },
+    "2358": {
+      "name": "pumpkinhalfunripe",
+      "file": null
+    },
+    "2370": {
+      "name": "GoteraBirchVariant",
+      "file": null
+    },
+    "2384": {
+      "name": "TomatoTreeStage1",
+      "file": null
+    },
+    "2422": {
+      "name": "LargeCaveMushroomCluster",
+      "file": "2422.png"
+    },
+    "2454": {
+      "name": "LogicIntToBool",
+      "file": null
+    },
+    "2484": {
+      "name": "CopperOre",
+      "file": "2484.png"
+    },
+    "2538": {
+      "name": "DiggingDirtParts",
+      "file": "2538.png"
+    },
+    "2542": {
+      "name": "TomatoTreeStage2",
+      "file": null
+    },
+    "2562": {
+      "name": "BabuLegFullRipe",
+      "file": "2562.png"
+    },
+    "2568": {
+      "name": "WoodcutBirchLeafClumpC2C31E",
+      "file": null
+    },
+    "2584": {
+      "name": "GoldBoulder",
+      "file": "2584.png"
+    },
+    "2594": {
+      "name": "MouldPressHebios",
+      "file": "2594.png"
+    },
+    "2596": {
+      "name": "GravestoneParts",
+      "file": null
+    },
+    "2712": {
+      "name": "WoodcutT0T30B30",
+      "file": null
+    },
+    "2718": {
+      "name": "GymnasiumTeleportTablet",
+      "file": null
+    },
+    "2720": {
+      "name": "pumpkinhalfripe",
+      "file": "2720.png"
+    },
+    "2758": {
+      "name": "OutdoorLightFixtureDim",
+      "file": null
+    },
+    "2760": {
+      "name": "WoodcutBirchLeafClumpC1C21E",
+      "file": null
+    },
+    "2792": {
+      "name": "CoalAsh",
+      "file": null
+    },
+    "2796": {
+      "name": "WoodcutWalnutLeafClumpC1C1E",
+      "file": null
+    },
+    "2892": {
+      "name": "TomatoTreeStage3",
+      "file": null
+    },
+    "2924": {
+      "name": "CrystalPickBlue",
+      "file": "2924.png"
+    },
+    "3082": {
+      "name": "pumpkinhalfcooked",
+      "file": null
+    },
+    "3088": {
+      "name": "GoteraDart",
+      "file": "3088.png"
+    },
+    "3094": {
+      "name": "MRK_gate_01",
+      "file": null
+    },
+    "3116": {
+      "name": "pumpkin_flower",
+      "file": "3116.png"
+    },
+    "3444": {
+      "name": "pumpkinhalfburnt",
+      "file": null
+    },
+    "3458": {
+      "name": "RepairBox",
+      "file": "3458.png"
+    },
+    "3506": {
+      "name": "HandleRoundFist",
+      "file": "3506.png"
+    },
+    "3512": {
+      "name": "RuinsElevatorPuzzleSquareCrystalPillar",
+      "file": "3512.png"
+    },
+    "3532": {
+      "name": "SchmeecheeRed",
+      "file": "3532.png"
+    },
+    "3558": {
+      "name": "SpikeTall",
+      "file": "3558.png"
+    },
+    "3786": {
+      "name": "WallTorchHolder",
+      "file": null
+    },
+    "3830": {
+      "name": "PadlockStandard",
+      "file": null
+    },
+    "3944": {
+      "name": "Stalactitepillar",
+      "file": "3944.png"
+    },
+    "3966": {
+      "name": "pumpkinfullunripe",
+      "file": null
+    },
+    "4070": {
+      "name": "MouldRack",
+      "file": null
+    },
+    "4192": {
+      "name": "RuinsElevatorPuzzleSquareLargeVariant",
+      "file": "4192.png"
+    },
+    "4412": {
+      "name": "RustyAxe",
+      "file": "4412.png"
+    },
+    "4488": {
+      "name": "pumpkinfullripe",
+      "file": "4488.png"
+    },
+    "4530": {
+      "name": "ShieldCoreHandle",
+      "file": "4530.png"
+    },
+    "4686": {
+      "name": "OutdoorLightFixture",
+      "file": null
+    },
+    "4900": {
+      "name": "MouldRestrictionZone",
+      "file": null
+    },
+    "4920": {
+      "name": "PoleHuggerShort",
+      "file": "4920.png"
+    },
+    "5010": {
+      "name": "pumpkinfullcooked",
+      "file": "5010.png"
+    },
+    "5050": {
+      "name": "Sandstone_Boulder_03",
+      "file": "5050.png"
+    },
+    "5078": {
+      "name": "(ChildNode)ClimbingTowerTeleporterNode",
+      "file": "5078.png"
+    },
+    "5142": {
+      "name": "FlameStepEffectProtoVenttest",
+      "file": "5142.png"
+    },
+    "5144": {
+      "name": "HebiosGuard",
+      "file": "5144.png"
+    },
+    "5170": {
+      "name": "SpyGlass",
+      "file": "5170.png"
+    },
+    "5172": {
+      "name": "InfiniteFire",
+      "file": null
+    },
+    "5262": {
+      "name": "Cube",
+      "file": null
+    },
+    "5316": {
+      "name": "GreaterGoteraChargeExplosion",
+      "file": null
+    },
+    "5532": {
+      "name": "pumpkinfullburnt",
+      "file": null
+    },
+    "5682": {
+      "name": "TallSupportBeams",
+      "file": "5682.png"
+    },
+    "5702": {
+      "name": "BurnableRootGround01",
+      "file": null
+    },
+    "5890": {
+      "name": "WoodenBarrel",
+      "file": "5890.png"
+    },
+    "5920": {
+      "name": "HandleShortCool",
+      "file": "5920.png"
+    },
+    "5972": {
+      "name": "SpriggullDrumstickHalfRipe",
+      "file": "5972.png"
+    },
+    "6004": {
+      "name": "WyrmTrial",
+      "file": "6004.png"
+    },
+    "6218": {
+      "name": "WoodcutWalnutLeafClumpC4C5E",
+      "file": null
+    },
+    "6224": {
+      "name": "WoodcutB0B0S30S30",
+      "file": null
+    },
+    "6308": {
+      "name": "DescentShaftGcoreFloorMiningBoulderDynamic",
+      "file": null
+    },
+    "6394": {
+      "name": "BreakableRootHangingThinBendy",
+      "file": null
+    },
+    "6584": {
+      "name": "CampfireSpawner",
+      "file": "6584.png"
+    },
+    "6714": {
+      "name": "MiningBaseGenerator",
+      "file": null
+    },
+    "6716": {
+      "name": "WoodcutRedwoodLeafClumpT3D30C3C4",
+      "file": null
+    },
+    "6732": {
+      "name": "WoodcutRedwoodLeafClumpT3D30C7C8",
+      "file": null
+    },
+    "6740": {
+      "name": "AppleFullUnripe",
+      "file": "6740.png"
+    },
+    "6742": {
+      "name": "CookingStand",
+      "file": "6742.png"
+    },
+    "6934": {
+      "name": "SpikeShort",
+      "file": "6934.png"
+    },
+    "6940": {
+      "name": "PhantomGuard",
+      "file": "6940.png"
+    },
+    "6974": {
+      "name": "Lockbox",
+      "file": null
+    },
+    "7014": {
+      "name": "SpriggullEgg",
+      "file": "7014.png"
+    },
+    "7092": {
+      "name": "CrystalShardBlue",
+      "file": "7092.png"
+    },
+    "7102": {
+      "name": "TimberSidePouchAttachment",
+      "file": "7102.png"
+    },
+    "7232": {
+      "name": "ShieldCoreBentMiddle",
+      "file": "7232.png"
+    },
+    "7242": {
+      "name": "WoodcutRedwoodLeafClumpT4D30C6",
+      "file": null
+    },
+    "7252": {
+      "name": "WheelBridge",
+      "file": "7252.png"
+    },
+    "7260": {
+      "name": "WoodcutBirchLeafClumpC1C11E",
+      "file": null
+    },
+    "7264": {
+      "name": "BrokenVineBunchDeadPiece",
+      "file": null
+    },
+    "7276": {
+      "name": "WoodcutBirchLeafClumpC3C41",
+      "file": null
+    },
+    "7278": {
+      "name": "AppleHalfRipe",
+      "file": "7278.png"
+    },
+    "7464": {
+      "name": "WoodcutSL15SL15",
+      "file": null
+    },
+    "7668": {
+      "name": "(RootNode)ClimbingTowerTeleporterNode",
+      "file": "7668.png"
+    },
+    "7676": {
+      "name": "CandyCaneKnife",
+      "file": "7676.png"
+    },
+    "7744": {
+      "name": "TrialSpawnerT1",
+      "file": null
+    },
+    "7852": {
+      "name": "StandardSidePouchAttachment",
+      "file": "7852.png"
+    },
+    "7900": {
+      "name": "TurabadaShardCore",
+      "file": null
+    },
+    "7918": {
+      "name": "SpriggullFeatherBlue",
+      "file": "7918.png"
+    },
+    "8002": {
+      "name": "CrystalGemBlue",
+      "file": "8002.png"
+    },
+    "8006": {
+      "name": "Sandstone_Boulder_02",
+      "file": "8006.png"
+    },
+    "8102": {
+      "name": "WoodcutB0S0S60",
+      "file": null
+    },
+    "8226": {
+      "name": "CeilingLight",
+      "file": "8226.png"
+    },
+    "8246": {
+      "name": "RandomPlacementCrate",
+      "file": "8246.png"
+    },
+    "8280": {
+      "name": "SlidingBlockTestLayoutINCOMPLETE",
+      "file": null
+    },
+    "8292": {
+      "name": "WoodcutWalnutLeafClumpC3C3E",
+      "file": null
+    },
+    "8298": {
+      "name": "TurabadaIronVariant",
+      "file": "8298.png"
+    },
+    "8440": {
+      "name": "SpriggullDrumstickHalfCooked",
+      "file": "8440.png"
+    },
+    "8520": {
+      "name": "PlacedTable",
+      "file": null
+    },
+    "8524": {
+      "name": "LightPuzzleTest",
+      "file": null
+    },
+    "8530": {
+      "name": "DaisRedVariant",
+      "file": "8530.png"
+    },
+    "8534": {
+      "name": "BreakableRootHangingShortWavy",
+      "file": null
+    },
+    "8570": {
+      "name": "WoodcutWalnutLeafClumpC1C2",
+      "file": null
+    },
+    "8586": {
+      "name": "Vacuum",
+      "file": null
+    },
+    "8620": {
+      "name": "TownshipBridgeBroken",
+      "file": "8620.png"
+    },
+    "8858": {
+      "name": "ArrowTrainingDud",
+      "file": null
+    },
+    "8860": {
+      "name": "Tree",
+      "file": null
+    },
+    "8932": {
+      "name": "WoodcutWalnutLeafClumpC2C2",
+      "file": null
+    },
+    "8948": {
+      "name": "StoneBoulderCluster",
+      "file": "8948.png"
+    },
+    "9018": {
+      "name": "HebiosWakizashiBladePartFull",
+      "file": null
+    },
+    "9058": {
+      "name": "WoodcutS0S30S30",
+      "file": null
+    },
+    "9140": {
+      "name": "Babu",
+      "file": "9140.png"
+    },
+    "9144": {
+      "name": "SilverBoulder",
+      "file": "9144.png"
+    },
+    "9226": {
+      "name": "BreakableRootHangingShortStraight",
+      "file": null
+    },
+    "9276": {
+      "name": "CampfireWeak",
+      "file": null
+    },
+    "9304": {
+      "name": "LargeGuardRectangle",
+      "file": "9304.png"
+    },
+    "9344": {
+      "name": "MRKLiftablePipeGate",
+      "file": "9344.png"
+    },
+    "9410": {
+      "name": "WoodcutRedwoodLeafClumpT2D30C7C8",
+      "file": null
+    },
+    "9414": {
+      "name": "MushroomCaveLargeHalfCooked",
+      "file": "9414.png"
+    },
+    "9426": {
+      "name": "WoodcutAshLeafClumpC2C3",
+      "file": null
+    },
+    "9466": {
+      "name": "Gotera",
+      "file": "9466.png"
+    },
+    "9562": {
+      "name": "PostBox",
+      "file": "9562.png"
+    },
+    "9566": {
+      "name": "MRK_heartReceptacle_01",
+      "file": "9566.png"
+    },
+    "9586": {
+      "name": "SilverOre",
+      "file": "9586.png"
+    },
+    "9630": {
+      "name": "WarHammer",
+      "file": "9630.png"
+    },
+    "9704": {
+      "name": "DaggerBladeCurved",
+      "file": "9704.png"
+    },
+    "9780": {
+      "name": "ATMCoinBank",
+      "file": "9780.png"
+    },
+    "9918": {
+      "name": "AxeHeadFelling",
+      "file": "9918.png"
+    },
+    "9940": {
+      "name": "WoodcutWalnutLeafClumpC5C5E",
+      "file": null
+    },
+    "10056": {
+      "name": "AxeHeadGreatCurve",
+      "file": "10056.png"
+    },
+    "10140": {
+      "name": "IronBoulderTraining",
+      "file": null
+    },
+    "10176": {
+      "name": "woodenPlatform_W2x3",
+      "file": null
+    },
+    "10440": {
+      "name": "CarrotLeaves",
+      "file": "10440.png"
+    },
+    "10666": {
+      "name": "WoodcutRedwoodLeafClumpT3D30C1C2",
+      "file": null
+    },
+    "10682": {
+      "name": "WoodcutAshLeafClumpC3C3",
+      "file": null
+    },
+    "10700": {
+      "name": "WoodcutBirchLeafClumpC1C12E",
+      "file": null
+    },
+    "10754": {
+      "name": "WoodcutRedwoodLeafClumpT4D30C8",
+      "file": null
+    },
+    "10908": {
+      "name": "SpriggullDrumstickHalfBurnt",
+      "file": "10908.png"
+    },
+    "10960": {
+      "name": "BuriedPullupPotatoSapling",
+      "file": "10960.png"
+    },
+    "10962": {
+      "name": "PoleHuggerPointyEnds",
+      "file": "10962.png"
+    },
+    "11234": {
+      "name": "WoodcutBirchLeafClumpC3C42E",
+      "file": null
+    },
+    "11332": {
+      "name": "RapierBlade",
+      "file": "11332.png"
+    },
+    "11654": {
+      "name": "BlacksmithBasicsCollection",
+      "file": null
+    },
+    "11702": {
+      "name": "MythrilOre",
+      "file": "11702.png"
+    },
+    "11872": {
+      "name": "Forge",
+      "file": "11872.png"
+    },
+    "11938": {
+      "name": "EdgeCurvedBlade",
+      "file": "11938.png"
+    },
+    "11982": {
+      "name": "PlayerInAreaLogic",
+      "file": null
+    },
+    "12182": {
+      "name": "WoodcutBirchLeafClumpC3C42",
+      "file": null
+    },
+    "12224": {
+      "name": "BreakableRootHangingShortCurved",
+      "file": null
+    },
+    "12356": {
+      "name": "WaterWellTunnelDynamic",
+      "file": null
+    },
+    "12386": {
+      "name": "HebiosKatanaBladePart02",
+      "file": null
+    },
+    "12388": {
+      "name": "HebiosKatanaBladePart01",
+      "file": null
+    },
+    "12416": {
+      "name": "ShieldPartHalfHole",
+      "file": "12416.png"
+    },
+    "12450": {
+      "name": "StoneBoulder03",
+      "file": "12450.png"
+    },
+    "12492": {
+      "name": "SpikeFancy",
+      "file": "12492.png"
+    },
+    "12512": {
+      "name": "WoodcutWedgeStorage",
+      "file": null
+    },
+    "12578": {
+      "name": "AppleFlowerBud",
+      "file": "12578.png"
+    },
+    "12580": {
+      "name": "AppleFlowerBloom",
+      "file": "12580.png"
+    },
+    "12632": {
+      "name": "DebugNet",
+      "file": null
+    },
+    "12672": {
+      "name": "WoodcutBirchLeafClumpC2E",
+      "file": null
+    },
+    "12688": {
+      "name": "WoodcutBirchLeafClumpC1C22",
+      "file": null
+    },
+    "12714": {
+      "name": "BreakableRootHangingStraight",
+      "file": null
+    },
+    "12812": {
+      "name": "MRKLargeLever",
+      "file": null
+    },
+    "12962": {
+      "name": "PlaceItemPuzzleNoDock",
+      "file": null
+    },
+    "13022": {
+      "name": "TomatoFlowerBloom",
+      "file": "13022.png"
+    },
+    "13024": {
+      "name": "TomatoFlowerBud",
+      "file": "13024.png"
+    },
+    "13062": {
+      "name": "WeaponRackWall",
+      "file": null
+    },
+    "13142": {
+      "name": "Slingshot",
+      "file": "13142.png"
+    },
+    "13158": {
+      "name": "WhiteGoldIngot",
+      "file": "13158.png"
+    },
+    "13220": {
+      "name": "TrainingShortSwordBladeHOT",
+      "file": null
+    },
+    "13256": {
+      "name": "AreaofInfluenceReceiverpuzzle",
+      "file": null
+    },
+    "13294": {
+      "name": "ruins_orbBasin_01Variant",
+      "file": null
+    },
+    "13362": {
+      "name": "MouldPressStandard",
+      "file": "13362.png"
+    },
+    "13390": {
+      "name": "LogicOperator",
+      "file": null
+    },
+    "13392": {
+      "name": "WoodcutTrainingBlock",
+      "file": null
+    },
+    "13444": {
+      "name": "DaisChildRedVariant",
+      "file": "13444.png"
+    },
+    "13452": {
+      "name": "PickupSlidingDoor",
+      "file": "13452.png"
+    },
+    "13476": {
+      "name": "GreaterGoteraSeedSpray",
+      "file": null
+    },
+    "13480": {
+      "name": "FlamingCoalbed",
+      "file": "13480.png"
+    },
+    "13634": {
+      "name": "BreakableRootGround06",
+      "file": null
+    },
+    "13678": {
+      "name": "MiningBasicsCollection",
+      "file": null
+    },
+    "13804": {
+      "name": "Turabada",
+      "file": "13804.png"
+    },
+    "13856": {
+      "name": "BreakableRootHangingShortBendy",
+      "file": null
+    },
+    "14074": {
+      "name": "WoodcutAshLeafClumpC1E1",
+      "file": null
+    },
+    "14114": {
+      "name": "MRKSlipDoor",
+      "file": "14114.png"
+    },
+    "14158": {
+      "name": "MRKPuzzleCore01",
+      "file": "14158.png"
+    },
+    "14166": {
+      "name": "BurnableRootHangingColumn02",
+      "file": null
+    },
+    "14226": {
+      "name": "AppleTreeGrowth",
+      "file": null
+    },
+    "14248": {
+      "name": "TurabadaCopperTrialVariant",
+      "file": "14248.png"
+    },
+    "14282": {
+      "name": "EggplantTreeStage1",
+      "file": null
+    },
+    "14440": {
+      "name": "EggplantTreeStage2",
+      "file": null
+    },
+    "14700": {
+      "name": "BlueberryTreeGrowth",
+      "file": null
+    },
+    "14778": {
+      "name": "CrystalBlueNoLight",
+      "file": "14778.png"
+    },
+    "14826": {
+      "name": "Mould",
+      "file": "14826.png"
+    },
+    "14844": {
+      "name": "AppleFullCooked",
+      "file": "14844.png"
+    },
+    "15090": {
+      "name": "EggplantTreeGrowth",
+      "file": null
+    },
+    "15124": {
+      "name": "MetalHebiosNaginataBlade",
+      "file": null
+    },
+    "15274": {
+      "name": "WoodenLadle",
+      "file": "15274.png"
+    },
+    "15310": {
+      "name": "TurabadaGoldDestroyVariant",
+      "file": "15310.png"
+    },
+    "15424": {
+      "name": "Pink_Crystal_cluster_02",
+      "file": "15424.png"
+    },
+    "15476": {
+      "name": "HammerHeadSmall",
+      "file": "15476.png"
+    },
+    "15500": {
+      "name": "AppleCoreCooked",
+      "file": "15500.png"
+    },
+    "15506": {
+      "name": "TurabadaGoldTrialVariant",
+      "file": "15506.png"
+    },
+    "15548": {
+      "name": "WallShelf",
+      "file": null
+    },
+    "15584": {
+      "name": "TurabadaArm",
+      "file": "15584.png"
+    },
+    "15602": {
+      "name": "BreakableRootMoundLarge",
+      "file": null
+    },
+    "15658": {
+      "name": "Pommel",
+      "file": "15658.png"
+    },
+    "15738": {
+      "name": "TreeSpawnerAnyStandard",
+      "file": null
+    },
+    "15786": {
+      "name": "PotatoPlantGrowth",
+      "file": null
+    },
+    "15898": {
+      "name": "AbsoluteAppleTreeVariant",
+      "file": "15898.png"
+    },
+    "15908": {
+      "name": "PuzzlePillarwithWheelBridge",
+      "file": "15908.png"
+    },
+    "16012": {
+      "name": "WoodcutRedwoodSeedSpawnerAttachment",
+      "file": null
+    },
+    "16026": {
+      "name": "WoodcutBirchSeedSpawnerAttachment",
+      "file": null
+    },
+    "16040": {
+      "name": "WoodcutWalnutSeedSpawnerAttachment",
+      "file": null
+    },
+    "16054": {
+      "name": "WoodcutAshSeedSpawnerAttachment",
+      "file": null
+    },
+    "16142": {
+      "name": "ChessBlackRook",
+      "file": "16142.png"
+    },
+    "16154": {
+      "name": "EggplantTreeStage3",
+      "file": null
+    },
+    "16204": {
+      "name": "ChessBlackQueen",
+      "file": "16204.png"
+    },
+    "16246": {
+      "name": "ChessWhiteQueen",
+      "file": "16246.png"
+    },
+    "16276": {
+      "name": "ChessWhiteKing",
+      "file": "16276.png"
+    },
+    "16298": {
+      "name": "BreakableRootGround05",
+      "file": null
+    },
+    "16322": {
+      "name": "AbsoluteBlueberryTreeVariant",
+      "file": "16322.png"
+    },
+    "16326": {
+      "name": "ChessWhiteChecker",
+      "file": "16326.png"
+    },
+    "16358": {
+      "name": "TomatoTreeGrowth",
+      "file": null
+    },
+    "16378": {
+      "name": "ChessBlackChecker",
+      "file": "16378.png"
+    },
+    "16424": {
+      "name": "WoodcutTwigsV515",
+      "file": null
+    },
+    "16448": {
+      "name": "WoodenShortSword",
+      "file": "16448.png"
+    },
+    "16464": {
+      "name": "OrchiIngot",
+      "file": "16464.png"
+    },
+    "16494": {
+      "name": "ChristmasGiftMailBox02",
+      "file": "16494.png"
+    },
+    "16574": {
+      "name": "StorageCrateParts",
+      "file": null
+    },
+    "16680": {
+      "name": "SpriggullNest",
+      "file": "16680.png"
+    },
+    "16684": {
+      "name": "TurabadaIronTrialVariant",
+      "file": "16684.png"
+    },
+    "16878": {
+      "name": "SnowmanNetworkPrefab2",
+      "file": null
+    },
+    "16896": {
+      "name": "ChessBoard",
+      "file": "16896.png"
+    },
+    "16998": {
+      "name": "ChessBlackBishop",
+      "file": "16998.png"
+    },
+    "17038": {
+      "name": "ChessWhiteKnight",
+      "file": "17038.png"
+    },
+    "17066": {
+      "name": "BurnableRootMoundSmall",
+      "file": null
+    },
+    "17084": {
+      "name": "ChessWhiteRook",
+      "file": "17084.png"
+    },
+    "17120": {
+      "name": "Silver_Boulder_Parts",
+      "file": null
+    },
+    "17162": {
+      "name": "ChessWhiteBishop",
+      "file": "17162.png"
+    },
+    "17174": {
+      "name": "MetalHebiosKatanaBlade",
+      "file": null
+    },
+    "17200": {
+      "name": "ChessBlackKing",
+      "file": "17200.png"
+    },
+    "17238": {
+      "name": "HebiosNaginataBladePart01",
+      "file": null
+    },
+    "17240": {
+      "name": "ChessWhitePawn",
+      "file": "17240.png"
+    },
+    "17258": {
+      "name": "BrownMushroomShield",
+      "file": "17258.png"
+    },
+    "17262": {
+      "name": "WoodenStake",
+      "file": "17262.png"
+    },
+    "17266": {
+      "name": "HebiosKatanaBladePartFull",
+      "file": null
+    },
+    "17270": {
+      "name": "SkillOrb",
+      "file": "17270.png"
+    },
+    "17282": {
+      "name": "ChessBlackPawn",
+      "file": "17282.png"
+    },
+    "17291": {
+      "name": "ChessBlackKnight",
+      "file": "17291.png"
+    },
+    "17302": {
+      "name": "OakTreeSeed",
+      "file": "17302.png"
+    },
+    "17334": {
+      "name": "MetalTap",
+      "file": "17334.png"
+    },
+    "17348": {
+      "name": "GuardStraightEnds",
+      "file": "17348.png"
+    },
+    "17390": {
+      "name": "EdibleObjectsCollection",
+      "file": null
+    },
+    "17400": {
+      "name": "AxeHeadLShape",
+      "file": "17400.png"
+    },
+    "17412": {
+      "name": "OakTreeStage1",
+      "file": null
+    },
+    "17420": {
+      "name": "HebiosNaginataBladePartFull",
+      "file": null
+    },
+    "17478": {
+      "name": "EdgeBladeLongCurve",
+      "file": "17478.png"
+    },
+    "17520": {
+      "name": "AssemblyDeck",
+      "file": "17520.png"
+    },
+    "17526": {
+      "name": "RedwoodTreeStage1",
+      "file": null
+    },
+    "17608": {
+      "name": "CaveExplosionBoulderClusters",
+      "file": null
+    },
+    "17612": {
+      "name": "SnowmanNetworkPrefab3",
+      "file": null
+    },
+    "17686": {
+      "name": "StoneBoulder02",
+      "file": "17686.png"
+    },
+    "17704": {
+      "name": "BirchTreeStage1",
+      "file": null
+    },
+    "17772": {
+      "name": "Phantom",
+      "file": "17772.png"
+    },
+    "17814": {
+      "name": "TurabadaLargeTrialVariant",
+      "file": "17814.png"
+    },
+    "17828": {
+      "name": "PoleHuggerEdgy",
+      "file": "17828.png"
+    },
+    "17892": {
+      "name": "AshTreeStage1",
+      "file": null
+    },
+    "17920": {
+      "name": "ChristmasGiftBox",
+      "file": "17920.png"
+    },
+    "18070": {
+      "name": "Iron_Boulder_Parts",
+      "file": null
+    },
+    "18096": {
+      "name": "CrystalClusterBlue",
+      "file": "18096.png"
+    },
+    "18120": {
+      "name": "DescentShaftGcoreFloorDiggableDynamic",
+      "file": null
+    },
+    "18144": {
+      "name": "ChristmasGiftBoxSpecial",
+      "file": "18144.png"
+    },
+    "18158": {
+      "name": "ore_mythril",
+      "file": null
+    },
+    "18244": {
+      "name": "LampPost",
+      "file": "18244.png"
+    },
+    "18260": {
+      "name": "TeleportOnTrueLogic",
+      "file": null
+    },
+    "18358": {
+      "name": "DaisAntlerRedVariant",
+      "file": "18358.png"
+    },
+    "18426": {
+      "name": "SpreadSpawnerDynamic",
+      "file": null
+    },
+    "18456": {
+      "name": "HebiosHandleKunai",
+      "file": "18456.png"
+    },
+    "18468": {
+      "name": "GoteraBigSeedSpray",
+      "file": null
+    },
+    "18490": {
+      "name": "TimerLogic",
+      "file": null
+    },
+    "18696": {
+      "name": "TrialSpawnerW2",
+      "file": null
+    },
+    "18702": {
+      "name": "BreakableRootGround04",
+      "file": "18702.png"
+    },
+    "18722": {
+      "name": "TurabadaMythrilTrialVariant",
+      "file": "18722.png"
+    },
+    "18734": {
+      "name": "SpriggullFeatherRed",
+      "file": "18734.png"
+    },
+    "18818": {
+      "name": "ForestPopulation",
+      "file": null
+    },
+    "18972": {
+      "name": "UnplacedMetalWallHook",
+      "file": "18972.png"
+    },
+    "19164": {
+      "name": "TeleporterPuzzle",
+      "file": null
+    },
+    "19180": {
+      "name": "HandleMediumStraight",
+      "file": "19180.png"
+    },
+    "19192": {
+      "name": "AppleGrowth",
+      "file": null
+    },
+    "19224": {
+      "name": "WoodcutB0B0S30",
+      "file": null
+    },
+    "19280": {
+      "name": "TomatoGrowth",
+      "file": null
+    },
+    "19292": {
+      "name": "BlueberryGrowth",
+      "file": null
+    },
+    "19304": {
+      "name": "EggplantGrowth",
+      "file": null
+    },
+    "19316": {
+      "name": "HandleMediumCurved",
+      "file": "19316.png"
+    },
+    "19354": {
+      "name": "BarrelBag",
+      "file": "19354.png"
+    },
+    "19364": {
+      "name": "WoodcutS15S15",
+      "file": null
+    },
+    "19490": {
+      "name": "StoneTraining",
+      "file": null
+    },
+    "19624": {
+      "name": "BreakableBox",
+      "file": "19624.png"
+    },
+    "19658": {
+      "name": "Coal",
+      "file": "19658.png"
+    },
+    "19936": {
+      "name": "TurabadaShortTrialVariant",
+      "file": "19936.png"
+    },
+    "20128": {
+      "name": "EasterEgg03",
+      "file": "20128.png"
+    },
+    "20300": {
+      "name": "HandleLongStraight",
+      "file": "20300.png"
+    },
+    "20416": {
+      "name": "Navigation_wheel",
+      "file": null
+    },
+    "20452": {
+      "name": "ShelfShort",
+      "file": null
+    },
+    "20484": {
+      "name": "ElevatorPuzzleRope",
+      "file": "20484.png"
+    },
+    "20564": {
+      "name": "StickCharred",
+      "file": "20564.png"
+    },
+    "20570": {
+      "name": "SpriggullDrumstickFullBurnt",
+      "file": "20570.png"
+    },
+    "20598": {
+      "name": "LongSHook",
+      "file": "20598.png"
+    },
+    "20640": {
+      "name": "HandleSpear",
+      "file": "20640.png"
+    },
+    "20646": {
+      "name": "CopperCluster",
+      "file": null
+    },
+    "20684": {
+      "name": "RustyShield",
+      "file": "20684.png"
+    },
+    "20844": {
+      "name": "TurabadaSilverTrialVariant",
+      "file": "20844.png"
+    },
+    "20892": {
+      "name": "EdgeShortCurveBlade",
+      "file": "20892.png"
+    },
+    "21206": {
+      "name": "BreakableRootGround03",
+      "file": "21206.png"
+    },
+    "21218": {
+      "name": "CraterGcoreDynamic",
+      "file": null
+    },
+    "21312": {
+      "name": "SmallShieldTraining",
+      "file": null
+    },
+    "21374": {
+      "name": "WoodcutRedwoodLeafClumpT1D30C1C2",
+      "file": null
+    },
+    "21558": {
+      "name": "EasterEgg04",
+      "file": "21558.png"
+    },
+    "21642": {
+      "name": "Wyrm",
+      "file": "21642.png"
+    },
+    "21776": {
+      "name": "GuardRoundEnds",
+      "file": "21776.png"
+    },
+    "21830": {
+      "name": "BoulderButtonSpawner",
+      "file": null
+    },
+    "21882": {
+      "name": "TurabadaTrialVariant",
+      "file": "21882.png"
+    },
+    "22284": {
+      "name": "RuinsElevatorPuzzleSquarePillarVariant",
+      "file": "22284.png"
+    },
+    "22418": {
+      "name": "SnowballSpawner",
+      "file": null
+    },
+    "22498": {
+      "name": "HebiosCraftedMould",
+      "file": "22498.png"
+    },
+    "22768": {
+      "name": "ore_copper",
+      "file": null
+    },
+    "22876": {
+      "name": "MetalHammerHead",
+      "file": "22876.png"
+    },
+    "22988": {
+      "name": "HandleFist",
+      "file": "22988.png"
+    },
+    "23012": {
+      "name": "IronIngot",
+      "file": "23012.png"
+    },
+    "23182": {
+      "name": "Anvil",
+      "file": "23182.png"
+    },
+    "23206": {
+      "name": "SoftFabricLargeRoll",
+      "file": "23206.png"
+    },
+    "23220": {
+      "name": "BrokenCrystalPiece04",
+      "file": null
+    },
+    "23246": {
+      "name": "BreakableRootGround02",
+      "file": "23246.png"
+    },
+    "23304": {
+      "name": "ConcoctionCrate",
+      "file": null
+    },
+    "23384": {
+      "name": "PondWater",
+      "file": null
+    },
+    "23400": {
+      "name": "CrystalLanceBlue",
+      "file": "23400.png"
+    },
+    "23472": {
+      "name": "SpireGcoreDynamic",
+      "file": null
+    },
+    "23502": {
+      "name": "CoalBoulder01",
+      "file": "23502.png"
+    },
+    "23514": {
+      "name": "FlowerBlue",
+      "file": "23514.png"
+    },
+    "23526": {
+      "name": "SkillOrbReplacer",
+      "file": null
+    },
+    "23528": {
+      "name": "SilverIngot",
+      "file": "23528.png"
+    },
+    "23552": {
+      "name": "LargeGuardTShape",
+      "file": "23552.png"
+    },
+    "23630": {
+      "name": "Shelf",
+      "file": null
+    },
+    "23642": {
+      "name": "FlashlightLantern",
+      "file": "23642.png"
+    },
+    "23644": {
+      "name": "PotionMedium",
+      "file": "23644.png"
+    },
+    "23788": {
+      "name": "CoalBoulder03",
+      "file": "23788.png"
+    },
+    "23836": {
+      "name": "Green_Crystal_cluster_03",
+      "file": "23836.png"
+    },
+    "23950": {
+      "name": "WoodenStirringSpoon",
+      "file": "23950.png"
+    },
+    "24020": {
+      "name": "FlameStepEffectProto",
+      "file": "24020.png"
+    },
+    "24046": {
+      "name": "CraftPieceSide2Way",
+      "file": "24046.png"
+    },
+    "24072": {
+      "name": "SpriggullFletchingRed",
+      "file": "24072.png"
+    },
+    "24096": {
+      "name": "MRKActivationLine",
+      "file": "24096.png"
+    },
+    "24198": {
+      "name": "HandleShortTaper",
+      "file": "24198.png"
+    },
+    "24218": {
+      "name": "AnvilTraining",
+      "file": null
+    },
+    "24220": {
+      "name": "HebiosHandleNaginata",
+      "file": "24220.png"
+    },
+    "24402": {
+      "name": "VineAttackFern",
+      "file": "24402.png"
+    },
+    "24406": {
+      "name": "SpriggullDrumstickBone",
+      "file": "24406.png"
+    },
+    "24422": {
+      "name": "WoodcutAshLeafClumpC2E1",
+      "file": null
+    },
+    "24434": {
+      "name": "BrambleObstacleNoBush",
+      "file": "24434.png"
+    },
+    "24480": {
+      "name": "DriedGrassBush",
+      "file": null
+    },
+    "24548": {
+      "name": "BreakableRootHangingColumn02",
+      "file": null
+    },
+    "24580": {
+      "name": "DrawbridgePuzzleToggle",
+      "file": "24580.png"
+    },
+    "24764": {
+      "name": "ChristmasGiftMailBox01",
+      "file": "24764.png"
+    },
+    "24774": {
+      "name": "MythrilIngot",
+      "file": "24774.png"
+    },
+    "24782": {
+      "name": "CastIronLamp",
+      "file": "24782.png"
+    },
+    "25100": {
+      "name": "MetalBow",
+      "file": "25100.png"
+    },
+    "25116": {
+      "name": "WoodcutS0S0S30",
+      "file": null
+    },
+    "25122": {
+      "name": "TimberBag",
+      "file": "25122.png"
+    },
+    "25290": {
+      "name": "HandleLargeCool",
+      "file": "25290.png"
+    },
+    "25312": {
+      "name": "GymnasiumPrefabSpawner",
+      "file": null
+    },
+    "25388": {
+      "name": "WoodcutTwigsV5R15",
+      "file": null
+    },
+    "25418": {
+      "name": "TablePlacer",
+      "file": null
+    },
+    "25446": {
+      "name": "SpriggullFeatherGreen",
+      "file": "25446.png"
+    },
+    "25456": {
+      "name": "CraneCenterPiece",
+      "file": "25456.png"
+    },
+    "25648": {
+      "name": "PillarRotate",
+      "file": "25648.png"
+    },
+    "25690": {
+      "name": "SnowmanNetworkPrefabtest",
+      "file": null
+    },
+    "25802": {
+      "name": "ThickGreatSwordBlade",
+      "file": "25802.png"
+    },
+    "25908": {
+      "name": "WoodenBowl",
+      "file": "25908.png"
+    },
+    "25922": {
+      "name": "RockClusterTutorial",
+      "file": "25922.png"
+    },
+    "25934": {
+      "name": "TreeGrower",
+      "file": null
+    },
+    "25992": {
+      "name": "SaplingFreshlyPlanted",
+      "file": null
+    },
+    "25994": {
+      "name": "Sapling",
+      "file": null
+    },
+    "26492": {
+      "name": "WoodcutT0B30B30",
+      "file": null
+    },
+    "26568": {
+      "name": "WalnutTreeStage1",
+      "file": null
+    },
+    "26588": {
+      "name": "BlueberryTreeStage1",
+      "file": null
+    },
+    "26710": {
+      "name": "MotherFernSeedSpray",
+      "file": null
+    },
+    "26748": {
+      "name": "CraftPieceSideFlat2Way",
+      "file": "26748.png"
+    },
+    "26780": {
+      "name": "GoteraBigDart",
+      "file": "26780.png"
+    },
+    "26788": {
+      "name": "ScytheBlade",
+      "file": "26788.png"
+    },
+    "26916": {
+      "name": "(OriginalChildNode)ClimbingTowerTeleporterNode",
+      "file": "26916.png"
+    },
+    "26988": {
+      "name": "ore_silver",
+      "file": null
+    },
+    "27004": {
+      "name": "EggplantTree",
+      "file": "27004.png"
+    },
+    "27038": {
+      "name": "Sai",
+      "file": "27038.png"
+    },
+    "27128": {
+      "name": "GoteraRedwoodVariant",
+      "file": "27128.png"
+    },
+    "27188": {
+      "name": "TurabadaSpawnerReactive",
+      "file": null
+    },
+    "27250": {
+      "name": "item_pedestal_puzzle_base",
+      "file": "27250.png"
+    },
+    "27314": {
+      "name": "CandyCane",
+      "file": "27314.png"
+    },
+    "27322": {
+      "name": "CarvedPumpkinSmelter",
+      "file": "27322.png"
+    },
+    "27368": {
+      "name": "MythrilBoulder",
+      "file": "27368.png"
+    },
+    "27416": {
+      "name": "BowBlade",
+      "file": "27416.png"
+    },
+    "27482": {
+      "name": "ruins_orbBasin_01",
+      "file": null
+    },
+    "27582": {
+      "name": "RuinsElevatorPuzzleSquare",
+      "file": "27582.png"
+    },
+    "27820": {
+      "name": "HandleShortSCurve",
+      "file": "27820.png"
+    },
+    "27848": {
+      "name": "EggplantFlowerBloom",
+      "file": "27848.png"
+    },
+    "27850": {
+      "name": "EggplantFlowerBud",
+      "file": "27850.png"
+    },
+    "27908": {
+      "name": "StewingRecipesCollection",
+      "file": null
+    },
+    "28040": {
+      "name": "MushroomFairyCirclePuzzleTeleport",
+      "file": null
+    },
+    "28136": {
+      "name": "LogicBoolOneTimeActivate",
+      "file": null
+    },
+    "28160": {
+      "name": "GuardPointyEnds",
+      "file": "28160.png"
+    },
+    "28202": {
+      "name": "PlayerGrave",
+      "file": "28202.png"
+    },
+    "28272": {
+      "name": "IronCluster",
+      "file": null
+    },
+    "28312": {
+      "name": "AshLeafClumpBase",
+      "file": null
+    },
+    "28332": {
+      "name": "BreakableRootWavy",
+      "file": null
+    },
+    "28396": {
+      "name": "CraftingDeck",
+      "file": "28396.png"
+    },
+    "28416": {
+      "name": "MRKPuzzleCore02",
+      "file": "28416.png"
+    },
+    "28636": {
+      "name": "HandleShortPointyEnd",
+      "file": "28636.png"
+    },
+    "28708": {
+      "name": "mrk_large_lift_01",
+      "file": null
+    },
+    "29008": {
+      "name": "BurnableRootHangingShortCurved",
+      "file": null
+    },
+    "29032": {
+      "name": "GourdCanteen",
+      "file": "29032.png"
+    },
+    "29078": {
+      "name": "OnionLeaves",
+      "file": null
+    },
+    "29148": {
+      "name": "MushroomCaveSmallFullBurnt",
+      "file": "29148.png"
+    },
+    "29162": {
+      "name": "WoodcutT0T0B60",
+      "file": null
+    },
+    "29276": {
+      "name": "PuzzleOrbRestrictor",
+      "file": null
+    },
+    "29296": {
+      "name": "RustyGreataxe",
+      "file": "29296.png"
+    },
+    "29468": {
+      "name": "MRKLanternFire",
+      "file": "29468.png"
+    },
+    "29550": {
+      "name": "BuriedPullupPrimitive",
+      "file": "29550.png"
+    },
+    "29678": {
+      "name": "GeodeTier1Half01",
+      "file": "29678.png"
+    },
+    "29690": {
+      "name": "LargeCaveMushroom",
+      "file": "29690.png"
+    },
+    "29772": {
+      "name": "ArrowShaftWooden",
+      "file": "29772.png"
+    },
+    "29810": {
+      "name": "HuntingBasicsCollection",
+      "file": null
+    },
+    "29856": {
+      "name": "Wakizashi",
+      "file": "29856.png"
+    },
+    "29874": {
+      "name": "MRKLargeGearVariant",
+      "file": "29874.png"
+    },
+    "29962": {
+      "name": "WoodcutWalnutLeafClumpC1C1",
+      "file": null
+    },
+    "29976": {
+      "name": "WoodcutAshLeafClumpC2E",
+      "file": null
+    },
+    "30016": {
+      "name": "TradeDeck",
+      "file": "30016.png"
+    },
+    "30056": {
+      "name": "MRKPuzzleCoreInitialStand02Variant",
+      "file": "30056.png"
+    },
+    "30060": {
+      "name": "WoodenBag",
+      "file": "30060.png"
+    },
+    "30092": {
+      "name": "GoldIngot",
+      "file": "30092.png"
+    },
+    "30124": {
+      "name": "EdgeStraightBlade",
+      "file": "30124.png"
+    },
+    "30164": {
+      "name": "ChocolateEasterEgg",
+      "file": "30164.png"
+    },
+    "30180": {
+      "name": "DaisAntlerVariant",
+      "file": "30180.png"
+    },
+    "30196": {
+      "name": "WallTorchHolderPuzzle",
+      "file": "30196.png"
+    },
+    "30542": {
+      "name": "SnowballMoundSpawner",
+      "file": null
+    },
+    "30570": {
+      "name": "TreeYoung",
+      "file": null
+    },
+    "30572": {
+      "name": "TreeGrown",
+      "file": null
+    },
+    "30854": {
+      "name": "ExplosionBoulderLarge",
+      "file": null
+    },
+    "30950": {
+      "name": "MiningPath",
+      "file": null
+    },
+    "31034": {
+      "name": "RedIronIngot",
+      "file": "31034.png"
+    },
+    "31046": {
+      "name": "CircleSpawnerExplosiveSpike",
+      "file": null
+    },
+    "31088": {
+      "name": "VineBoulder01",
+      "file": null
+    },
+    "31136": {
+      "name": "CaveExplosionBoulder",
+      "file": "31136.png"
+    },
+    "31152": {
+      "name": "StandardStages",
+      "file": null
+    },
+    "31268": {
+      "name": "TestFire",
+      "file": "31268.png"
+    },
+    "31306": {
+      "name": "CoinPress",
+      "file": "31306.png"
+    },
+    "31326": {
+      "name": "Dynamite",
+      "file": "31326.png"
+    },
+    "31418": {
+      "name": "PotionHoopsSideToolAttachment",
+      "file": "31418.png"
+    },
+    "31540": {
+      "name": "GoteraSeedSpray",
+      "file": null
+    },
+    "31580": {
+      "name": "MushroomGlowingHalfRipe",
+      "file": "31580.png"
+    },
+    "31614": {
+      "name": "AppleCoreUnripe",
+      "file": "31614.png"
+    },
+    "31618": {
+      "name": "HebiosStorageChestGcore",
+      "file": null
+    },
+    "31620": {
+      "name": "PuzzleOrb1",
+      "file": null
+    },
+    "31628": {
+      "name": "TempDynamicWall",
+      "file": null
+    },
+    "31646": {
+      "name": "SchmeecheePoisonous",
+      "file": "31646.png"
+    },
+    "31838": {
+      "name": "DaisChildVariant",
+      "file": "31838.png"
+    },
+    "32002": {
+      "name": "Kunai",
+      "file": "32002.png"
+    },
+    "32068": {
+      "name": "OnionRoots",
+      "file": null
+    },
+    "32158": {
+      "name": "HolidayRewardDisplay",
+      "file": null
+    },
+    "32160": {
+      "name": "CraftPieceSide4Way",
+      "file": "32160.png"
+    },
+    "32198": {
+      "name": "EvinonSteelIngot",
+      "file": "32198.png"
+    },
+    "32200": {
+      "name": "ProfessionUpgradeShrine",
+      "file": null
+    },
+    "32210": {
+      "name": "TrialSpawnerMDW1",
+      "file": null
+    },
+    "32476": {
+      "name": "CeilingLanternLit",
+      "file": null
+    },
+    "32526": {
+      "name": "BabuLegBone",
+      "file": "32526.png"
+    },
+    "32620": {
+      "name": "TimedRespawner",
+      "file": null
+    },
+    "32642": {
+      "name": "WoodcutTwigsV515",
+      "file": null
+    },
+    "32704": {
+      "name": "RepairBoxStandingPanel",
+      "file": "32704.png"
+    },
+    "32788": {
+      "name": "StorageCrateRedwoodOpen",
+      "file": null
+    },
+    "32850": {
+      "name": "CopperIngot",
+      "file": "32850.png"
+    },
+    "32874": {
+      "name": "ForageSidePouchAttachment",
+      "file": "32874.png"
+    },
+    "33004": {
+      "name": "SafePoint",
+      "file": null
+    },
+    "33006": {
+      "name": "MRKSmelterGemPedestal1",
+      "file": "33006.png"
+    },
+    "33084": {
+      "name": "TrialSpawnerW1",
+      "file": null
+    },
+    "33190": {
+      "name": "SpriggullDrumstickFullCooked",
+      "file": "33190.png"
+    },
+    "33230": {
+      "name": "RustySpade",
+      "file": "33230.png"
+    },
+    "33334": {
+      "name": "TownshipBridgeFixed",
+      "file": "33334.png"
+    },
+    "33338": {
+      "name": "DescentShaftGcoreWallWyrmDynamic",
+      "file": null
+    },
+    "33376": {
+      "name": "StoneBoulder01",
+      "file": null
+    },
+    "33570": {
+      "name": "DiggingDirtMoundHebios",
+      "file": "33570.png"
+    },
+    "33628": {
+      "name": "ForgeTraining",
+      "file": null
+    },
+    "33664": {
+      "name": "woodenPlatform_W2x4",
+      "file": null
+    },
+    "33796": {
+      "name": "SmallCaveMushroom01",
+      "file": null
+    },
+    "34014": {
+      "name": "BreakableRootGround01",
+      "file": "34014.png"
+    },
+    "34038": {
+      "name": "mrk_extensionBridge_01",
+      "file": "34038.png"
+    },
+    "34042": {
+      "name": "MushroomGlowingHalfCooked",
+      "file": "34042.png"
+    },
+    "34050": {
+      "name": "ProtoGreaterGotBrambleWall",
+      "file": "34050.png"
+    },
+    "34122": {
+      "name": "Tinder",
+      "file": null
+    },
+    "34144": {
+      "name": "CrystalStructureRocks",
+      "file": "34144.png"
+    },
+    "34168": {
+      "name": "Sandstone_Boulder_01",
+      "file": "34168.png"
+    },
+    "34396": {
+      "name": "BouncingMovement",
+      "file": null
+    },
+    "34412": {
+      "name": "AxeHead",
+      "file": "34412.png"
+    },
+    "34422": {
+      "name": "GachaHandle",
+      "file": null
+    },
+    "34428": {
+      "name": "GuardHemisphere",
+      "file": "34428.png"
+    },
+    "34502": {
+      "name": "WoodcutT0T0B45B45B60",
+      "file": null
+    },
+    "34564": {
+      "name": "BreakableRoot2.5mStraight",
+      "file": null
+    },
+    "34570": {
+      "name": "ThinClothMediumSquare",
+      "file": "34570.png"
+    },
+    "34586": {
+      "name": "timberBlock_1Long",
+      "file": "34586.png"
+    },
+    "34594": {
+      "name": "MRKPuzzleCoreStand02",
+      "file": "34594.png"
+    },
+    "34602": {
+      "name": "WoodcutBirchLeafClumpC3C41E",
+      "file": null
+    },
+    "34630": {
+      "name": "LogicContext",
+      "file": null
+    },
+    "34638": {
+      "name": "WoodcutAshLeafClumpC1C2",
+      "file": null
+    },
+    "34664": {
+      "name": "MRKAutomatedPipeHazardElevatorLargeInverseVariant",
+      "file": "34664.png"
+    },
+    "34696": {
+      "name": "LavaPool",
+      "file": "34696.png"
+    },
+    "34710": {
+      "name": "TreeSpawnerAnyWalnut",
+      "file": null
+    },
+    "34724": {
+      "name": "WoodcutRedwoodLeafTopper",
+      "file": null
+    },
+    "34734": {
+      "name": "MRK_gate_01",
+      "file": null
+    },
+    "34850": {
+      "name": "TurabadaCopperDestroyVariant",
+      "file": "34850.png"
+    },
+    "34852": {
+      "name": "BurnableRootGround02",
+      "file": null
+    },
+    "34892": {
+      "name": "DebugArrow",
+      "file": "34892.png"
+    },
+    "34898": {
+      "name": "HandleShortCCurve",
+      "file": "34898.png"
+    },
+    "34986": {
+      "name": "SmelterGem1",
+      "file": "34986.png"
+    },
+    "34994": {
+      "name": "Katana",
+      "file": "34994.png"
+    },
+    "35030": {
+      "name": "MRK_activation_lever",
+      "file": "35030.png"
+    },
+    "35078": {
+      "name": "HebiosStorageChestClimbing",
+      "file": null
+    },
+    "35154": {
+      "name": "BurnableRootGround05",
+      "file": null
+    },
+    "35174": {
+      "name": "GoteraWalnutBomb",
+      "file": "35174.png"
+    },
+    "35274": {
+      "name": "AshTreeSeed",
+      "file": "35274.png"
+    },
+    "35280": {
+      "name": "StructureChest",
+      "file": "35280.png"
+    },
+    "35324": {
+      "name": "Bag",
+      "file": "35324.png"
+    },
+    "35612": {
+      "name": "DiggingMaterialBox",
+      "file": "35612.png"
+    },
+    "35738": {
+      "name": "BreakableRoot2.5mCurved",
+      "file": null
+    },
+    "35828": {
+      "name": "BurnableVineBunch",
+      "file": "35828.png"
+    },
+    "35878": {
+      "name": "PickaxeHead",
+      "file": "35878.png"
+    },
+    "35896": {
+      "name": "BreakableRoot2.5mBendy",
+      "file": null
+    },
+    "36054": {
+      "name": "BreakableRoot2.5mWavy",
+      "file": null
+    },
+    "36126": {
+      "name": "RustyHammer",
+      "file": "36126.png"
+    },
+    "36130": {
+      "name": "MRKLantern_01",
+      "file": "36130.png"
+    },
+    "36180": {
+      "name": "Crate",
+      "file": "36180.png"
+    },
+    "36190": {
+      "name": "ArrowTraining",
+      "file": null
+    },
+    "36248": {
+      "name": "SpriggullFeatherPurple",
+      "file": "36248.png"
+    },
+    "36342": {
+      "name": "BurnableRootGround04",
+      "file": null
+    },
+    "36356": {
+      "name": "BurnableRootHangingThinStraight",
+      "file": null
+    },
+    "36438": {
+      "name": "ShotelBlade",
+      "file": "36438.png"
+    },
+    "36504": {
+      "name": "MushroomGlowingHalfBurnt",
+      "file": "36504.png"
+    },
+    "36614": {
+      "name": "PlacementCrate",
+      "file": "36614.png"
+    },
+    "36772": {
+      "name": "ArrowShaftWoodenTraining",
+      "file": null
+    },
+    "36810": {
+      "name": "TomatoFullUnripe",
+      "file": null
+    },
+    "36844": {
+      "name": "WoodcutB0B0S30",
+      "file": null
+    },
+    "36866": {
+      "name": "LargeCaveMushroomOLD",
+      "file": null
+    },
+    "36976": {
+      "name": "LogicReset",
+      "file": null
+    },
+    "37046": {
+      "name": "BrokenCrystalPiece03",
+      "file": null
+    },
+    "37066": {
+      "name": "Paper",
+      "file": null
+    },
+    "37174": {
+      "name": "WyrmBoulder01",
+      "file": null
+    },
+    "37176": {
+      "name": "TurabadaGoldVariant",
+      "file": "37176.png"
+    },
+    "37252": {
+      "name": "PoisonVent",
+      "file": "37252.png"
+    },
+    "37392": {
+      "name": "CrystalWyrm",
+      "file": "37392.png"
+    },
+    "37398": {
+      "name": "ChiselDeck",
+      "file": "37398.png"
+    },
+    "37414": {
+      "name": "BurnableRootGround06",
+      "file": null
+    },
+    "37454": {
+      "name": "TomatoFullRipe",
+      "file": "37454.png"
+    },
+    "37508": {
+      "name": "TurabadaDestroy",
+      "file": "37508.png"
+    },
+    "37516": {
+      "name": "PowerStrikeCounter",
+      "file": null
+    },
+    "37626": {
+      "name": "MRKAutomatedPipeHazardElevatorTallVariant",
+      "file": "37626.png"
+    },
+    "37642": {
+      "name": "DeathFern",
+      "file": "37642.png"
+    },
+    "37666": {
+      "name": "BreakableRootHangingColumn01",
+      "file": null
+    },
+    "37764": {
+      "name": "BuriedPullupBramble",
+      "file": "37764.png"
+    },
+    "37794": {
+      "name": "WoodcutBirchLeafClumpBase",
+      "file": null
+    },
+    "37822": {
+      "name": "MRKHorizontalLift",
+      "file": "37822.png"
+    },
+    "37926": {
+      "name": "WyrmCrystalSpit",
+      "file": "37926.png"
+    },
+    "38008": {
+      "name": "CrossSlash",
+      "file": null
+    },
+    "38096": {
+      "name": "GoteraWalnutVariant",
+      "file": "38096.png"
+    },
+    "38098": {
+      "name": "TomatoFullCooked",
+      "file": null
+    },
+    "38102": {
+      "name": "WoodcutOakLeafClumpC3C32",
+      "file": null
+    },
+    "38122": {
+      "name": "WoodcutOakLeafClumpC3C31",
+      "file": null
+    },
+    "38144": {
+      "name": "WoodcutOakLeafClumpC3E",
+      "file": null
+    },
+    "38162": {
+      "name": "WoodcutOakLeafClumpC2C3E",
+      "file": null
+    },
+    "38178": {
+      "name": "CrystalBlue",
+      "file": "38178.png"
+    },
+    "38184": {
+      "name": "WoodcutOakLeafClumpC2C32",
+      "file": null
+    },
+    "38202": {
+      "name": "BurnableVineBunchTutorial",
+      "file": "38202.png"
+    },
+    "38204": {
+      "name": "WoodcutOakLeafClumpC2C31",
+      "file": null
+    },
+    "38224": {
+      "name": "WoodcutOakLeafClumpC2C22",
+      "file": null
+    },
+    "38242": {
+      "name": "WoodcutOakLeafClumpC2C21",
+      "file": null
+    },
+    "38264": {
+      "name": "WoodcutOakLeafClumpC2E",
+      "file": null
+    },
+    "38284": {
+      "name": "WoodcutOakLeafClumpC1C2E",
+      "file": null
+    },
+    "38304": {
+      "name": "WoodcutOakLeafClumpC1C22",
+      "file": null
+    },
+    "38324": {
+      "name": "WoodcutOakLeafClumpC1C21",
+      "file": null
+    },
+    "38344": {
+      "name": "WoodcutOakLeafClumpC1C12",
+      "file": null
+    },
+    "38360": {
+      "name": "MushroomRedHalfRipe",
+      "file": "38360.png"
+    },
+    "38364": {
+      "name": "WoodcutOakLeafClumpC1C11",
+      "file": null
+    },
+    "38382": {
+      "name": "WoodcutOakLeafClumpC1E",
+      "file": null
+    },
+    "38512": {
+      "name": "GeodeTier1Half02",
+      "file": "38512.png"
+    },
+    "38546": {
+      "name": "MRKAutomatedPipeHazardElevator",
+      "file": "38546.png"
+    },
+    "38566": {
+      "name": "ShortSword",
+      "file": "38566.png"
+    },
+    "38578": {
+      "name": "StandardCraftedMould",
+      "file": "38578.png"
+    },
+    "38596": {
+      "name": "ore_gold",
+      "file": null
+    },
+    "38606": {
+      "name": "CraftPieceSideFlat1Way",
+      "file": "38606.png"
+    },
+    "38672": {
+      "name": "PumpkinTreeStage1",
+      "file": null
+    },
+    "38742": {
+      "name": "TomatoFullBurnt",
+      "file": null
+    },
+    "38942": {
+      "name": "Pouch",
+      "file": "38942.png"
+    },
+    "38966": {
+      "name": "MushroomGlowingFullRipe",
+      "file": "38966.png"
+    },
+    "38974": {
+      "name": "CrateStackSpawner",
+      "file": null
+    },
+    "39010": {
+      "name": "LargeGuardWedge",
+      "file": "39010.png"
+    },
+    "39056": {
+      "name": "TurabadaCopperVariant",
+      "file": "39056.png"
+    },
+    "39174": {
+      "name": "LiquidPump",
+      "file": null
+    },
+    "39240": {
+      "name": "DeathFernPoisonCloud",
+      "file": null
+    },
+    "39282": {
+      "name": "WoodcutS15S15",
+      "file": null
+    },
+    "39484": {
+      "name": "Flint",
+      "file": "39484.png"
+    },
+    "39592": {
+      "name": "BurnableRootHangingStraight",
+      "file": null
+    },
+    "39694": {
+      "name": "BurnableRootHangingColumn01",
+      "file": null
+    },
+    "39716": {
+      "name": "WalnutGoteraBombDart",
+      "file": "39716.png"
+    },
+    "39744": {
+      "name": "KeyStandard",
+      "file": "39744.png"
+    },
+    "39880": {
+      "name": "ForageBasketBag",
+      "file": "39880.png"
+    },
+    "40010": {
+      "name": "AppleFullRipe",
+      "file": "40010.png"
+    },
+    "40066": {
+      "name": "MushroomCaveSmallFullCooked",
+      "file": "40066.png"
+    },
+    "40128": {
+      "name": "RockSpireGcoreDynamic",
+      "file": null
+    },
+    "40198": {
+      "name": "TrialSpawnerT2",
+      "file": null
+    },
+    "40208": {
+      "name": "WoodcutTwigsV5L15",
+      "file": null
+    },
+    "40366": {
+      "name": "RustyChisel",
+      "file": "40366.png"
+    },
+    "40460": {
+      "name": "Prongs",
+      "file": null
+    },
+    "40478": {
+      "name": "Firebug",
+      "file": "40478.png"
+    },
+    "40692": {
+      "name": "DrawbridgePuzzleRange",
+      "file": null
+    },
+    "40722": {
+      "name": "WoodcutAshLeafClumpC1E2",
+      "file": null
+    },
+    "40748": {
+      "name": "Firework",
+      "file": "40748.png"
+    },
+    "40816": {
+      "name": "MushroomRedHalfCooked",
+      "file": "40816.png"
+    },
+    "40824": {
+      "name": "DeathFernPlanted",
+      "file": null
+    },
+    "40920": {
+      "name": "BlueberryFlowerBud",
+      "file": "40920.png"
+    },
+    "40922": {
+      "name": "BlueberryFlowerBloom",
+      "file": "40922.png"
+    },
+    "40946": {
+      "name": "BreakableRootSpawner",
+      "file": null
+    },
+    "40982": {
+      "name": "FruitTreePath",
+      "file": null
+    },
+    "41052": {
+      "name": "Naginata",
+      "file": "41052.png"
+    },
+    "41172": {
+      "name": "TurabadaLargeVariant",
+      "file": "41172.png"
+    },
+    "41226": {
+      "name": "FlameStepEffectProtoLavaTestVariant",
+      "file": "41226.png"
+    },
+    "41234": {
+      "name": "HotCoalbed",
+      "file": "41234.png"
+    },
+    "41286": {
+      "name": "pumpkinpieceunripe",
+      "file": null
+    },
+    "41402": {
+      "name": "RedwoodGoteraCore",
+      "file": "41402.png"
+    },
+    "41428": {
+      "name": "MushroomGlowingFullCooked",
+      "file": "41428.png"
+    },
+    "41438": {
+      "name": "HandleMediumStandard",
+      "file": "41438.png"
+    },
+    "41482": {
+      "name": "BreakableRootBendy",
+      "file": "41482.png"
+    },
+    "41608": {
+      "name": "pumpkinpieceripe",
+      "file": "41608.png"
+    },
+    "41638": {
+      "name": "SmelterGem2",
+      "file": "41638.png"
+    },
+    "41658": {
+      "name": "PumpkinTreeGrowth",
+      "file": null
+    },
+    "41676": {
+      "name": "SandstoneCluster",
+      "file": "41676.png"
+    },
+    "41760": {
+      "name": "Lantern",
+      "file": "41760.png"
+    },
+    "41834": {
+      "name": "MushroomCaveSmallHalfRipe",
+      "file": "41834.png"
+    },
+    "41842": {
+      "name": "RepairBoxWallPanel",
+      "file": "41842.png"
+    },
+    "41870": {
+      "name": "DaisMeatFullBurnt",
+      "file": "41870.png"
+    },
+    "41930": {
+      "name": "pumpkinpiececooked",
+      "file": null
+    },
+    "42062": {
+      "name": "HebiosCampValley",
+      "file": null
+    },
+    "42138": {
+      "name": "PommelLargeSquare",
+      "file": "42138.png"
+    },
+    "42218": {
+      "name": "pumpkinpieceburnt",
+      "file": null
+    },
+    "42226": {
+      "name": "DiggingBoxHebios",
+      "file": "42226.png"
+    },
+    "42230": {
+      "name": "HandleShort",
+      "file": "42230.png"
+    },
+    "42340": {
+      "name": "BowTraining",
+      "file": null
+    },
+    "42430": {
+      "name": "DaisVariant",
+      "file": "42430.png"
+    },
+    "42494": {
+      "name": "RuinsSlidingWallPuzzleSquare",
+      "file": "42494.png"
+    },
+    "42508": {
+      "name": "PumpkinTreeStage2",
+      "file": null
+    },
+    "42552": {
+      "name": "WoodcutRedwoodLeafClumpT4D30C1",
+      "file": null
+    },
+    "42556": {
+      "name": "BlueberryFullUnripe",
+      "file": "42556.png"
+    },
+    "42598": {
+      "name": "WoodcutBirchLeafClumpC1C12",
+      "file": null
+    },
+    "42624": {
+      "name": "TrialSpawnerW3",
+      "file": null
+    },
+    "42690": {
+      "name": "TurabadaIronDestroyVariant",
+      "file": "42690.png"
+    },
+    "42764": {
+      "name": "PommelDiamond",
+      "file": "42764.png"
+    },
+    "42894": {
+      "name": "HebiosNaginataBladePart02",
+      "file": null
+    },
+    "42916": {
+      "name": "BabuLegFullCooked",
+      "file": "42916.png"
+    },
+    "42982": {
+      "name": "MaterialBoxPieces",
+      "file": "42982.png"
+    },
+    "43010": {
+      "name": "BreakableRootMoundSmall",
+      "file": null
+    },
+    "43146": {
+      "name": "HammerHead",
+      "file": "43146.png"
+    },
+    "43186": {
+      "name": "GuardHandle",
+      "file": "43186.png"
+    },
+    "43200": {
+      "name": "BurnableRootHangingShortStraight",
+      "file": null
+    },
+    "43272": {
+      "name": "MushroomRedHalfBurnt",
+      "file": "43272.png"
+    },
+    "43294": {
+      "name": "DaisMeatHalfRipe",
+      "file": "43294.png"
+    },
+    "43430": {
+      "name": "SpriggullDrumstickFullRipe",
+      "file": "43430.png"
+    },
+    "43452": {
+      "name": "DaisMeatFullCooked",
+      "file": "43452.png"
+    },
+    "43502": {
+      "name": "DaisMeatHalfCooked",
+      "file": "43502.png"
+    },
+    "43522": {
+      "name": "Mythril_Boulder_Parts",
+      "file": null
+    },
+    "43552": {
+      "name": "DragonflyCorpse",
+      "file": null
+    },
+    "43674": {
+      "name": "DaisMeatHalfBurnt",
+      "file": "43674.png"
+    },
+    "43806": {
+      "name": "WoodenPassageDynamic",
+      "file": null
+    },
+    "43836": {
+      "name": "RopeClump",
+      "file": "43836.png"
+    },
+    "43856": {
+      "name": "MushroomGlowingFullBurnt",
+      "file": "43856.png"
+    },
+    "43924": {
+      "name": "DiggingDirtMound",
+      "file": "43924.png"
+    },
+    "43960": {
+      "name": "PhantomHead",
+      "file": null
+    },
+    "43966": {
+      "name": "OnionFullUnripe",
+      "file": null
+    },
+    "43994": {
+      "name": "BrokenBreakableRootPieceThick",
+      "file": null
+    },
+    "43996": {
+      "name": "BrokenBreakableRootPieceGround",
+      "file": null
+    },
+    "43998": {
+      "name": "BrokenBreakableRootPieceShort",
+      "file": null
+    },
+    "44000": {
+      "name": "BrokenBreakableRootPieceThin",
+      "file": null
+    },
+    "44028": {
+      "name": "pot_01",
+      "file": null
+    },
+    "44066": {
+      "name": "RodLong",
+      "file": "44066.png"
+    },
+    "44162": {
+      "name": "ExplosionBoulder",
+      "file": "44162.png"
+    },
+    "44172": {
+      "name": "WalnutTreeSeed",
+      "file": "44172.png"
+    },
+    "44204": {
+      "name": "RodMedium",
+      "file": "44204.png"
+    },
+    "44224": {
+      "name": "LevelingDummy",
+      "file": null
+    },
+    "44244": {
+      "name": "ClimbingTowerProgressionVisualizer",
+      "file": "44244.png"
+    },
+    "44360": {
+      "name": "HealingPod",
+      "file": "44360.png"
+    },
+    "44372": {
+      "name": "WoodcutWalnutLeafClumpC4C4E",
+      "file": null
+    },
+    "44380": {
+      "name": "Chisel",
+      "file": "44380.png"
+    },
+    "44386": {
+      "name": "WoodcutRedwoodLeafClumpT4D30C7",
+      "file": null
+    },
+    "44390": {
+      "name": "Leaderboard",
+      "file": null
+    },
+    "44404": {
+      "name": "WoodcutBirchLeafClumpC4E",
+      "file": null
+    },
+    "44488": {
+      "name": "MushroomCaveSmallHalfCooked",
+      "file": "44488.png"
+    },
+    "44646": {
+      "name": "Smelter",
+      "file": "44646.png"
+    },
+    "44688": {
+      "name": "MushroomFairyCirclePuzzleOLD",
+      "file": null
+    },
+    "44704": {
+      "name": "ShieldPartHalfCircleHole",
+      "file": "44704.png"
+    },
+    "44824": {
+      "name": "RustyShortSword",
+      "file": "44824.png"
+    },
+    "44884": {
+      "name": "BurnableRootHangingBendy",
+      "file": null
+    },
+    "44892": {
+      "name": "WoodcutAshLeafClumpC1C1",
+      "file": null
+    },
+    "44898": {
+      "name": "Elevator",
+      "file": null
+    },
+    "44908": {
+      "name": "WoodcutAshLeafClumpC2C2",
+      "file": null
+    },
+    "44984": {
+      "name": "HebiosStorageChest",
+      "file": "44984.png"
+    },
+    "45012": {
+      "name": "BlueberryFullRipe",
+      "file": "45012.png"
+    },
+    "45082": {
+      "name": "CauldronMedium",
+      "file": "45082.png"
+    },
+    "45096": {
+      "name": "TrialSpawnerT3",
+      "file": null
+    },
+    "45144": {
+      "name": "BurnableRootFence",
+      "file": null
+    },
+    "45344": {
+      "name": "IronBoulder",
+      "file": "45344.png"
+    },
+    "45418": {
+      "name": "WoodcuttingPath",
+      "file": null
+    },
+    "45454": {
+      "name": "FakePlayercombat_dummy",
+      "file": "45454.png"
+    },
+    "45488": {
+      "name": "TurabadaMythrilDestroyVariant",
+      "file": "45488.png"
+    },
+    "45512": {
+      "name": "Broken_ExplosionBoulder_Part_04",
+      "file": null
+    },
+    "45514": {
+      "name": "Broken_ExplosionBoulder_Part_01",
+      "file": null
+    },
+    "45516": {
+      "name": "Broken_ExplosionBoulder_Part_03",
+      "file": null
+    },
+    "45518": {
+      "name": "Broken_ExplosionBoulder_Part_02",
+      "file": null
+    },
+    "45520": {
+      "name": "Broken_ExplosionBoulder_Part_05",
+      "file": null
+    },
+    "45608": {
+      "name": "WoodenDice",
+      "file": "45608.png"
+    },
+    "45646": {
+      "name": "mrk_lift_01",
+      "file": null
+    },
+    "45658": {
+      "name": "MRK_gate_01",
+      "file": null
+    },
+    "45716": {
+      "name": "TurabadaSilverVariant",
+      "file": "45716.png"
+    },
+    "45732": {
+      "name": "ForestChunkPointGenerator",
+      "file": null
+    },
+    "45822": {
+      "name": "PotatoHalfUnripe",
+      "file": null
+    },
+    "45828": {
+      "name": "LecternFlat",
+      "file": null
+    },
+    "46024": {
+      "name": "Copper_Boulder_Parts",
+      "file": null
+    },
+    "46252": {
+      "name": "StickStorage",
+      "file": null
+    },
+    "46292": {
+      "name": "WoodcutWalnutLeafClumpC2C3E",
+      "file": null
+    },
+    "46376": {
+      "name": "MaterialBox",
+      "file": "46376.png"
+    },
+    "46506": {
+      "name": "TallSupport",
+      "file": "46506.png"
+    },
+    "46508": {
+      "name": "SmelterGem3",
+      "file": "46508.png"
+    },
+    "46510": {
+      "name": "MushroomBrownFullCooked",
+      "file": "46510.png"
+    },
+    "46522": {
+      "name": "HebiosOpenCrateSpawner",
+      "file": null
+    },
+    "46524": {
+      "name": "HebiosClosedCrateSpawner",
+      "file": null
+    },
+    "46660": {
+      "name": "MushroomRedFullBurnt",
+      "file": "46660.png"
+    },
+    "46706": {
+      "name": "MushroomFairyCirclePuzzle",
+      "file": null
+    },
+    "46726": {
+      "name": "WoodcutRedwoodLeafClumpT4D30C2",
+      "file": null
+    },
+    "46874": {
+      "name": "RustyPickaxe",
+      "file": "46874.png"
+    },
+    "46888": {
+      "name": "MushroomRedFullCooked",
+      "file": "46888.png"
+    },
+    "46992": {
+      "name": "OneTimeUpgradeStationHealth",
+      "file": "46992.png"
+    },
+    "47012": {
+      "name": "BreakableRootStraight",
+      "file": null
+    },
+    "47018": {
+      "name": "HammerTraining",
+      "file": null
+    },
+    "47090": {
+      "name": "BuriedGrass",
+      "file": "47090.png"
+    },
+    "47118": {
+      "name": "WoodcutWedge",
+      "file": "47118.png"
+    },
+    "47126": {
+      "name": "MushroomBrownFullBurnt",
+      "file": "47126.png"
+    },
+    "47142": {
+      "name": "MushroomCaveSmallHalfBurnt",
+      "file": "47142.png"
+    },
+    "47150": {
+      "name": "PuzzleOrb2",
+      "file": null
+    },
+    "47394": {
+      "name": "DaisMeatFullRipe",
+      "file": "47394.png"
+    },
+    "47436": {
+      "name": "PillarBridgeRotate",
+      "file": "47436.png"
+    },
+    "47458": {
+      "name": "WoodcutAshLeafClumpC1E",
+      "file": null
+    },
+    "47468": {
+      "name": "BlueberryFullCooked",
+      "file": "47468.png"
+    },
+    "47486": {
+      "name": "WoodcutRedwoodLeafClumpT1D30C7C8",
+      "file": null
+    },
+    "47502": {
+      "name": "WoodcutAshLeafClumpC1C2E",
+      "file": null
+    },
+    "47520": {
+      "name": "WoodcutWalnutLeafClumpC2C3",
+      "file": null
+    },
+    "47632": {
+      "name": "WoodcutWalnutLeafClumpBase",
+      "file": null
+    },
+    "47662": {
+      "name": "HebiosHandleWakizashi",
+      "file": "47662.png"
+    },
+    "47730": {
+      "name": "OnionFullRipe",
+      "file": "47730.png"
+    },
+    "47738": {
+      "name": "Gold_Boulder_Parts",
+      "file": null
+    },
+    "47760": {
+      "name": "SoftFabricMediumRoll",
+      "file": "47760.png"
+    },
+    "48002": {
+      "name": "TurabadaShortDestroyVariant",
+      "file": "48002.png"
+    },
+    "48100": {
+      "name": "mrk_puzzleCore_symbol_01",
+      "file": "48100.png"
+    },
+    "48102": {
+      "name": "mrk_puzzleCore_symbol_02",
+      "file": "48102.png"
+    },
+    "48128": {
+      "name": "CrystalWyrmTrial",
+      "file": "48128.png"
+    },
+    "48134": {
+      "name": "PotatoHalfRipe",
+      "file": null
+    },
+    "48208": {
+      "name": "AshTreeGrowth",
+      "file": null
+    },
+    "48214": {
+      "name": "OnionFullCooked",
+      "file": null
+    },
+    "48218": {
+      "name": "BirchTreeGrowth",
+      "file": null
+    },
+    "48238": {
+      "name": "OakTreeGrowth",
+      "file": null
+    },
+    "48248": {
+      "name": "RedwoodTreeGrowth",
+      "file": null
+    },
+    "48268": {
+      "name": "WalnutTreeGrowth",
+      "file": null
+    },
+    "48306": {
+      "name": "WeightGauge",
+      "file": "48306.png"
+    },
+    "48358": {
+      "name": "TreeSpawnerAnyOak",
+      "file": null
+    },
+    "48460": {
+      "name": "MushroomBrownHalfRipe",
+      "file": "48460.png"
+    },
+    "48478": {
+      "name": "TurabadaHubDynamic",
+      "file": null
+    },
+    "48718": {
+      "name": "OnionFullBurnt",
+      "file": null
+    },
+    "48826": {
+      "name": "HealingPodPlant",
+      "file": null
+    },
+    "48860": {
+      "name": "AshGoteraSmoke",
+      "file": null
+    },
+    "48874": {
+      "name": "BurnableRootMoundLarge",
+      "file": null
+    },
+    "48902": {
+      "name": "MetalHebiosWakizashiBlade",
+      "file": null
+    },
+    "48982": {
+      "name": "WoodcuttingBasicsCollection",
+      "file": null
+    },
+    "49074": {
+      "name": "WoodcutRedwoodLeafClumpT1D30C3C4",
+      "file": null
+    },
+    "49086": {
+      "name": "PumpkinTree",
+      "file": null
+    },
+    "49162": {
+      "name": "GarlicFullUnripe",
+      "file": "49162.png"
+    },
+    "49188": {
+      "name": "RedMushroomShield",
+      "file": "49188.png"
+    },
+    "49198": {
+      "name": "BrokenCrystalPiece02",
+      "file": null
+    },
+    "49320": {
+      "name": "MRKPipeGate",
+      "file": "49320.png"
+    },
+    "49402": {
+      "name": "DaggerBladeEdgy",
+      "file": "49402.png"
+    },
+    "49408": {
+      "name": "PotatoGrowth",
+      "file": null
+    },
+    "49418": {
+      "name": "MRK_TeleporterOut",
+      "file": "49418.png"
+    },
+    "49578": {
+      "name": "Salt",
+      "file": "49578.png"
+    },
+    "49642": {
+      "name": "CircleSpawner",
+      "file": "49642.png"
+    },
+    "49658": {
+      "name": "HangingLootSack",
+      "file": null
+    },
+    "49710": {
+      "name": "WoodcutOakSeedSpawnerAttachment",
+      "file": null
+    },
+    "49774": {
+      "name": "HebiosWakizashiBladePart01",
+      "file": null
+    },
+    "49890": {
+      "name": "BlueberryFullBurnt",
+      "file": "49890.png"
+    },
+    "49994": {
+      "name": "TrialSpawnerT3Myth",
+      "file": null
+    },
+    "50078": {
+      "name": "WallStreetPost",
+      "file": null
+    },
+    "50184": {
+      "name": "HebiosWakizashiBladePart02",
+      "file": null
+    },
+    "50252": {
+      "name": "BabuLegHalfRipe",
+      "file": "50252.png"
+    },
+    "50322": {
+      "name": "AxeHeadCurve",
+      "file": "50322.png"
+    },
+    "50326": {
+      "name": "BabuLegHalfCooked",
+      "file": "50326.png"
+    },
+    "50328": {
+      "name": "BabuLegHalfBurnt",
+      "file": "50328.png"
+    },
+    "50412": {
+      "name": "ExplosiveSpike",
+      "file": "50412.png"
+    },
+    "50484": {
+      "name": "AppleCoreBurnt",
+      "file": "50484.png"
+    },
+    "50548": {
+      "name": "SpadeHead",
+      "file": "50548.png"
+    },
+    "50602": {
+      "name": "ShieldCoreHoledMiddle",
+      "file": "50602.png"
+    },
+    "50608": {
+      "name": "SpriggullFletchingBlue",
+      "file": "50608.png"
+    },
+    "50612": {
+      "name": "PotatoHalfCooked",
+      "file": null
+    },
+    "50658": {
+      "name": "WoodcutBranchRootV2B0",
+      "file": null
+    },
+    "50692": {
+      "name": "PotatoSapling",
+      "file": null
+    },
+    "50768": {
+      "name": "FloatRangeOperator",
+      "file": null
+    },
+    "50794": {
+      "name": "TreeSpawnerAnyAsh",
+      "file": null
+    },
+    "50818": {
+      "name": "TrialSpawnerMDW2",
+      "file": null
+    },
+    "50888": {
+      "name": "ShieldPartHalfCircle",
+      "file": "50888.png"
+    },
+    "50916": {
+      "name": "MushroomBrownHalfCooked",
+      "file": "50916.png"
+    },
+    "50926": {
+      "name": "AppleTreeStage1",
+      "file": null
+    },
+    "50930": {
+      "name": "woodenPlatform_T2x11",
+      "file": null
+    },
+    "50932": {
+      "name": "woodenPlatform_W2x2",
+      "file": null
+    },
+    "50934": {
+      "name": "HoverPiece",
+      "file": "50934.png"
+    },
+    "50940": {
+      "name": "woodenPlatform_Stairs_02",
+      "file": "50940.png"
+    },
+    "50942": {
+      "name": "woodenPlatform_1x1",
+      "file": "50942.png"
+    },
+    "50944": {
+      "name": "woodenPlatform_T2x1",
+      "file": null
+    },
+    "50946": {
+      "name": "woodenPlatform_Railings_1x1",
+      "file": "50946.png"
+    },
+    "50950": {
+      "name": "woodenPlatform_1x2",
+      "file": "50950.png"
+    },
+    "50988": {
+      "name": "HardPlateMetalMediumSquare",
+      "file": "50988.png"
+    },
+    "51070": {
+      "name": "SpawnerTest",
+      "file": null
+    },
+    "51096": {
+      "name": "IngredientGeneratorShelf",
+      "file": null
+    },
+    "51114": {
+      "name": "InfoBoard",
+      "file": null
+    },
+    "51128": {
+      "name": "CrystalStructureBlue",
+      "file": "51128.png"
+    },
+    "51290": {
+      "name": "HebiosBuriedSpawnArea",
+      "file": null
+    },
+    "51434": {
+      "name": "RopePullyPuzzle",
+      "file": "51434.png"
+    },
+    "51486": {
+      "name": "WoodcutB0B30S30",
+      "file": null
+    },
+    "51594": {
+      "name": "ClimbingUnlockOrbPedestal",
+      "file": null
+    },
+    "51610": {
+      "name": "CoalTraining",
+      "file": null
+    },
+    "51652": {
+      "name": "TurabadaSpawnerAutomatic",
+      "file": null
+    },
+    "51672": {
+      "name": "Guard",
+      "file": "51672.png"
+    },
+    "51764": {
+      "name": "MRKMoltenCore",
+      "file": "51764.png"
+    },
+    "52090": {
+      "name": "SnowballnetworkPrefab",
+      "file": "52090.png"
+    },
+    "52126": {
+      "name": "GarlicFullRipe",
+      "file": "52126.png"
+    },
+    "52146": {
+      "name": "PotatoFullUnripe",
+      "file": null
+    },
+    "52360": {
+      "name": "PommelCone",
+      "file": "52360.png"
+    },
+    "52364": {
+      "name": "WheelPuzzle",
+      "file": "52364.png"
+    },
+    "52366": {
+      "name": "EtheralArrow",
+      "file": null
+    },
+    "52444": {
+      "name": "PoisonCloud",
+      "file": null
+    },
+    "52530": {
+      "name": "GarlicFullCooked",
+      "file": "52530.png"
+    },
+    "52756": {
+      "name": "ShieldCoreCircleMiddle",
+      "file": "52756.png"
+    },
+    "52804": {
+      "name": "DescentShaftGcoreElevatorDynamic",
+      "file": null
+    },
+    "52934": {
+      "name": "GarlicFullBurnt",
+      "file": "52934.png"
+    },
+    "52952": {
+      "name": "HangingHealthVine01",
+      "file": null
+    },
+    "52988": {
+      "name": "TrialSpawnerMDT3",
+      "file": null
+    },
+    "53124": {
+      "name": "MetalHebiosSaiBlade",
+      "file": null
+    },
+    "53190": {
+      "name": "SendPost",
+      "file": "53190.png"
+    },
+    "53200": {
+      "name": "HebiosHandleKatana",
+      "file": "53200.png"
+    },
+    "53266": {
+      "name": "WoodcutSR15SR15",
+      "file": null
+    },
+    "53372": {
+      "name": "MushroomBrownHalfBurnt",
+      "file": "53372.png"
+    },
+    "53376": {
+      "name": "SteamSpray",
+      "file": null
+    },
+    "53398": {
+      "name": "AshPile",
+      "file": "53398.png"
+    },
+    "53458": {
+      "name": "EggplantFullUnripe",
+      "file": "53458.png"
+    },
+    "53496": {
+      "name": "HangingHealthVine03",
+      "file": null
+    },
+    "53540": {
+      "name": "WoodenNet",
+      "file": "53540.png"
+    },
+    "53570": {
+      "name": "WedgeTraining",
+      "file": null
+    },
+    "53576": {
+      "name": "SchmeecheeGlowing",
+      "file": "53576.png"
+    },
+    "53902": {
+      "name": "LargeMythrilBoulder",
+      "file": "53902.png"
+    },
+    "53982": {
+      "name": "EggplantFullRipe",
+      "file": "53982.png"
+    },
+    "54092": {
+      "name": "WoodcutBirchLeafClumpC2C31",
+      "file": null
+    },
+    "54108": {
+      "name": "WoodcutBirchLeafClumpC2C32E",
+      "file": null
+    },
+    "54122": {
+      "name": "WoodcutRedwoodLeafClumpT4D30C5",
+      "file": null
+    },
+    "54174": {
+      "name": "WoodcutBirchLeafClumpC1C22E",
+      "file": null
+    },
+    "54182": {
+      "name": "MushroomCaveLargeHalfRipe",
+      "file": "54182.png"
+    },
+    "54190": {
+      "name": "WoodcutWalnutLeafClumpC3C3",
+      "file": null
+    },
+    "54214": {
+      "name": "HoarderBag",
+      "file": "54214.png"
+    },
+    "54328": {
+      "name": "MRK_gate_02",
+      "file": null
+    },
+    "54358": {
+      "name": "archery_targetpuzzletest",
+      "file": null
+    },
+    "54404": {
+      "name": "Dragonfly",
+      "file": null
+    },
+    "54460": {
+      "name": "FlameStepEffectProtoLavaTestLongVariant",
+      "file": "54460.png"
+    },
+    "54462": {
+      "name": "HangingLootBoxPlatform",
+      "file": null
+    },
+    "54482": {
+      "name": "DaggerBladeWide",
+      "file": "54482.png"
+    },
+    "54506": {
+      "name": "EggplantFullCooked",
+      "file": "54506.png"
+    },
+    "54692": {
+      "name": "PotatoFullRipe",
+      "file": "54692.png"
+    },
+    "54764": {
+      "name": "WoodcutB0S30S30",
+      "file": null
+    },
+    "54788": {
+      "name": "PotatoPlantStage3",
+      "file": null
+    },
+    "54804": {
+      "name": "WoodcutBirchLeafClumpC1C21",
+      "file": null
+    },
+    "54820": {
+      "name": "WoodcutBirchLeafClumpC3E",
+      "file": null
+    },
+    "54836": {
+      "name": "WoodcutWalnutLeafClumpC1C2E",
+      "file": null
+    },
+    "54852": {
+      "name": "WoodcutBirchLeafClumpC2C32",
+      "file": null
+    },
+    "55030": {
+      "name": "EggplantFullBurnt",
+      "file": "55030.png"
+    },
+    "55054": {
+      "name": "RedwoodTreeSeed",
+      "file": "55054.png"
+    },
+    "55152": {
+      "name": "WoodcutRedwoodLeafClumpBase",
+      "file": null
+    },
+    "55274": {
+      "name": "BirchTreeSeed",
+      "file": "55274.png"
+    },
+    "55310": {
+      "name": "ShortSwordBlade",
+      "file": "55310.png"
+    },
+    "55364": {
+      "name": "WoodcutBirchLeafClumpC1E",
+      "file": null
+    },
+    "55378": {
+      "name": "WoodcutRedwoodLeafClumpT1D30C5C6",
+      "file": null
+    },
+    "55446": {
+      "name": "(OriginalRootNode)ClimbingTowerTeleporterNode",
+      "file": "55446.png"
+    },
+    "55462": {
+      "name": "EasterEgg01",
+      "file": "55462.png"
+    },
+    "55520": {
+      "name": "WoodcutRedwoodLeafClumpT3D30C5C6",
+      "file": null
+    },
+    "55646": {
+      "name": "HittingShortSwordTraining",
+      "file": null
+    },
+    "55696": {
+      "name": "DiggingGeode",
+      "file": "55696.png"
+    },
+    "55740": {
+      "name": "IntRangeOperator",
+      "file": null
+    },
+    "55914": {
+      "name": "LargeSpikedWoodenClub",
+      "file": "55914.png"
+    },
+    "55930": {
+      "name": "SandstoneStone",
+      "file": "55930.png"
+    },
+    "55954": {
+      "name": "WoodcutRedwoodLeafClumpT2D30C1C2",
+      "file": null
+    },
+    "56012": {
+      "name": "HebiosCampBarrenDynamic",
+      "file": null
+    },
+    "56090": {
+      "name": "HeartReceptacle",
+      "file": "56090.png"
+    },
+    "56098": {
+      "name": "Smeltergem2itempedestal",
+      "file": "56098.png"
+    },
+    "56124": {
+      "name": "LargeLongswordBlade",
+      "file": "56124.png"
+    },
+    "56168": {
+      "name": "Ladder",
+      "file": null
+    },
+    "56300": {
+      "name": "OreTraining",
+      "file": null
+    },
+    "56318": {
+      "name": "ChristmasTree",
+      "file": null
+    },
+    "56348": {
+      "name": "GiftMailBox",
+      "file": "56348.png"
+    },
+    "56376": {
+      "name": "MRKSmelterGemPedestal2",
+      "file": "56376.png"
+    },
+    "56444": {
+      "name": "SmallCaveMushroomCluster",
+      "file": null
+    },
+    "56460": {
+      "name": "Arrow",
+      "file": "56460.png"
+    },
+    "56486": {
+      "name": "TomatoHalfUnripe",
+      "file": null
+    },
+    "56492": {
+      "name": "TomatoTree",
+      "file": "56492.png"
+    },
+    "56546": {
+      "name": "Bow",
+      "file": "56546.png"
+    },
+    "56698": {
+      "name": "Torch",
+      "file": "56698.png"
+    },
+    "56720": {
+      "name": "DaggerBladeRound",
+      "file": "56720.png"
+    },
+    "56764": {
+      "name": "GoteraAshBomb",
+      "file": "56764.png"
+    },
+    "56796": {
+      "name": "HangingHealthVine02",
+      "file": null
+    },
+    "56830": {
+      "name": "HebiosSaiBladePart02",
+      "file": null
+    },
+    "56890": {
+      "name": "TomatoHalfRipe",
+      "file": "56890.png"
+    },
+    "56894": {
+      "name": "CrystalSwordBlue",
+      "file": "56894.png"
+    },
+    "56934": {
+      "name": "CarrotFullUnripe",
+      "file": "56934.png"
+    },
+    "57048": {
+      "name": "HebiosSaiBladePart01",
+      "file": null
+    },
+    "57100": {
+      "name": "LogicFloatReset",
+      "file": null
+    },
+    "57126": {
+      "name": "combat_dummy",
+      "file": "57126.png"
+    },
+    "57168": {
+      "name": "BreakableRootHangingThinStraight",
+      "file": null
+    },
+    "57248": {
+      "name": "StreetPost",
+      "file": null
+    },
+    "57250": {
+      "name": "WoodcutAshLeafClumpC3E",
+      "file": null
+    },
+    "57266": {
+      "name": "WoodcutRedwoodLeafClumpT2D30C3C4",
+      "file": null
+    },
+    "57286": {
+      "name": "TreeSpawnerSmallStandard",
+      "file": null
+    },
+    "57294": {
+      "name": "TomatoHalfCooked",
+      "file": null
+    },
+    "57298": {
+      "name": "QuestBoard",
+      "file": "57298.png"
+    },
+    "57304": {
+      "name": "GymnasiumXpDisplayView",
+      "file": null
+    },
+    "57348": {
+      "name": "PouchTraining",
+      "file": null
+    },
+    "57382": {
+      "name": "CoalBoulder02",
+      "file": "57382.png"
+    },
+    "57516": {
+      "name": "MRKSmelterGemPedestal3",
+      "file": "57516.png"
+    },
+    "57530": {
+      "name": "CaveWaterMound",
+      "file": null
+    },
+    "57538": {
+      "name": "AppleTreeStage2",
+      "file": null
+    },
+    "57564": {
+      "name": "GarlicRoots",
+      "file": "57564.png"
+    },
+    "57634": {
+      "name": "GenericCraftingCollection",
+      "file": null
+    },
+    "57698": {
+      "name": "TomatoHalfBurnt",
+      "file": null
+    },
+    "57802": {
+      "name": "WoodcutAshLeafClumpC2C3E",
+      "file": null
+    },
+    "57820": {
+      "name": "WoodcutWalnutLeafClumpC3C4",
+      "file": null
+    },
+    "57830": {
+      "name": "SnowmanNetworkPrefab1",
+      "file": null
+    },
+    "57838": {
+      "name": "HandleTonfa",
+      "file": "57838.png"
+    },
+    "57840": {
+      "name": "PotatoFullCooked",
+      "file": null
+    },
+    "57872": {
+      "name": "GrassClump",
+      "file": "57872.png"
+    },
+    "57966": {
+      "name": "PommelCircle",
+      "file": "57966.png"
+    },
+    "57998": {
+      "name": "EasterEgg02",
+      "file": "57998.png"
+    },
+    "58042": {
+      "name": "BurnableRootHangingShortBendy",
+      "file": null
+    },
+    "58068": {
+      "name": "WoodcutWedgeCharred",
+      "file": null
+    },
+    "58102": {
+      "name": "OnionHalfUnripe",
+      "file": null
+    },
+    "58180": {
+      "name": "ruins_orbBasin_01TEST",
+      "file": null
+    },
+    "58240": {
+      "name": "RuinsPillarCrystal",
+      "file": "58240.png"
+    },
+    "58270": {
+      "name": "MushroomCaveSmallFullRipe",
+      "file": "58270.png"
+    },
+    "58286": {
+      "name": "TrialSpawnerW2Crys",
+      "file": null
+    },
+    "58460": {
+      "name": "BrokenBurnableRootPieceShort",
+      "file": null
+    },
+    "58506": {
+      "name": "OnionHalfRipe",
+      "file": null
+    },
+    "58514": {
+      "name": "DrawbridgePuzzleRangelong",
+      "file": null
+    },
+    "58540": {
+      "name": "MRKPuzzleCoreStand01",
+      "file": "58540.png"
+    },
+    "58838": {
+      "name": "CarrotFullRipe",
+      "file": "58838.png"
+    },
+    "58844": {
+      "name": "PondTest",
+      "file": null
+    },
+    "58910": {
+      "name": "OnionHalfCooked",
+      "file": null
+    },
+    "58970": {
+      "name": "TreeSpawnerAnyTEMPTEST",
+      "file": null
+    },
+    "59026": {
+      "name": "BuriedPullupCarrot",
+      "file": "59026.png"
+    },
+    "59062": {
+      "name": "SlowGrass",
+      "file": null
+    },
+    "59178": {
+      "name": "BrambleObstacle",
+      "file": "59178.png"
+    },
+    "59314": {
+      "name": "OnionHalfBurnt",
+      "file": null
+    },
+    "59336": {
+      "name": "GeodeTier1",
+      "file": "59336.png"
+    },
+    "59342": {
+      "name": "GoteraSeedlingOrb",
+      "file": "59342.png"
+    },
+    "59468": {
+      "name": "StandardSideToolAttachment",
+      "file": "59468.png"
+    },
+    "59482": {
+      "name": "AreaofInfluenceSenderpuzzle",
+      "file": null
+    },
+    "59586": {
+      "name": "RustyPitchfork",
+      "file": "59586.png"
+    },
+    "59588": {
+      "name": "RodSlim40cm",
+      "file": "59588.png"
+    },
+    "59594": {
+      "name": "StorageCrateRedwoodClosed",
+      "file": null
+    },
+    "59718": {
+      "name": "GarlicHalfUnripe",
+      "file": null
+    },
+    "59748": {
+      "name": "PotatoHalfBurnt",
+      "file": null
+    },
+    "59922": {
+      "name": "PumpkinGrowth",
+      "file": null
+    },
+    "59936": {
+      "name": "ShieldPartHalfPoint01",
+      "file": "59936.png"
+    },
+    "59952": {
+      "name": "Bookshelf_NoBackboard",
+      "file": null
+    },
+    "59986": {
+      "name": "Lectern",
+      "file": null
+    },
+    "60122": {
+      "name": "GarlicHalfRipe",
+      "file": null
+    },
+    "60158": {
+      "name": "WoodcutOakLeafClumpBase",
+      "file": null
+    },
+    "60246": {
+      "name": "ChuteGcoreDynamic",
+      "file": null
+    },
+    "60330": {
+      "name": "MushroomCaveLargeHalfBurnt",
+      "file": "60330.png"
+    },
+    "60372": {
+      "name": "TeleporterToCustomization",
+      "file": "60372.png"
+    },
+    "60406": {
+      "name": "BrokenBurnableRootPieceGround",
+      "file": null
+    },
+    "60484": {
+      "name": "BrokenCrystalPiece01",
+      "file": null
+    },
+    "60526": {
+      "name": "GarlicHalfCooked",
+      "file": null
+    },
+    "60550": {
+      "name": "MRKPuzzleCoreInitialStand01Variant",
+      "file": "60550.png"
+    },
+    "60598": {
+      "name": "HandleMediumRidged",
+      "file": "60598.png"
+    },
+    "60674": {
+      "name": "TownshipBridgeRepairBox",
+      "file": null
+    },
+    "60684": {
+      "name": "Recycler",
+      "file": "60684.png"
+    },
+    "60742": {
+      "name": "CarrotFullCooked",
+      "file": "60742.png"
+    },
+    "60762": {
+      "name": "CharacterLevelStone",
+      "file": null
+    },
+    "60800": {
+      "name": "BreakablePot",
+      "file": "60800.png"
+    },
+    "60812": {
+      "name": "TargetedGeyser",
+      "file": "60812.png"
+    },
+    "60868": {
+      "name": "CarsiIngot",
+      "file": "60868.png"
+    },
+    "60876": {
+      "name": "ore_iron",
+      "file": null
+    },
+    "60910": {
+      "name": "TrialSpawnerMDT2",
+      "file": null
+    },
+    "60930": {
+      "name": "GarlicHalfBurnt",
+      "file": null
+    },
+    "60974": {
+      "name": "MapBoard",
+      "file": null
+    },
+    "61020": {
+      "name": "OreSidePouchAttachment",
+      "file": "61020.png"
+    },
+    "61098": {
+      "name": "HandleLargeBranch",
+      "file": "61098.png"
+    },
+    "61180": {
+      "name": "MetalWallHook",
+      "file": null
+    },
+    "61222": {
+      "name": "AppleTree",
+      "file": "61222.png"
+    },
+    "61334": {
+      "name": "EggplantHalfUnripe",
+      "file": "61334.png"
+    },
+    "61400": {
+      "name": "HandleMediumBranch",
+      "file": "61400.png"
+    },
+    "61414": {
+      "name": "StickTraining",
+      "file": null
+    },
+    "61448": {
+      "name": "GoteraAshVariant",
+      "file": "61448.png"
+    },
+    "61454": {
+      "name": "WyrmSpit",
+      "file": "61454.png"
+    },
+    "61488": {
+      "name": "SmallBoneSpike",
+      "file": "61488.png"
+    },
+    "61492": {
+      "name": "BrokenBurnableRootPieceThin",
+      "file": null
+    },
+    "61634": {
+      "name": "FlowerRed",
+      "file": "61634.png"
+    },
+    "61648": {
+      "name": "GoldCoin",
+      "file": "61648.png"
+    },
+    "61650": {
+      "name": "GoldOre",
+      "file": "61650.png"
+    },
+    "61652": {
+      "name": "IronOre",
+      "file": "61652.png"
+    },
+    "61654": {
+      "name": "PickAxe",
+      "file": null
+    },
+    "61656": {
+      "name": "Shield",
+      "file": "61656.png"
+    },
+    "61658": {
+      "name": "MushroomRedFullRipe",
+      "file": "61658.png"
+    },
+    "61666": {
+      "name": "MushroomBrownFullRipe",
+      "file": "61666.png"
+    },
+    "61670": {
+      "name": "Stone",
+      "file": "61670.png"
+    },
+    "61674": {
+      "name": "Stick",
+      "file": "61674.png"
+    },
+    "61738": {
+      "name": "EggplantHalfRipe",
+      "file": "61738.png"
+    },
+    "61742": {
+      "name": "BuriedPullup",
+      "file": "61742.png"
+    },
+    "61754": {
+      "name": "MRKAutomatedPipeHazardElevator76Variant",
+      "file": null
+    },
+    "61844": {
+      "name": "MRKWheelBridge",
+      "file": "61844.png"
+    },
+    "61856": {
+      "name": "HandleMediumCool",
+      "file": "61856.png"
+    },
+    "61862": {
+      "name": "AshGoteraSeedSpray",
+      "file": null
+    },
+    "61964": {
+      "name": "WheelPuzzleOLD",
+      "file": null
+    },
+    "62012": {
+      "name": "AppleHalfUnripe",
+      "file": "62012.png"
+    },
+    "62050": {
+      "name": "Spriggull",
+      "file": "62050.png"
+    },
+    "62102": {
+      "name": "AppleFullBurnt",
+      "file": "62102.png"
+    },
+    "62120": {
+      "name": "DebugPlayerStone",
+      "file": null
+    },
+    "62140": {
+      "name": "GuardFancy",
+      "file": "62140.png"
+    },
+    "62142": {
+      "name": "EggplantHalfCooked",
+      "file": "62142.png"
+    },
+    "62144": {
+      "name": "TrialSpawnerMDT1",
+      "file": null
+    },
+    "62188": {
+      "name": "StewIngredientCollection",
+      "file": null
+    },
+    "62220": {
+      "name": "LogicFloatChangeOnBool",
+      "file": null
+    },
+    "62244": {
+      "name": "DecraftingDeck",
+      "file": "62244.png"
+    },
+    "62282": {
+      "name": "PoleHuggerTall",
+      "file": "62282.png"
+    },
+    "62378": {
+      "name": "WoodcutT0B45B45B60",
+      "file": null
+    },
+    "62404": {
+      "name": "DummyShelfShort",
+      "file": "62404.png"
+    },
+    "62444": {
+      "name": "NewTreeGrower",
+      "file": null
+    },
+    "62546": {
+      "name": "EggplantHalfBurnt",
+      "file": "62546.png"
+    },
+    "62594": {
+      "name": "HardMetalSmallBits",
+      "file": "62594.png"
+    },
+    "62602": {
+      "name": "PotatoPlantStage1",
+      "file": null
+    },
+    "62634": {
+      "name": "CarrotFullBurnt",
+      "file": "62634.png"
+    },
+    "62702": {
+      "name": "AppleTreeStage3",
+      "file": null
+    },
+    "62838": {
+      "name": "ObstaclePath",
+      "file": null
+    },
+    "62846": {
+      "name": "BreakableRootFence",
+      "file": "62846.png"
+    },
+    "62950": {
+      "name": "CarrotHalfUnripe",
+      "file": "62950.png"
+    },
+    "62968": {
+      "name": "TurabadaMythrilVariant",
+      "file": "62968.png"
+    },
+    "63034": {
+      "name": "CampfireInfinite",
+      "file": null
+    },
+    "63036": {
+      "name": "Smeltergem3itempedestal",
+      "file": "63036.png"
+    },
+    "63038": {
+      "name": "PumpkinTreeStage3",
+      "file": null
+    },
+    "63156": {
+      "name": "RustyGreatsword",
+      "file": "63156.png"
+    },
+    "63174": {
+      "name": "ChristmasGiftBoxSpawner",
+      "file": null
+    },
+    "63178": {
+      "name": "TurabadaLargeDestroyVariant",
+      "file": "63178.png"
+    },
+    "63204": {
+      "name": "SoftFabricMediumStrips",
+      "file": "63204.png"
+    },
+    "63354": {
+      "name": "CarrotHalfRipe",
+      "file": "63354.png"
+    },
+    "63498": {
+      "name": "SmallShield",
+      "file": "63498.png"
+    },
+    "63530": {
+      "name": "PotatoPlantStage2",
+      "file": null
+    },
+    "63728": {
+      "name": "SchmeecheeOrange",
+      "file": "63728.png"
+    },
+    "63758": {
+      "name": "CarrotHalfCooked",
+      "file": "63758.png"
+    },
+    "63792": {
+      "name": "BreakableRootHangingBendy",
+      "file": null
+    },
+    "63824": {
+      "name": "RockCluster",
+      "file": "63824.png"
+    },
+    "63826": {
+      "name": "StorageChest",
+      "file": null
+    },
+    "63840": {
+      "name": "CaveWallSupport",
+      "file": null
+    },
+    "63844": {
+      "name": "SpawnPoint",
+      "file": null
+    },
+    "63846": {
+      "name": "CaveGrass",
+      "file": "63846.png"
+    },
+    "63848": {
+      "name": "Campfire",
+      "file": null
+    },
+    "63878": {
+      "name": "TurabadaShortVariant",
+      "file": "63878.png"
+    },
+    "63886": {
+      "name": "GreatSwordBlade",
+      "file": "63886.png"
+    },
+    "63904": {
+      "name": "WoodenBucket",
+      "file": "63904.png"
+    },
+    "64134": {
+      "name": "ElevatorPuzzleCrank",
+      "file": "64134.png"
+    },
+    "64136": {
+      "name": "MRK_gate_0115xVariant",
+      "file": null
+    },
+    "64146": {
+      "name": "CarrotHalfBurnt",
+      "file": "64146.png"
+    },
+    "64172": {
+      "name": "CurledWoodenHandle",
+      "file": "64172.png"
+    },
+    "64204": {
+      "name": "MailDepositBox",
+      "file": "64204.png"
+    },
+    "64260": {
+      "name": "woodenPlatform_1x1Torch",
+      "file": "64260.png"
+    },
+    "64302": {
+      "name": "BrokenBurnableRootPieceThick",
+      "file": null
+    },
+    "64316": {
+      "name": "Bookshelf",
+      "file": null
+    },
+    "64388": {
+      "name": "BreakableRootCurved",
+      "file": "64388.png"
+    },
+    "64410": {
+      "name": "HandleBow",
+      "file": "64410.png"
+    },
+    "64560": {
+      "name": "OreBag",
+      "file": "64560.png"
+    },
+    "64640": {
+      "name": "Quiver",
+      "file": "64640.png"
+    },
+    "64704": {
+      "name": "PracticeGate",
+      "file": null
+    },
+    "64844": {
+      "name": "BabuLegFullBurnt",
+      "file": "64844.png"
+    },
+    "64848": {
+      "name": "SpyGlassLong",
+      "file": null
+    },
+    "64858": {
+      "name": "PlaceItemPuzzleNoDockFire",
+      "file": null
+    },
+    "64866": {
+      "name": "BurnableRootHangingThinBendy",
+      "file": null
+    },
+    "65004": {
+      "name": "MotherFern",
+      "file": "65004.png"
+    },
+    "65260": {
+      "name": "BurnableRootGround03",
+      "file": null
+    },
+    "65358": {
+      "name": "MRKFuelCore",
+      "file": "65358.png"
+    },
+    "65380": {
+      "name": "CopperBoulder",
+      "file": "65380.png"
+    },
+    "65420": {
+      "name": "OreStorage",
+      "file": null
+    },
+    "65526": {
+      "name": "AppleHalfBurnt",
+      "file": "65526.png"
+    }
+  }
+}
