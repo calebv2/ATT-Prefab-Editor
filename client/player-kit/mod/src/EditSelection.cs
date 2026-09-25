@@ -119,8 +119,8 @@ namespace PrefabEditorMod
         const float MaxResizePercent = 100f;
         string _resizePercentText = "10";
         float _resizePercent = 10f;
-        NetworkEntity _resizePreviewRoot;
-        Vector3 _resizePreviewScale;
+        readonly List<NetworkEntity> _resizePreviewRoots = new List<NetworkEntity>();
+        readonly List<Vector3> _resizePreviewScales = new List<Vector3>();
         bool _resizePreviewActive;
         bool _resizeSliderDragging;
         bool _surfaceSnap;
@@ -373,19 +373,33 @@ namespace PrefabEditorMod
 
         void PreviewResize(float percent)
         {
-            if (_busy || !_has || _group.Count != 1 || _root == null) return;
-            if (_resizePreviewActive && _resizePreviewRoot != _root) RestoreResizePreview();
+            if (_busy || !_has || _group.Count == 0) return;
             if (!_resizePreviewActive)
             {
-                _resizePreviewRoot = _root;
-                try { _resizePreviewScale = _root.transform.localScale; }
-                catch { _resizePreviewRoot = null; return; }
+                _resizePreviewRoots.Clear();
+                _resizePreviewScales.Clear();
+                for (int i = 0; i < _group.Count; i++)
+                {
+                    NetworkEntity item = _group[i];
+                    if (item == null) continue;
+                    try
+                    {
+                        _resizePreviewRoots.Add(item);
+                        _resizePreviewScales.Add(item.transform.localScale);
+                    }
+                    catch { }
+                }
+                if (_resizePreviewRoots.Count == 0) return;
                 _resizePreviewActive = true;
             }
             try
             {
-                _resizePreviewRoot.transform.localScale = _resizePreviewScale * (1f + percent / 100f);
-                SetStatus("resize preview " + percent.ToString("+0.0;-0.0;0", CultureInfo.InvariantCulture)
+                float factor = 1f + percent / 100f;
+                for (int i = 0; i < _resizePreviewRoots.Count; i++)
+                    if (_resizePreviewRoots[i] != null)
+                        _resizePreviewRoots[i].transform.localScale = _resizePreviewScales[i] * factor;
+                SetStatus("resize preview " + _resizePreviewRoots.Count + " selected items "
+                    + percent.ToString("+0.0;-0.0;0", CultureInfo.InvariantCulture)
                     + "% - release slider to apply");
             }
             catch { RestoreResizePreview(); }
@@ -395,14 +409,18 @@ namespace PrefabEditorMod
         {
             if (_resizePreviewActive)
             {
-                try
+                for (int i = 0; i < _resizePreviewRoots.Count; i++)
                 {
-                    if (_resizePreviewRoot != null)
-                        _resizePreviewRoot.transform.localScale = _resizePreviewScale;
+                    try
+                    {
+                        if (_resizePreviewRoots[i] != null)
+                            _resizePreviewRoots[i].transform.localScale = _resizePreviewScales[i];
+                    }
+                    catch { }
                 }
-                catch { }
             }
-            _resizePreviewRoot = null;
+            _resizePreviewRoots.Clear();
+            _resizePreviewScales.Clear();
             _resizePreviewActive = false;
             _resizeSliderDragging = false;
         }
@@ -1927,22 +1945,67 @@ namespace PrefabEditorMod
         void ResizeSelected(float factor)
         {
             if (_busy || !_has) return;
-            if (_group.Count != 1)
-            {
-                RestoreResizePreview();
-                SetStatus("resize one item at a time", ToneErr);
-                return;
-            }
             if (factor < 0.5f || factor > 2f)
             {
                 RestoreResizePreview();
                 SetStatus("resize amount must be between -50% and +100%", ToneErr);
                 return;
             }
-            uint id = _id;
+            List<uint> ids = new List<uint>();
+            for (int i = 0; i < _group.Count; i++)
+            {
+                try { if (_group[i] != null && _group[i].Identifier != 0) ids.Add(_group[i].Identifier); }
+                catch { }
+            }
+            if (ids.Count == 0) { RestoreResizePreview(); SetStatus("selection has no live items", ToneErr); return; }
+            RestoreResizePreview();
             _busy = true;
-            SetStatus("scaling #" + id + " ...");
-            _api.Scale(id, factor, OnReplaced);
+            if (ids.Count == 1)
+            {
+                SetStatus("scaling #" + ids[0] + " ...");
+                _api.Scale(ids[0], factor, OnReplaced);
+                return;
+            }
+            SetStatus("scaling " + ids.Count + " selected items...");
+            ResizeNext(ids, new List<uint>(), 0, factor);
+        }
+
+        void ResizeNext(List<uint> ids, List<uint> replacements, int index, float factor)
+        {
+            if (index >= ids.Count)
+            {
+                FinishResizeMany(ids, replacements, ids.Count, null);
+                return;
+            }
+            uint oldId = ids[index];
+            _api.Scale(oldId, factor, delegate(EditResult r)
+            {
+                if (r.Ok && r.Ent != null && r.Ent.Id != 0)
+                {
+                    replacements.Add(r.Ent.Id);
+                    SetStatus("scaled " + replacements.Count + " of " + ids.Count + " items...");
+                    ResizeNext(ids, replacements, index + 1, factor);
+                    return;
+                }
+
+                // Keep the unprocessed selection alongside completed replacements
+                // so a partial server failure does not lose the user's selection.
+                for (int i = index; i < ids.Count; i++) replacements.Add(ids[i]);
+                FinishResizeMany(ids, replacements, index, Reason(r));
+            });
+        }
+
+        void FinishResizeMany(List<uint> originalIds, List<uint> selectedIds, int scaledCount, string error)
+        {
+            _busy = false;
+            Clear();
+            AdoptManySoon(selectedIds, "scaled");
+            RefreshHistory(false);
+            if (error == null)
+                SetStatus("scaled " + scaledCount + " items; restoring the full selection...", ToneOk);
+            else
+                SetStatus("scaled " + scaledCount + " of " + originalIds.Count
+                    + " items; stopped after an error: " + error, ToneErr);
         }
 
         void OnReplaced(EditResult r)
@@ -3291,8 +3354,7 @@ namespace PrefabEditorMod
 
             if (DrawArrangeSection("Scale", ref _scaleSectionOpen))
             {
-                if (single) DrawResizeControls();
-                else GUILayout.Label("Select one item to change its size.", _mutedStyle);
+                DrawResizeControls();
             }
             GUILayout.Space(6f);
 
@@ -3860,10 +3922,10 @@ namespace PrefabEditorMod
 
         void DrawResizeControls()
         {
-            bool enabled = _group.Count == 1 && !_busy;
+            bool enabled = _has && _group.Count > 0 && !_busy;
             GUILayout.Space(4f);
             GUILayout.BeginHorizontal();
-            GUILayout.Label("Size Δ", GUILayout.Width(54f));
+            GUILayout.Label(_group.Count > 1 ? "Size Δ each" : "Size Δ", GUILayout.Width(78f));
             GUI.enabled = enabled;
             GUI.SetNextControlName("PrefabResizePercent");
             string typed = GUILayout.TextField(_resizePercentText, GUILayout.Width(68f));
@@ -3883,7 +3945,9 @@ namespace PrefabEditorMod
             if (!valid) GUILayout.Label("Enter a size change from -50% to +100%.", _mutedStyle);
 
             GUI.enabled = enabled;
-            GUILayout.Label("Drag to preview; release to apply (-50% to +100%).");
+            GUILayout.Label(_group.Count > 1
+                ? "Drag to preview all selected items; release to apply (-50% to +100%)."
+                : "Drag to preview; release to apply (-50% to +100%).");
             float previous = _resizePercent;
             float changed = GUILayout.HorizontalSlider(_resizePercent, MinResizePercent, MaxResizePercent);
             if (Mathf.Abs(changed - previous) > 0.01f)

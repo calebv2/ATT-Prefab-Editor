@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.5 — 2026-09-25
+
+- Scaling now previews and applies to all selected items together; the replacements are reselected afterward.
+- Group scaling uses the existing server-authoritative scale operation for each selected item.
+
+
 ## 2.0.4 — 2026-09-25
 
 - The in-game spawn picker now shows every live server spawnable prefab when the search box is empty, with the list scrollable beyond the first 11 entries.
