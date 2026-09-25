@@ -2336,7 +2336,7 @@ namespace PrefabEditorMod
                 if (_spawnQuery == _spawnSent) return;
                 _spawnBusy = true;
                 string fallbackQuery = _spawnQuery;
-                _api.Prefabs(fallbackQuery, 11, delegate(EditResult r) { OnStaticPrefabs(fallbackQuery, r); });
+                _api.Prefabs(fallbackQuery, 2000, delegate(EditResult r) { OnStaticPrefabs(fallbackQuery, r); });
                 return;
             }
 
@@ -2412,7 +2412,7 @@ namespace PrefabEditorMod
                     return;
                 }
             }
-            for (int i = 0; i < _spawnCatalog.Count && _hitNames.Count < 11; i++)
+            for (int i = 0; i < _spawnCatalog.Count; i++)
             {
                 SpawnCatalogEntry entry = _spawnCatalog[i];
                 if (!string.IsNullOrEmpty(q)

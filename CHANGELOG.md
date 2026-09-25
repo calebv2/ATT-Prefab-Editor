@@ -1,5 +1,11 @@
 # Changelog
 
+## 2.0.4 — 2026-09-25
+
+- The in-game spawn picker now shows every live server spawnable prefab when the search box is empty, with the list scrollable beyond the first 11 entries.
+- The packaged-catalog fallback also requests the complete result range.
+
+
 ## 2.0.3 — 2026-09-25
 
 - The server panel's prefab picker now shows the full catalog when search is empty and scrolls through all results.
