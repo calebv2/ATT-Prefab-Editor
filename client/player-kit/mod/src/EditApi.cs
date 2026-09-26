@@ -12,6 +12,7 @@
 
 using System;
 using System.Collections;
+using System.Collections.Generic;
 using System.Globalization;
 using System.Text;
 using MelonLoader;
@@ -262,6 +263,49 @@ namespace PrefabEditorMod
             Send("GET", "/api/edit/players", null, cb);
         }
 
+        public void SetTime(string time, Action<EditResult> cb)
+        {
+            Post("/api/edit/time", "{\"time\":\"" + EscapeJson(time) + "\"}", cb);
+        }
+
+        public void KickPlayer(string player, Action<EditResult> cb)
+        {
+            Post("/api/edit/kick", "{\"player\":\"" + EscapeJson(player) + "\"}", cb);
+        }
+
+        public void TeleportPlayer(string player, string destination, Action<EditResult> cb)
+        {
+            Post("/api/edit/teleport-player", "{\"player\":\"" + EscapeJson(player)
+                + "\",\"destination\":\"" + EscapeJson(destination) + "\"}", cb);
+        }
+
+        public void InfoBoards(Action<EditResult> cb)
+        {
+            Send("GET", "/api/infoboards", null, cb);
+        }
+
+        public void UpdateInfoBoard(string key, string text, bool hasRotation, bool enabled,
+            int interval, string unit, List<string> messages, Action<EditResult> cb)
+        {
+            string rotation = "null";
+            if (hasRotation)
+            {
+                StringBuilder encodedMessages = new StringBuilder("[");
+                for (int i = 0; messages != null && i < messages.Count; i++)
+                {
+                    if (i > 0) encodedMessages.Append(',');
+                    encodedMessages.Append('"').Append(EscapeJson(messages[i])).Append('"');
+                }
+                encodedMessages.Append(']');
+                rotation = "{\"enabled\":" + (enabled ? "true" : "false")
+                    + ",\"interval\":" + interval
+                    + ",\"unit\":\"" + EscapeJson(unit) + "\",\"messages\":" + encodedMessages + "}";
+            }
+            string body = "{\"key\":\"" + EscapeJson(key) + "\",\"text\":\""
+                + EscapeJson(text) + "\",\"rotation\":" + rotation + "}";
+            Post("/api/infoboards/update", body, cb);
+        }
+
         public void Command(string command, Action<EditResult> cb)
         {
             Post("/api/command", "{\"command\":\"" + EscapeJson(command) + "\"}", cb);
@@ -270,8 +314,21 @@ namespace PrefabEditorMod
         static string EscapeJson(string value)
         {
             if (value == null) return "";
-            return value.Replace("\\", "\\\\").Replace("\"", "\\\"")
-                .Replace("\r", "\\r").Replace("\n", "\\n");
+            StringBuilder escaped = new StringBuilder(value.Length + 16);
+            for (int i = 0; i < value.Length; i++)
+            {
+                char c = value[i];
+                if (c == '\\') escaped.Append("\\\\");
+                else if (c == '"') escaped.Append("\\\"");
+                else if (c == '\b') escaped.Append("\\b");
+                else if (c == '\f') escaped.Append("\\f");
+                else if (c == '\n') escaped.Append("\\n");
+                else if (c == '\r') escaped.Append("\\r");
+                else if (c == '\t') escaped.Append("\\t");
+                else if (c < 0x20) escaped.Append("\\u").Append(((int)c).ToString("x4", CultureInfo.InvariantCulture));
+                else escaped.Append(c);
+            }
+            return escaped.ToString();
         }
 
         // Spawn a catalog prefab at a point (edit spawnat). The hash is the whole
@@ -526,15 +583,10 @@ namespace PrefabEditorMod
             {
                 if (arr[i] == '"')
                 {
-                    int j = i + 1; StringBuilder sb = new StringBuilder();
-                    while (j < n)
-                    {
-                        if (arr[j] == '\\' && j + 1 < n) { sb.Append(arr[j + 1]); j += 2; continue; }
-                        if (arr[j] == '"') break;
-                        sb.Append(arr[j]); j++;
-                    }
-                    outp.Add(sb.ToString());
-                    i = j + 1;
+                    string encoded = Read(arr, i);
+                    if (encoded == null || encoded.Length < 2) break;
+                    outp.Add(Unescape(encoded.Substring(1, encoded.Length - 2)));
+                    i += encoded.Length;
                 }
                 else i++;
             }

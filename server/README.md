@@ -38,3 +38,25 @@ panel, then creates `start-panel.bat`. See [INSTALL.md](INSTALL.md) for details.
 - `server-kit/core/` — C# source and build script
 
 This source checkout does not track generated DLLs. Download the Server Kit ZIP from [Releases](https://github.com/calebv2/ATT-Prefab-Editor/releases/latest), or build `server-kit/core/PrefabEditorCore.dll` before running the installer.
+
+## Admin and Info Boards tabs
+
+The in-game **Admin** tab sets a custom time or noon, kicks a selected online
+player after confirmation, and teleports one online player beside another.
+Those commands run on the server through the panel's existing owner-authorized
+console connection.
+
+The in-game **Info boards** tab edits text and timed message rotation for a
+selected `Info_Board`. It requires the separate server-only
+`LiveInfoBoards.dll` mod and its `UserData/InfoBoards.json` registry. The panel writes that registry atomically;
+LiveInfoBoards notices the change and applies it while the server stays up.
+If you do not have `LiveInfoBoards.dll`, it is available on the ATT modding
+Discord. Install it on the server and restart once so it creates the registry.
+
+By default, the panel looks for `InfoBoards.json` beside the `UserData`
+directory implied by `ATT_CONSOLE_DIR` (for example, if that is
+`game-server/UserData/att_console`, it uses
+`game-server/UserData/InfoBoards.json`). If the file is elsewhere, start the
+panel with `INFOBOARDS_CONFIG` set to its full path. Only trusted users should
+have access to the panel, since its existing console connection can administer
+the server.

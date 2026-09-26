@@ -44,6 +44,11 @@
 //   POST /api/edit/duplicate-many { ids, dx, dy, dz } batch duplicate
 //   POST /api/edit/undo | /redo; GET /api/edit/history server session history
 //   POST /api/edit/tostring { id }                    save string of one entity (one-shot)
+//   POST /api/edit/time { time }                      set time of day
+//   POST /api/edit/kick { player }                    kick an online player
+//   POST /api/edit/teleport-player { player, destination } move between players
+//   GET  /api/infoboards                              LiveInfoBoards registry
+//   POST /api/infoboards/update { key, text, rotation } edit one board
 //
 // String library (capture/replay half):
 //   GET  /api/strings                    the saved library
@@ -139,6 +144,88 @@ function nameOrId(v, what) {
     return s.includes(' ') ? '"' + s + '"' : s;
 }
 
+function adminTimeCommand(b) {
+    const value = String(b.time == null ? '' : b.time).trim();
+    if (!/^(?:(?:[01]?\d|2[0-3])(?::[0-5]\d)?|[a-z][a-z0-9_-]{0,31})$/i.test(value)) {
+        throw new PanelError('time must be a 24-hour value such as 13:45 or a time keyword');
+    }
+    return 'time set ' + value;
+}
+
+function infoBoardText(v, what) {
+    if (typeof v !== 'string' || v.length > 5000) {
+        throw new PanelError(what + ' must be text with at most 5000 characters');
+    }
+    return v;
+}
+
+function infoBoardRotation(v) {
+    if (v === null) return null;
+    if (!v || typeof v !== 'object' || Array.isArray(v)) {
+        throw new PanelError('rotation must be null or an object');
+    }
+    if (typeof v.enabled !== 'boolean' || !Number.isInteger(v.interval)
+        || v.interval < 1 || v.interval > 86400
+        || (v.unit !== 'seconds' && v.unit !== 'minutes')
+        || !Array.isArray(v.messages) || v.messages.length > 20) {
+        throw new PanelError('rotation needs enabled, interval (1-86400), unit, and up to 20 messages');
+    }
+    const messages = v.messages.map((message, i) => {
+        if (typeof message !== 'string' || message.length < 1 || message.length > 5000) {
+            throw new PanelError('rotation message ' + (i + 1) + ' must contain 1-5000 characters');
+        }
+        return message;
+    });
+    return { enabled: v.enabled, interval: v.interval, unit: v.unit, messages };
+}
+
+function readInfoBoardDocument(file) {
+    if (!fs.existsSync(file)) return { configured: false, boards: {} };
+    let document;
+    try { document = JSON.parse(fs.readFileSync(file, 'utf8')); }
+    catch (e) { throw new PanelError('cannot read InfoBoards.json: ' + e.message); }
+    if (!document || typeof document !== 'object' || Array.isArray(document)
+        || !document.boards || typeof document.boards !== 'object' || Array.isArray(document.boards)) {
+        throw new PanelError('InfoBoards.json must contain a boards object');
+    }
+    return { configured: true, boards: document.boards };
+}
+
+function updateInfoBoardDocument(file, body) {
+    const loaded = readInfoBoardDocument(file);
+    if (!loaded.configured) {
+        throw new PanelError('InfoBoards.json was not found; install LiveInfoBoards.dll or set INFOBOARDS_CONFIG');
+    }
+    if (typeof body.key !== 'string' || !/^-?\d+\.\d,-?\d+\.\d,-?\d+\.\d$/.test(body.key)) {
+        throw new PanelError('board key must be a registered one-decimal world position');
+    }
+    if (!Object.prototype.hasOwnProperty.call(loaded.boards, body.key)) {
+        throw new PanelError('this Info_Board is not registered yet; let it load in-world, then refresh');
+    }
+    const board = loaded.boards[body.key];
+    if (!board || typeof board !== 'object' || Array.isArray(board)
+        || typeof board.channel !== 'string' || typeof board.text !== 'string') {
+        throw new PanelError('registered board entry is invalid');
+    }
+    board.text = infoBoardText(body.text, 'board text');
+    if (!Object.prototype.hasOwnProperty.call(body, 'rotation')) {
+        throw new PanelError('rotation settings are missing');
+    }
+    const rotation = infoBoardRotation(body.rotation);
+    if (rotation === null) delete board.rotation;
+    else board.rotation = rotation;
+
+    const temporary = file + '.prefab-editor-' + process.pid + '-' + Date.now() + '.tmp';
+    try {
+        fs.writeFileSync(temporary, JSON.stringify({ boards: loaded.boards }, null, 2) + '\n', 'utf8');
+        fs.renameSync(temporary, file);
+    } catch (e) {
+        try { fs.unlinkSync(temporary); } catch { }
+        throw new PanelError('could not save InfoBoards.json: ' + e.message);
+    }
+    return { ok: true, key: body.key, board };
+}
+
 // Save strings are the game's comma-separated encoding, two halves joined by
 // '|' — numbers and separators only. Anything else does not go into the pipe.
 const SAVE_STRING_RE = /^[\d,|\s.+-]+$/;
@@ -170,6 +257,10 @@ const builders = {
     selectToString: () => 'select tostring',
     spawnString: (player, s) => 'spawn string ' + nameOrId(player, 'player') + ' ' + saveString(s, 'string'),
     editPlayers: () => 'edit players',
+    adminSetTime: (b) => adminTimeCommand(b),
+    editKick: (b) => 'edit kick ' + nameOrId(b.player, 'player'),
+    editTeleportPlayer: (b) => 'edit teleport ' + nameOrId(b.player, 'player')
+        + ' ' + nameOrId(b.destination, 'destination player'),
     editScan: (b) => 'edit scan ' + nameOrId(b.player, 'player') + ' ' + coord(b.radius == null ? 30 : b.radius, 'radius'),
     editScanAt: (b) => 'edit scanat ' + coord(b.x, 'x') + ' ' + coord(b.y, 'y') + ' ' + coord(b.z, 'z')
         + ' ' + coord(b.radius == null ? 30 : b.radius, 'radius'),
@@ -265,12 +356,12 @@ class PanelError extends Error { }
 
 // ---- http plumbing -------------------------------------------------------------
 
-function readBody(req) {
+function readBody(req, maxBytes) {
     return new Promise((resolve, reject) => {
         let data = '';
         req.on('data', (c) => {
             data += c;
-            if (data.length > 65536) { req.destroy(); reject(new PanelError('body too large')); }
+            if (data.length > (maxBytes || 65536)) { req.destroy(); reject(new PanelError('body too large')); }
         });
         req.on('end', () => {
             if (data === '') { return resolve({}); }
@@ -296,6 +387,12 @@ function createServer(opts) {
     const stateDir = opts.stateDir || process.env.PANEL_STATE_DIR || path.join(__dirname, 'state');
     const library = new StringLibrary(stateDir);
     const signer = opts.signer || new TokenSigner({ consoleDir: opts.consoleDir });
+    const consoleDirectory = opts.consoleDir || process.env.ATT_CONSOLE_DIR || signer.consoleDir;
+    const defaultInfoBoardsFile = consoleDirectory
+        ? path.join(path.dirname(consoleDirectory), 'InfoBoards.json')
+        : path.join(stateDir, 'InfoBoards.json');
+    const infoBoardsFile = path.resolve(opts.infoBoardsFile || process.env.INFOBOARDS_CONFIG
+        || defaultInfoBoardsFile);
     const pipe = opts.pipe || new ConsolePipe({
         host: opts.consoleHost,
         port: opts.consolePort,
@@ -421,6 +518,27 @@ function createServer(opts) {
 
                 case 'GET /api/edit/players':
                     return runEdit(res, builders.editPlayers());
+                case 'POST /api/edit/time': {
+                    try { return run(res, builders.adminSetTime(await readBody(req))); }
+                    catch (e) {
+                        if (e instanceof PanelError) return json(res, 200, { ok: false, error: e.message });
+                        throw e;
+                    }
+                }
+                case 'POST /api/edit/kick': {
+                    try { return runEdit(res, builders.editKick(await readBody(req))); }
+                    catch (e) {
+                        if (e instanceof PanelError) return json(res, 200, { ok: false, error: e.message });
+                        throw e;
+                    }
+                }
+                case 'POST /api/edit/teleport-player': {
+                    try { return runEdit(res, builders.editTeleportPlayer(await readBody(req))); }
+                    catch (e) {
+                        if (e instanceof PanelError) return json(res, 200, { ok: false, error: e.message });
+                        throw e;
+                    }
+                }
                 case 'POST /api/edit/scan': {
                     const b = await readBody(req);
                     return runEdit(res, b.player != null && b.player !== ''
@@ -467,6 +585,27 @@ function createServer(opts) {
                     return runEdit(res, builders.editReplace(await readBody(req)));
                 case 'POST /api/edit/spawnat':
                     return runEdit(res, builders.editSpawnAt(await readBody(req)));
+
+                case 'GET /api/infoboards': {
+                    try {
+                        const loaded = readInfoBoardDocument(infoBoardsFile);
+                        const boards = Object.keys(loaded.boards).sort().map((key) => {
+                            const board = loaded.boards[key];
+                            return { key, channel: board.channel, text: board.text, rotation: board.rotation || null };
+                        });
+                        return json(res, 200, { ok: true, configured: loaded.configured, boards });
+                    } catch (e) {
+                        if (e instanceof PanelError) return json(res, 200, { ok: false, error: e.message });
+                        throw e;
+                    }
+                }
+                case 'POST /api/infoboards/update': {
+                    try { return json(res, 200, updateInfoBoardDocument(infoBoardsFile, await readBody(req, 150000))); }
+                    catch (e) {
+                        if (e instanceof PanelError) return json(res, 200, { ok: false, error: e.message });
+                        throw e;
+                    }
+                }
 
                 case 'GET /api/strings':
                     return json(res, 200, { strings: library.list() });

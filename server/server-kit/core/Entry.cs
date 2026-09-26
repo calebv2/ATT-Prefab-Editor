@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using Alta.Console;
 using MelonLoader;
 
-[assembly: MelonInfo(typeof(PrefabEditor.Entry), "PrefabEditorCore", "1.2.0", "ATT Prefab Editor")]
+[assembly: MelonInfo(typeof(PrefabEditor.Entry), "PrefabEditorCore", "1.3.0", "ATT Prefab Editor")]
 [assembly: MelonGame(null, null)]
 [assembly: RuntimeCompatibility(WrapNonExceptionThrows = true)]
 

@@ -27,7 +27,7 @@ using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.InputSystem;
 
-[assembly: MelonInfo(typeof(PrefabEditorMod.EditorMod), "ATT Prefab Editor", "1.7.0", "ATT Prefab Editor")]
+[assembly: MelonInfo(typeof(PrefabEditorMod.EditorMod), "ATT Prefab Editor", "1.8.0", "ATT Prefab Editor")]
 [assembly: MelonGame("Alta", "A Township Tale")]
 
 namespace PrefabEditorMod

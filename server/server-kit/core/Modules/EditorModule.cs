@@ -146,6 +146,39 @@ namespace PrefabEditor.Modules
             return "{\"ok\":true,\"players\":[" + string.Join(",", records.ToArray()) + "]}";
         }
 
+        [Command("kick", "Kick an online player from the server")]
+        public static string Kick(Player target)
+        {
+            if (target == null) return EditJson.Err("player not found or no longer online");
+            string name = SafeUsername(target);
+            try
+            {
+                target.Kick("Kicked by a server administrator.");
+                return "{\"ok\":true,\"note\":\"kicked " + EditJson.Esc(name) + "\"}";
+            }
+            catch (Exception e) { return EditJson.Err("kick failed: " + e.Message); }
+        }
+
+        [Command("teleport", "Teleport one online player beside another: edit teleport <player> <destination-player>")]
+        public static string TeleportPlayer(Player target, Player destination)
+        {
+            if (target == null || target.PlayerController == null)
+                return EditJson.Err("player to move was not found or has no body");
+            if (destination == null || destination.PlayerController == null)
+                return EditJson.Err("destination player was not found or has no body");
+            if (target == destination) return EditJson.Err("choose two different players");
+
+            try
+            {
+                Vector3 point = destination.PlayerController.transform.position
+                    + destination.PlayerController.transform.right * 1.5f;
+                target.PlayerController.ForceTeleportTo(point);
+                return "{\"ok\":true,\"note\":\"teleported " + EditJson.Esc(SafeUsername(target))
+                    + " beside " + EditJson.Esc(SafeUsername(destination)) + "\"}";
+            }
+            catch (Exception e) { return EditJson.Err("teleport failed: " + e.Message); }
+        }
+
         [Command("scan", "List root entities near a player as JSON")]
         public static string Scan(Player player, float radius = 30f)
         {

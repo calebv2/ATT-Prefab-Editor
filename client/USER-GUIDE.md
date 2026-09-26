@@ -15,6 +15,12 @@ transforms. Group rotation turns up to 100 items around the primary item. Use
 **Build** for spawn search, saved layouts, and import/export. **World** contains
 work areas, player travel, keep-player-active, and nearby outlines.
 
+**Admin** sets a custom 24-hour time or noon, and lets trusted panel users kick
+or teleport online players after confirmation. **Info boards** edits a selected
+board's text and timed message rotation. That tab requires the server-only
+`LiveInfoBoards.dll`; if the server does not have it, find it on the ATT modding
+Discord, install it, and restart the server once.
+
 Nearby outlines can only show objects that the game has streamed to your
 player. If the count is zero in a distant area, move a player there first.
 

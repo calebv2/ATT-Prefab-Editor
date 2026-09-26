@@ -80,6 +80,18 @@ namespace PrefabEditorMod
             public Vector3 Position;
         }
 
+        sealed class InfoBoardEntry
+        {
+            public string Key;
+            public string Channel;
+            public string Text;
+            public bool HasRotation;
+            public bool RotationEnabled;
+            public int Interval;
+            public string Unit;
+            public readonly List<string> Messages = new List<string>();
+        }
+
         sealed class TravelState
         {
             public string Player;
@@ -173,6 +185,7 @@ namespace PrefabEditorMod
         string _groupRotationX = "0", _groupRotationY = "0", _groupRotationZ = "0";
         string _rotationStep = "15";
         bool _positionFocused, _rotationFocused, _stepFocused;
+        bool _adminTimeFocused, _boardTextFocused, _boardIntervalFocused, _boardMessageFocused;
         bool _resetPositionArmed;
         float _resetPositionUntil;
         bool _hasTransformClipboard;
@@ -238,6 +251,30 @@ namespace PrefabEditorMod
         float _keepAliveNextAt;
         const float KeepAliveInterval = 240f;
         const float KeepAliveNudge = 0.12f;
+
+        // Server-authoritative admin controls.
+        string _adminTime = "12";
+        string _adminStatus = "";
+        string _adminKickPlayer = "";
+        string _adminMovePlayer = "";
+        string _adminDestinationPlayer = "";
+        bool _adminBusy;
+        float _adminKickUntil, _adminTeleportUntil;
+        string _adminKickArmedPlayer = "";
+        string _adminTeleportArmedFrom = "", _adminTeleportArmedTo = "";
+
+        // The LiveInfoBoards mod watches this server-side registry and applies edits live.
+        readonly List<InfoBoardEntry> _infoBoards = new List<InfoBoardEntry>();
+        bool _infoBoardsLoading, _infoBoardsLoaded, _infoBoardsConfigured, _infoBoardSaving;
+        string _infoBoardStatus = "";
+        string _infoBoardFormKey = "";
+        string _infoBoardText = "";
+        Vector2 _infoBoardTextScroll;
+        string _infoBoardIntervalText = "2";
+        string _infoBoardUnit = "minutes";
+        bool _infoBoardHasRotation, _infoBoardRotationEnabled;
+        readonly List<string> _infoBoardMessages = new List<string>();
+        readonly List<Vector2> _infoBoardMessageScrolls = new List<Vector2>();
 
         // Import a blueprint JSON array (name/string/position/rotation records).
         string _importPath = "";
@@ -325,6 +362,8 @@ namespace PrefabEditorMod
             get
             {
                 return (_spawnOpen && _searchFocused) || (_panelTab == 3 && _workAreaNameFocused)
+                    || (_panelTab == 4 && _adminTimeFocused)
+                    || (_panelTab == 5 && (_boardTextFocused || _boardIntervalFocused || _boardMessageFocused))
                     || _importPathFocused || _resizePercentFocused
                     || _positionFocused || _rotationFocused || _stepFocused
                     || _arrangeSpacingFocused || _duplicateOffsetFocused;
@@ -350,6 +389,7 @@ namespace PrefabEditorMod
             _deleteArmUntil = 0f;
             _deleteIds = "";
             _deleteConfirmCount = 0;
+            _infoBoardFormKey = "";
             _resetPositionArmed = false;
             _pendingId = 0;
             _pendingIds.Clear();
@@ -360,6 +400,7 @@ namespace PrefabEditorMod
             _resizePercentFocused = false;
             _positionFocused = _rotationFocused = _stepFocused = false;
             _arrangeSpacingFocused = _duplicateOffsetFocused = false;
+            _adminTimeFocused = _boardTextFocused = _boardIntervalFocused = _boardMessageFocused = false;
         }
 
         bool TryResizePercent(out float percent)
@@ -3085,7 +3126,7 @@ namespace PrefabEditorMod
             bool showConnectionMessage = (!_connected || panelOnly) && !_checkingConnection
                 && !string.IsNullOrEmpty(_connectionMessage);
             float contentHeight = ph - 20f;
-            float headerHeight = 128f + (showConnectionMessage ? 28f : 0f);
+            float headerHeight = 158f + (showConnectionMessage ? 28f : 0f);
             float footerHeight = 116f;
             float bodyHeight = Mathf.Max(0f, contentHeight - headerHeight - footerHeight - 8f);
 
@@ -3094,6 +3135,7 @@ namespace PrefabEditorMod
             _resizePercentFocused = false;
             _importPathFocused = false;
             _workAreaNameFocused = false;
+            _adminTimeFocused = _boardTextFocused = _boardIntervalFocused = _boardMessageFocused = false;
 
             GUILayout.BeginVertical();
             GUILayout.BeginVertical(GUILayout.Height(headerHeight));
@@ -3116,20 +3158,21 @@ namespace PrefabEditorMod
             }
 
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button(_panelTab == 0 ? "SELECT" : "Select", _panelTab == 0 ? _selectedTabStyle : _tabStyle,
-                GUILayout.Height(28f))) _panelTab = 0;
-            if (GUILayout.Button(_panelTab == 1 ? "ARRANGE" : "Arrange", _panelTab == 1 ? _selectedTabStyle : _tabStyle,
-                GUILayout.Height(28f))) _panelTab = 1;
-            if (GUILayout.Button(_panelTab == 2 ? "BUILD" : "Build", _panelTab == 2 ? _selectedTabStyle : _tabStyle,
-                GUILayout.Height(28f))) _panelTab = 2;
-            if (GUILayout.Button(_panelTab == 3 ? "WORLD" : "World", _panelTab == 3 ? _selectedTabStyle : _tabStyle,
-                GUILayout.Height(28f))) _panelTab = 3;
+            DrawPanelTab(0, "Select");
+            DrawPanelTab(1, "Arrange");
+            DrawPanelTab(2, "Build");
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            DrawPanelTab(3, "World");
+            DrawPanelTab(4, "Admin");
+            DrawPanelTab(5, "Info boards");
             GUILayout.EndHorizontal();
             if (_panelTab != _lastPanelTab)
             {
                 _panelScroll = Vector2.zero;
                 _lastPanelTab = _panelTab;
-                if (_panelTab == 3) RefreshPlayers();
+                if (_panelTab == 3 || _panelTab == 4) RefreshPlayers();
+                if (_panelTab == 5) RefreshInfoBoards();
             }
             GUILayout.Space(3f);
             string selectionSummary;
@@ -3148,7 +3191,9 @@ namespace PrefabEditorMod
             if (_panelTab == 0) DrawSelectionTab();
             else if (_panelTab == 1) DrawArrangeTab();
             else if (_panelTab == 2) DrawBuildTab();
-            else DrawWorldTab();
+            else if (_panelTab == 3) DrawWorldTab();
+            else if (_panelTab == 4) DrawAdminTab();
+            else DrawInfoBoardsTab();
             GUILayout.EndScrollView();
 
             GUILayout.BeginVertical(GUILayout.Height(footerHeight));
@@ -3176,6 +3221,13 @@ namespace PrefabEditorMod
             GUILayout.EndVertical();
             GUILayout.EndVertical();
             GUILayout.EndArea();
+        }
+
+        void DrawPanelTab(int index, string label)
+        {
+            if (GUILayout.Button(_panelTab == index ? label.ToUpperInvariant() : label,
+                _panelTab == index ? _selectedTabStyle : _tabStyle, GUILayout.Height(27f)))
+                _panelTab = index;
         }
 
         void DrawSelectionTab()
@@ -3488,6 +3540,435 @@ namespace PrefabEditorMod
             GUILayout.Label("WASD move   Space up   Ctrl down   Shift fast\nRight mouse look   wheel changes speed\nF2 desktop mirror   F3 display   F1 close", _mutedStyle);
         }
 
+        void DrawAdminTab()
+        {
+            GUILayout.Label("Server admin", _titleStyle);
+            GUILayout.Label("These actions run on the server. Share panel access only with trusted people.", _mutedStyle);
+
+            GUILayout.Space(5f);
+            GUILayout.Label("Time of day", _titleStyle);
+            GUILayout.BeginHorizontal();
+            GUI.SetNextControlName("AdminTimeField");
+            _adminTime = GUILayout.TextField(_adminTime, GUILayout.MinWidth(90f));
+            _adminTimeFocused = GUI.GetNameOfFocusedControl() == "AdminTimeField";
+            GUI.enabled = !_adminBusy && !string.IsNullOrEmpty((_adminTime ?? "").Trim());
+            if (GUILayout.Button("Set time", GUILayout.Width(72f))) SetAdminTime(_adminTime);
+            if (GUILayout.Button("Noon", GUILayout.Width(62f))) SetAdminTime("12");
+            GUI.enabled = true;
+            GUILayout.EndHorizontal();
+            GUILayout.Label("Enter a 24-hour hour (0-23) or time like 18:30. 12 is noon.", _mutedStyle);
+
+            GUILayout.Space(8f);
+            GUILayout.Label("Players", _titleStyle);
+            GUILayout.BeginHorizontal();
+            GUI.enabled = !_playersLoading && !_adminBusy;
+            if (GUILayout.Button(_playersLoading ? "Refreshing players..." : "Refresh players")) RefreshPlayers();
+            GUI.enabled = true;
+            string localName = CurrentUsername();
+            GUILayout.FlexibleSpace();
+            GUILayout.Label(string.IsNullOrEmpty(localName) ? "Local player not detected" : "You: " + localName, _mutedStyle);
+            GUILayout.EndHorizontal();
+
+            if (_onlinePlayers.Count == 0 && !_playersLoading)
+                GUILayout.Label("No online players loaded. Refresh to try again.", _mutedStyle);
+            for (int i = 0; i < _onlinePlayers.Count; i++)
+            {
+                OnlinePlayer p = _onlinePlayers[i];
+                GUILayout.BeginHorizontal();
+                GUILayout.Label(p.Name + "  " + VecText(p.Position), _mutedStyle, GUILayout.MinWidth(70f));
+                GUI.enabled = !_adminBusy;
+                if (GUILayout.Button(_adminMovePlayer == p.Name ? "FROM ✓" : "From", GUILayout.Width(56f)))
+                    _adminMovePlayer = p.Name;
+                if (GUILayout.Button(_adminDestinationPlayer == p.Name ? "TO ✓" : "To", GUILayout.Width(48f)))
+                    _adminDestinationPlayer = p.Name;
+                if (GUILayout.Button(_adminKickPlayer == p.Name ? "Target ✓" : "Target", GUILayout.Width(60f)))
+                    _adminKickPlayer = p.Name;
+                GUILayout.EndHorizontal();
+            }
+
+            GUILayout.Space(4f);
+            GUILayout.Label("Move: " + (string.IsNullOrEmpty(_adminMovePlayer) ? "choose From" : _adminMovePlayer)
+                + "  →  " + (string.IsNullOrEmpty(_adminDestinationPlayer) ? "choose To" : _adminDestinationPlayer), _mutedStyle);
+            GUILayout.Label("From is the player who moves; To is their destination. Target selects who to kick or teleport yourself to.", _mutedStyle);
+            bool validManualTeleport = !string.IsNullOrEmpty(_adminMovePlayer)
+                && !string.IsNullOrEmpty(_adminDestinationPlayer)
+                && _adminMovePlayer != _adminDestinationPlayer;
+            GUI.enabled = !_adminBusy && validManualTeleport;
+            bool teleportArmed = Time.unscaledTime < _adminTeleportUntil
+                && _adminTeleportArmedFrom == _adminMovePlayer && _adminTeleportArmedTo == _adminDestinationPlayer;
+            if (GUILayout.Button(teleportArmed
+                ? "Confirm teleport " + _adminMovePlayer
+                : "Teleport From player beside To player", _dangerButtonStyle))
+                AdminTeleportClick(_adminMovePlayer, _adminDestinationPlayer);
+            GUI.enabled = true;
+
+            if (!string.IsNullOrEmpty(localName) && !string.IsNullOrEmpty(_adminKickPlayer))
+            {
+                GUILayout.BeginHorizontal();
+                bool meArmed = Time.unscaledTime < _adminTeleportUntil
+                    && _adminTeleportArmedFrom == localName && _adminTeleportArmedTo == _adminKickPlayer;
+                bool bringArmed = Time.unscaledTime < _adminTeleportUntil
+                    && _adminTeleportArmedFrom == _adminKickPlayer && _adminTeleportArmedTo == localName;
+                GUI.enabled = !_adminBusy && !string.Equals(_adminKickPlayer, localName, StringComparison.OrdinalIgnoreCase);
+                if (GUILayout.Button(meArmed ? "Confirm: me to " + _adminKickPlayer : "Teleport me to " + _adminKickPlayer))
+                    AdminTeleportClick(localName, _adminKickPlayer);
+                if (GUILayout.Button(bringArmed ? "Confirm: bring " + _adminKickPlayer : "Bring " + _adminKickPlayer + " to me"))
+                    AdminTeleportClick(_adminKickPlayer, localName);
+                GUI.enabled = true;
+                GUILayout.EndHorizontal();
+            }
+
+            if (string.IsNullOrEmpty(_adminKickPlayer))
+                GUILayout.Label("Choose a player with a Kick button above.", _mutedStyle);
+            else
+            {
+                bool kickArmed = Time.unscaledTime < _adminKickUntil && _adminKickArmedPlayer == _adminKickPlayer;
+                GUI.enabled = !_adminBusy && !string.Equals(_adminKickPlayer, localName, StringComparison.OrdinalIgnoreCase);
+                if (GUILayout.Button(kickArmed ? "Confirm kick " + _adminKickPlayer : "Kick " + _adminKickPlayer,
+                    _dangerButtonStyle, GUILayout.Height(30f))) AdminKickClick();
+                GUI.enabled = true;
+            }
+            if (!string.IsNullOrEmpty(_adminStatus)) GUILayout.Label(_adminStatus, _mutedStyle);
+        }
+
+        void DrawInfoBoardsTab()
+        {
+            GUILayout.Label("Live info boards", _titleStyle);
+            GUILayout.Label("Select an Info Board in the world to edit its server text and rotation.", _mutedStyle);
+            GUILayout.BeginHorizontal();
+            GUILayout.Label(_infoBoardsLoading ? "Loading registry..." : "Registered: " + _infoBoards.Count,
+                _mutedStyle);
+            GUILayout.FlexibleSpace();
+            GUI.enabled = !_infoBoardsLoading && !_infoBoardSaving;
+            if (GUILayout.Button("Refresh", GUILayout.Width(74f))) RefreshInfoBoards();
+            GUI.enabled = true;
+            GUILayout.EndHorizontal();
+
+            if (!_infoBoardsLoaded)
+            {
+                if (!string.IsNullOrEmpty(_infoBoardStatus)) GUILayout.Label(_infoBoardStatus, _mutedStyle);
+                return;
+            }
+            if (!_infoBoardsConfigured)
+            {
+                GUILayout.Label("Info board editing needs the server-only LiveInfoBoards.dll. If you do not have it, find it on the modding Discord and install it on the server.", _panelOnlyStyle);
+                GUILayout.Label("Restart the server once so it creates UserData/InfoBoards.json, then refresh here. If it is already installed, check the panel's INFOBOARDS_CONFIG path.", _mutedStyle);
+                return;
+            }
+
+            string key = CurrentInfoBoardKey();
+            if (string.IsNullOrEmpty(key))
+            {
+                GUILayout.Space(8f);
+                GUILayout.Label(!_has ? "No object selected." : (_info == null
+                    ? "Waiting for the selected object's server details..."
+                    : "The selected prefab is not an Info Board."), _panelOnlyStyle);
+                if (!string.IsNullOrEmpty(_infoBoardStatus)) GUILayout.Label(_infoBoardStatus, _mutedStyle);
+                return;
+            }
+
+            if (_infoBoardFormKey != key)
+            {
+                InfoBoardEntry selected = FindInfoBoard(key);
+                LoadInfoBoardForm(key, selected);
+            }
+            InfoBoardEntry board = FindInfoBoard(key);
+            if (board == null)
+            {
+                GUILayout.Space(8f);
+                GUILayout.Label("This board is not in the server registry yet.", _panelOnlyStyle);
+                GUILayout.Label("Keep a player near it until LiveInfoBoards registers it, then refresh.", _mutedStyle);
+                GUILayout.Label("Position key: " + key, _mutedStyle);
+                if (!string.IsNullOrEmpty(_infoBoardStatus)) GUILayout.Label(_infoBoardStatus, _mutedStyle);
+                return;
+            }
+
+            GUILayout.Space(5f);
+            GUILayout.Label("Board channel: " + board.Channel, _connectedStyle);
+            GUILayout.Label("Position key: " + key, _mutedStyle);
+            GUILayout.Label(_infoBoardRotationEnabled ? "Fallback text (rotation off)" : "Text", _titleStyle);
+            if (_infoBoardRotationEnabled)
+                GUILayout.Label("The rotation messages below are shown while rotation is on.", _mutedStyle);
+            _infoBoardText = DrawInfoBoardTextArea("BoardTextField", _infoBoardText,
+                ref _infoBoardTextScroll, 82f, 190f, Mathf.Max(140f, _panelRect.width - 70f));
+            _boardTextFocused = GUI.GetNameOfFocusedControl() == "BoardTextField";
+
+            bool rotate = ThemedToggle(_infoBoardRotationEnabled, "Rotate messages automatically");
+            if (rotate != _infoBoardRotationEnabled)
+            {
+                _infoBoardRotationEnabled = rotate;
+                _infoBoardHasRotation = true;
+                if (rotate && _infoBoardMessages.Count == 0 && !string.IsNullOrEmpty(_infoBoardText))
+                {
+                    _infoBoardMessages.Add(_infoBoardText);
+                    _infoBoardMessageScrolls.Add(Vector2.zero);
+                }
+            }
+            if (_infoBoardHasRotation || _infoBoardRotationEnabled)
+            {
+                GUILayout.BeginHorizontal();
+                GUILayout.Label("Every", GUILayout.Width(42f));
+                GUI.SetNextControlName("BoardIntervalField");
+                _infoBoardIntervalText = GUILayout.TextField(_infoBoardIntervalText, GUILayout.Width(64f));
+                _boardIntervalFocused = GUI.GetNameOfFocusedControl() == "BoardIntervalField";
+                if (GUILayout.Button(_infoBoardUnit == "seconds" ? "SECONDS" : "Seconds", _infoBoardUnit == "seconds" ? _selectedTabStyle : _tabStyle))
+                    _infoBoardUnit = "seconds";
+                if (GUILayout.Button(_infoBoardUnit == "minutes" ? "MINUTES" : "Minutes", _infoBoardUnit == "minutes" ? _selectedTabStyle : _tabStyle))
+                    _infoBoardUnit = "minutes";
+                GUILayout.EndHorizontal();
+                GUILayout.Label("Messages", _titleStyle);
+                for (int i = 0; i < _infoBoardMessages.Count; i++)
+                {
+                    GUILayout.BeginHorizontal();
+                    Vector2 messageScroll = _infoBoardMessageScrolls[i];
+                    _infoBoardMessages[i] = DrawInfoBoardTextArea("BoardMessage" + i,
+                        _infoBoardMessages[i], ref messageScroll, 54f, 150f,
+                        Mathf.Max(120f, _panelRect.width - 104f));
+                    _infoBoardMessageScrolls[i] = messageScroll;
+                    if (GUI.GetNameOfFocusedControl() == "BoardMessage" + i) _boardMessageFocused = true;
+                    GUI.enabled = !_infoBoardSaving;
+                    if (GUILayout.Button("×", GUILayout.Width(30f)))
+                    {
+                        _infoBoardMessages.RemoveAt(i);
+                        _infoBoardMessageScrolls.RemoveAt(i);
+                        GUILayout.EndHorizontal();
+                        break;
+                    }
+                    GUI.enabled = true;
+                    GUILayout.EndHorizontal();
+                }
+                GUI.enabled = !_infoBoardSaving && _infoBoardMessages.Count < 20;
+                if (GUILayout.Button("+ Add rotation message"))
+                {
+                    _infoBoardMessages.Add("");
+                    _infoBoardMessageScrolls.Add(Vector2.zero);
+                }
+                GUI.enabled = true;
+                if (_infoBoardRotationEnabled && _infoBoardMessages.Count == 0)
+                    GUILayout.Label("Add at least one message before enabling rotation.", _panelOnlyStyle);
+            }
+
+            GUILayout.Space(5f);
+            int interval;
+            bool intervalValid = int.TryParse(_infoBoardIntervalText, out interval) && interval >= 1 && interval <= 86400;
+            bool canSave = !_infoBoardSaving && intervalValid
+                && (!_infoBoardRotationEnabled || _infoBoardMessages.Count > 0)
+                && _infoBoardText.Length <= 5000;
+            GUI.enabled = canSave;
+            if (GUILayout.Button(_infoBoardSaving ? "Saving..." : "Save board", GUILayout.Height(32f))) SaveInfoBoard(key, interval);
+            GUI.enabled = true;
+            if (!intervalValid && (_infoBoardHasRotation || _infoBoardRotationEnabled))
+                GUILayout.Label("Interval must be from 1 to 86400.", _panelOnlyStyle);
+            if (_infoBoardText.Length > 5000) GUILayout.Label("Board text limit is 5000 characters.", _panelOnlyStyle);
+            if (!string.IsNullOrEmpty(_infoBoardStatus)) GUILayout.Label(_infoBoardStatus, _mutedStyle);
+        }
+
+        void SetAdminTime(string time)
+        {
+            if (_adminBusy) return;
+            string value = (time ?? "").Trim();
+            if (value.Length == 0) { _adminStatus = "Enter a time first."; return; }
+            _adminBusy = true;
+            _adminStatus = "Sending time change to server...";
+            _api.SetTime(value, delegate(EditResult r)
+            {
+                _adminBusy = false;
+                string response = Json.Str(r.Raw, "text");
+                _adminStatus = r.Ok ? "Time command sent." + (string.IsNullOrEmpty(response) ? "" : " " + response)
+                    : "Time change failed: " + Reason(r);
+            });
+        }
+
+        void AdminKickClick()
+        {
+            if (_adminBusy || string.IsNullOrEmpty(_adminKickPlayer)) return;
+            bool armed = Time.unscaledTime < _adminKickUntil && _adminKickArmedPlayer == _adminKickPlayer;
+            if (!armed)
+            {
+                _adminKickArmedPlayer = _adminKickPlayer;
+                _adminKickUntil = Time.unscaledTime + DeleteArmSeconds;
+                _adminStatus = "Click confirm within 6 seconds to kick " + _adminKickPlayer + ".";
+                return;
+            }
+            _adminKickUntil = 0f;
+            string player = _adminKickPlayer;
+            _adminBusy = true;
+            _adminStatus = "Kicking " + player + "...";
+            _api.KickPlayer(player, delegate(EditResult r)
+            {
+                _adminBusy = false;
+                _adminStatus = r.Ok ? (r.Note ?? ("Kicked " + player + ".")) : "Kick failed: " + Reason(r);
+                if (r.Ok) RefreshPlayers();
+            });
+        }
+
+        void AdminTeleportClick(string from, string to)
+        {
+            if (_adminBusy || string.IsNullOrEmpty(from) || string.IsNullOrEmpty(to) || from == to) return;
+            bool armed = Time.unscaledTime < _adminTeleportUntil
+                && _adminTeleportArmedFrom == from && _adminTeleportArmedTo == to;
+            if (!armed)
+            {
+                _adminTeleportArmedFrom = from;
+                _adminTeleportArmedTo = to;
+                _adminTeleportUntil = Time.unscaledTime + DeleteArmSeconds;
+                _adminStatus = "Click confirm within 6 seconds to move " + from + " beside " + to + ".";
+                return;
+            }
+            _adminTeleportUntil = 0f;
+            _adminBusy = true;
+            _adminStatus = "Teleporting " + from + " beside " + to + "...";
+            _api.TeleportPlayer(from, to, delegate(EditResult r)
+            {
+                _adminBusy = false;
+                _adminStatus = r.Ok ? (r.Note ?? ("Teleported " + from + " beside " + to + "."))
+                    : "Teleport failed: " + Reason(r);
+                if (r.Ok) RefreshPlayers();
+            });
+        }
+
+        void RefreshInfoBoards()
+        {
+            if (_infoBoardsLoading) return;
+            _infoBoardsLoading = true;
+            _infoBoardStatus = "Reading server board registry...";
+            _api.InfoBoards(delegate(EditResult r)
+            {
+                _infoBoardsLoading = false;
+                _infoBoards.Clear();
+                if (!r.Ok)
+                {
+                    _infoBoardsLoaded = false;
+                    _infoBoardStatus = "Could not read board registry: " + Reason(r);
+                    return;
+                }
+                _infoBoardsLoaded = true;
+                _infoBoardsConfigured = Json.Bool(r.Raw, "configured", false);
+                string rows = Json.Value(r.Raw, "boards");
+                List<string> entries = Json.Objects(rows);
+                for (int i = 0; i < entries.Count; i++)
+                {
+                    string row = entries[i];
+                    InfoBoardEntry entry = new InfoBoardEntry();
+                    entry.Key = Json.Str(row, "key") ?? "";
+                    entry.Channel = Json.Str(row, "channel") ?? "";
+                    entry.Text = Json.Str(row, "text") ?? "";
+                    string rotation = Json.Value(row, "rotation");
+                    if (rotation != null && rotation != "null")
+                    {
+                        entry.HasRotation = true;
+                        entry.RotationEnabled = Json.Bool(rotation, "enabled", false);
+                        entry.Interval = (int)Json.Num(rotation, "interval", 2f);
+                        entry.Unit = Json.Str(rotation, "unit") ?? "minutes";
+                        string messages = Json.Value(rotation, "messages");
+                        entry.Messages.AddRange(Json.StrArray(messages));
+                    }
+                    _infoBoards.Add(entry);
+                }
+                _infoBoardFormKey = "";
+                string selectedKey = CurrentInfoBoardKey();
+                if (!string.IsNullOrEmpty(selectedKey)) LoadInfoBoardForm(selectedKey, FindInfoBoard(selectedKey));
+                _infoBoardStatus = _infoBoardsConfigured
+                    ? "Board list refreshed from the server." : "No InfoBoards.json found. This tab requires LiveInfoBoards.dll from the modding Discord.";
+            });
+        }
+
+        void LoadInfoBoardForm(string key, InfoBoardEntry entry)
+        {
+            _infoBoardFormKey = key;
+            _infoBoardText = entry == null ? "" : entry.Text;
+            _infoBoardTextScroll = Vector2.zero;
+            _infoBoardHasRotation = entry != null && entry.HasRotation;
+            _infoBoardRotationEnabled = _infoBoardHasRotation && entry.RotationEnabled;
+            _infoBoardIntervalText = _infoBoardHasRotation ? entry.Interval.ToString(CultureInfo.InvariantCulture) : "2";
+            _infoBoardUnit = _infoBoardHasRotation && entry.Unit == "seconds" ? "seconds" : "minutes";
+            _infoBoardMessages.Clear();
+            _infoBoardMessageScrolls.Clear();
+            if (entry != null)
+            {
+                _infoBoardMessages.AddRange(entry.Messages);
+                for (int i = 0; i < entry.Messages.Count; i++) _infoBoardMessageScrolls.Add(Vector2.zero);
+            }
+        }
+
+        string DrawInfoBoardTextArea(string controlName, string text, ref Vector2 scroll,
+            float minimumHeight, float maximumViewportHeight, float width)
+        {
+            string value = text ?? "";
+            float contentHeight = GUI.skin.textArea.CalcHeight(new GUIContent(value), Mathf.Max(120f, width)) + 8f;
+            contentHeight = Mathf.Max(minimumHeight, contentHeight);
+            float viewportHeight = Mathf.Min(maximumViewportHeight, contentHeight);
+            scroll = GUILayout.BeginScrollView(scroll, GUILayout.ExpandWidth(true), GUILayout.Height(viewportHeight));
+            GUI.SetNextControlName(controlName);
+            value = GUILayout.TextArea(value, GUILayout.ExpandWidth(true), GUILayout.Height(contentHeight));
+            GUILayout.EndScrollView();
+            return value;
+        }
+
+        InfoBoardEntry FindInfoBoard(string key)
+        {
+            for (int i = 0; i < _infoBoards.Count; i++)
+                if (string.Equals(_infoBoards[i].Key, key, StringComparison.Ordinal)) return _infoBoards[i];
+            return null;
+        }
+
+        string CurrentInfoBoardKey()
+        {
+            if (!_has || _root == null || _info == null || _info.Id != _id || string.IsNullOrEmpty(_info.Prefab)
+                || !IsInfoBoardPrefab(_info.Prefab)) return "";
+            return InfoBoardPositionKey(new Vector3(_info.X, _info.Y, _info.Z));
+        }
+
+        static bool IsInfoBoardPrefab(string prefab)
+        {
+            if (string.IsNullOrEmpty(prefab)) return false;
+            StringBuilder normalized = new StringBuilder(prefab.Length);
+            for (int i = 0; i < prefab.Length; i++)
+            {
+                char c = prefab[i];
+                if (Char.IsLetterOrDigit(c)) normalized.Append(Char.ToLowerInvariant(c));
+            }
+            return normalized.ToString().IndexOf("infoboard", StringComparison.Ordinal) >= 0;
+        }
+
+        static string InfoBoardPositionKey(Vector3 position)
+        {
+            return Math.Round(position.x, 1, MidpointRounding.AwayFromZero).ToString("0.0", CultureInfo.InvariantCulture) + ","
+                + Math.Round(position.y, 1, MidpointRounding.AwayFromZero).ToString("0.0", CultureInfo.InvariantCulture) + ","
+                + Math.Round(position.z, 1, MidpointRounding.AwayFromZero).ToString("0.0", CultureInfo.InvariantCulture);
+        }
+
+        void SaveInfoBoard(string key, int interval)
+        {
+            if (_infoBoardSaving || FindInfoBoard(key) == null) return;
+            if (_infoBoardRotationEnabled && _infoBoardMessages.Count == 0)
+            { _infoBoardStatus = "Add at least one message before enabling rotation."; return; }
+            for (int i = 0; i < _infoBoardMessages.Count; i++)
+                if (string.IsNullOrEmpty(_infoBoardMessages[i]) || _infoBoardMessages[i].Length > 5000)
+                { _infoBoardStatus = "Rotation messages must contain 1-5000 characters."; return; }
+            _infoBoardSaving = true;
+            _infoBoardStatus = "Saving board...";
+            _api.UpdateInfoBoard(key, _infoBoardText, _infoBoardHasRotation || _infoBoardRotationEnabled,
+                _infoBoardRotationEnabled, interval, _infoBoardUnit, _infoBoardMessages, delegate(EditResult r)
+                {
+                    _infoBoardSaving = false;
+                    _infoBoardStatus = r.Ok ? "Saved. LiveInfoBoards will apply it within about half a second."
+                        : "Save failed: " + Reason(r);
+                    if (r.Ok) RefreshInfoBoards();
+                });
+        }
+
+        string CurrentUsername()
+        {
+            try
+            {
+                if (Player.Current != null && Player.Current.UserInfo != null)
+                    return Player.Current.UserInfo.Username ?? "";
+            }
+            catch { }
+            return "";
+        }
+
         void DrawActiveTravel()
         {
             GUILayout.BeginVertical(GUI.skin.box);
@@ -3636,6 +4117,24 @@ namespace PrefabEditorMod
                     bool found = false;
                     for (int i = 0; i < _onlinePlayers.Count; i++) if (_onlinePlayers[i].Name == _selectedPlayer) found = true;
                     if (!found) _selectedPlayer = _onlinePlayers[0].Name;
+                    bool foundMove = false, foundDestination = false, foundKick = false;
+                    for (int i = 0; i < _onlinePlayers.Count; i++)
+                    {
+                        if (string.Equals(_onlinePlayers[i].Name, _adminMovePlayer, StringComparison.OrdinalIgnoreCase)) foundMove = true;
+                        if (string.Equals(_onlinePlayers[i].Name, _adminDestinationPlayer, StringComparison.OrdinalIgnoreCase)) foundDestination = true;
+                        if (string.Equals(_onlinePlayers[i].Name, _adminKickPlayer, StringComparison.OrdinalIgnoreCase)) foundKick = true;
+                    }
+                    string local = CurrentUsername();
+                    if (!foundMove)
+                    {
+                        bool localFound = false;
+                        for (int i = 0; i < _onlinePlayers.Count; i++)
+                            if (string.Equals(_onlinePlayers[i].Name, local, StringComparison.OrdinalIgnoreCase))
+                            { _adminMovePlayer = _onlinePlayers[i].Name; localFound = true; break; }
+                        if (!localFound) _adminMovePlayer = _onlinePlayers[0].Name;
+                    }
+                    if (!foundDestination) _adminDestinationPlayer = "";
+                    if (!foundKick) _adminKickPlayer = "";
                     _workMessage = "Choose an online player.";
                 }
             });

@@ -1,5 +1,12 @@
 # Changelog
 
+## 2.0.6 — 2026-09-26
+
+- Added an Admin tab for setting server time, kicking players, and teleporting players, with confirmation for disruptive actions.
+- Added an Info Boards tab to edit board text and timed message rotation through the server panel and LiveInfoBoards registry.
+- Improved Info Board recognition and made long text fields expand and scroll independently.
+- Hour-only time values are accepted; `12` sets noon.
+
 ## 2.0.5 — 2026-09-25
 
 - Scaling now previews and applies to all selected items together; the replacements are reselected afterward.
