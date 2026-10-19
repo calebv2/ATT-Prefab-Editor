@@ -27,3 +27,24 @@ Never put your console token in a public ZIP or Discord post.
 Version 1.0.5 includes core 1.5.2, required for broadcasts and persistent server
 spawn control. Spawn overrides are stored in the mod core data folder as
 server-spawn.json. Use Admin > Restore default server spawn to remove an override.
+
+PERSONAL ADMIN ACCESS (requires player and server package 1.0.6 or newer)
+Owner: connect Prefabulator with your existing owner console token. Click
+Manage Admin Access, then New admin. Enter their name, tick the tabs they
+may use (or All tabs), and click Create token. Copy the token shown once
+and send it privately to that admin. Keep your owner console token private.
+
+Admin: connect Prefabulator with the server address and your personal token
+in the Access Token field. Optional: tick Save my access token to reconnect
+when launching that server. Press F1 in game; only your allowed tabs appear.
+
+Owner: select an admin to change permissions or Revoke selected admin.
+Revoking disconnects their active sessions and blocks future connections.
+Replace selected token invalidates the old token and issues a new one.
+All tabs does not allow managing admin access. Undo/redo requires Select,
+Arrange and Build because those tools share history. Object Loader imports
+local models; server edits still require the appropriate editing tabs.
+
+Update BOTH packages and restart the server and game before using this.
+Admin profiles persist in UserData/PrefabEditor/admin-access.json (only token hashes).
+Keep this file with your server backups; do not share it in release packages.

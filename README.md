@@ -5,7 +5,7 @@ All editing happens in game (F1). Keep Tavern Launcher open while playing.
 
 - Players: use Player-Addon-and-Mod. Follow its single START HERE.txt.
 - Server owners: use Server-Mod-Only. Copy the DLL to the server game Mods folder and restart.
-- The address is remembered. Saving the console token is optional. Windows encrypts saved tokens for your account; they enable auto-connect when launching that server through Tavern.
+- The address is remembered. Saving the access token is optional. Windows encrypts saved tokens for your account; they enable auto-connect when launching that server through Tavern.
 
 Source instructions: [player](tavern-addon/player-instructions.txt), [server](tavern-addon/server-instructions.txt).
 Build mods using their build.ps1 scripts with -GamePath. Package using tools/package_tavern_addon.py --output <folder>.
@@ -22,3 +22,5 @@ python tools/package_tavern_addon.py --output release --node "C:/Program Files/n
 ```
 
 The packaging script includes the staged mods, launcher add-on, local editor runtime, required assets and third-party license notices. Player and server ZIPs each contain one START HERE.txt. Runtime executables and installed dependencies belong in release assets, not source commits.
+
+Owners can use Manage Admin Access in Prefabulator to issue personal admin tokens, select allowed tabs, change permissions or revoke access. Update both packages to 1.0.6 first. All tabs never grants access management.

@@ -53,6 +53,7 @@ namespace PrefabEditor.Modules
         protected override void Init()
         {
             EditorAdminModule.InitializeBridge(Ctx.UserDataDir);
+            AdminAccess.Initialize(Ctx.CoreDir, delegate(string message) { Ctx.RawLog.Warning(message); });
             ServerSpawn.Initialize(Ctx.CoreDir, delegate(string message) { Ctx.RawLog.Warning(message); });
             EditorAdminModule.InitializeBlacklist(Ctx.CoreDir,
                 delegate(string message) { Ctx.RawLog.Msg("[Editor] " + message); },
@@ -77,6 +78,7 @@ namespace PrefabEditor.Modules
             EditorAdminModule.ShutdownBlacklist();
             TeleporterLinks.Shutdown();
             ServerSpawn.Shutdown();
+            AdminAccess.Shutdown();
             SafeTeleport.Shutdown();
         }
     }

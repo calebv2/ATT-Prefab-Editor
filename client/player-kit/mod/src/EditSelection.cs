@@ -665,6 +665,7 @@ namespace PrefabEditorMod
 
         public void Update()
         {
+            if(Time.unscaledTime>=_nextAccessAt && !_accessPending) RefreshAccess();
             _teleporterInput.Tick(_panelTab == 8);
             _broadcastInput.Tick(_panelTab == 4);
             _spawnLocationInput.Tick(_panelTab == 4);
@@ -3543,7 +3544,8 @@ namespace PrefabEditorMod
 
             _panelScroll = GUILayout.BeginScrollView(_panelScroll,
                 GUILayout.Width(pw - 16f), GUILayout.Height(bodyHeight));
-            if (_panelTab == 0) DrawSelectionTab();
+            if (!CanOpenTab(_panelTab)) GUILayout.Label(_accessStatus, _mutedStyle);
+            else if (_panelTab == 0) DrawSelectionTab();
             else if (_panelTab == 1) DrawArrangeTab();
             else if (_panelTab == 2) DrawBuildTab();
             else if (_panelTab == 3) DrawWorldTab();
@@ -3558,16 +3560,16 @@ namespace PrefabEditorMod
             GUILayout.BeginVertical(GUILayout.Height(footerHeight));
             GUILayout.Space(3f);
             bool armed = Time.unscaledTime < _deleteArmUntil && !string.IsNullOrEmpty(_deleteIds);
-            GUI.enabled = _has && !_busy;
+            GUI.enabled = _has && !_busy && CanOpenTab(0);
             if (GUILayout.Button(armed ? "CONFIRM DELETE  " + _deleteConfirmCount + " ITEMS" :
                 (_has ? "DELETE  " + _group.Count + " SELECTED ITEM" + (_group.Count == 1 ? "" : "S") : "DELETE  No selection"),
                 armed ? _dangerButtonStyle : GUI.skin.button, GUILayout.Height(32f))) DeleteClick();
             GUI.enabled = true;
 
             GUILayout.BeginHorizontal();
-            GUI.enabled = !_busy && _undoCount > 0;
+            GUI.enabled = !_busy && _undoCount > 0 && CanOpenTab(0) && CanOpenTab(1) && CanOpenTab(2);
             if (GUILayout.Button("Undo  Ctrl+Z" + (_undoCount > 0 ? "  (" + _undoCount + ")" : ""))) RunHistory(true);
-            GUI.enabled = !_busy && _redoCount > 0;
+            GUI.enabled = !_busy && _redoCount > 0 && CanOpenTab(0) && CanOpenTab(1) && CanOpenTab(2);
             if (GUILayout.Button("Redo  Ctrl+Y" + (_redoCount > 0 ? "  (" + _redoCount + ")" : ""))) RunHistory(false);
             GUI.enabled = true;
             GUILayout.EndHorizontal();
@@ -3582,8 +3584,47 @@ namespace PrefabEditorMod
             GUILayout.EndArea();
         }
 
+        readonly HashSet<string> _accessTabs = new HashSet<string>();
+        bool _accessPending;
+        float _nextAccessAt;
+        string _accessStatus = "Checking your tab permissions...";
+        static string TabPermission(int index)
+        {
+            switch(index)
+            {
+                case 0:return "select"; case 1:return "arrange"; case 2:return "build"; case 3:return "world";
+                case 4:return "admin"; case 5:return "boards"; case 6:return "objectLoader";
+                case 8:return "teleporter"; case 9:return "trading"; case 10:return "settings";
+            }
+            return "";
+        }
+        bool CanOpenTab(int index) { return _accessTabs.Contains(TabPermission(index)); }
+        void RefreshAccess()
+        {
+            if(_accessPending) return;
+            _accessPending=true;
+            _api.Access(delegate(EditResult result)
+            {
+                _accessPending=false; _nextAccessAt=Time.unscaledTime+3f;
+                _accessTabs.Clear();
+                if(result.Ok)
+                {
+                    string data=Json.Value(result.Raw,"data");
+                    foreach(string tab in Json.StrArray(Json.Value(data,"tabs"))) _accessTabs.Add(tab);
+                    _accessStatus=_accessTabs.Count==0 ? "No tabs enabled. Ask the owner to update your access." : "";
+                }
+                else _accessStatus="Could not verify access. Reconnect or ask the owner to update the server mod. " + Reason(result);
+                if(!CanOpenTab(_panelTab))
+                {
+                    _panelTab=-1;
+                    foreach(int index in new[]{0,1,2,3,4,5,6,8,9,10}) if(CanOpenTab(index)) { _panelTab=index; break; }
+                }
+            });
+        }
+
         void DrawPanelTab(int index, string label)
         {
+            if(!CanOpenTab(index)) return;
             if (GUILayout.Button(_panelTab == index ? label.ToUpperInvariant() : label,
                 _panelTab == index ? _selectedTabStyle : _tabStyle, GUILayout.Height(27f)))
                 _panelTab = index;

@@ -9,8 +9,8 @@ FIRST TIME
    Merge addons if asked. Keep all of addons/prefab_editor, including payload.
 2. Open the launcher > Addons, enable Prefabulator, then restart the launcher.
 3. Click Prefabulator on the MAIN launcher, beside TavernKeeper.
-4. Enter your server address and the owner's console token. Your address is saved.
-   Optional: check Save console token to auto-connect on future launches.
+4. Enter your server address and your personal admin token (owners use their console token). Your address is saved.
+   Optional: check Save my access token to auto-connect on future launches.
    Click Connect. Saved tokens are encrypted for your Windows account.
 5. If asked, close the game and click Install / update player mod. The mod
    is included; no separate download. The editor connection starts automatically.
@@ -18,11 +18,11 @@ FIRST TIME
    Select your player and do all building, trading and editing IN THE GAME.
 
 EACH SESSION
-With Save console token checked: launch the same server through Tavern normally.
+With Save my access token checked: launch the same server through Tavern normally.
 Prefabulator connects before the game opens. Press F1 to edit.
 Keep Tavern Launcher open while playing. No separate connection window is needed.
 Without a saved token: open Prefabulator, enter your token and Connect before playing.
-To stop saving: uncheck Save console token (or click Forget saved console token
+To stop saving: uncheck Save my access token (or click Forget saved access token
 if already connected). Your server address stays saved.
 Launching outside Tavern does not start the connection automatically.
 
@@ -30,7 +30,7 @@ If a server update is requested, the owner copies PrefabEditorCore.dll from
 Server-Mod-Only into the SERVER game's Mods folder and restarts the server.
 If the helper cannot start, stop any old standalone panel/workbench and retry.
 After disconnecting or changing servers, close/reopen Prefabulator, connect,
-then restart the game. Never post console tokens publicly.
+then restart the game. Never post access tokens publicly.
 
 Requires the Windows Tavern client launcher with add-on support.
 
@@ -43,3 +43,22 @@ your last refreshed player position; use a safe spot on solid ground. It affects
 new arrivals and default respawns, preserves personal homes, and survives restart.
 Restore default server spawn removes this override.
 These Admin features require Server-Mod-Only 1.0.5 (core 1.5.2) or newer.
+
+PERSONAL ADMIN ACCESS (requires player and server package 1.0.6 or newer)
+Owner: connect Prefabulator with your existing owner console token. Click
+Manage Admin Access, then New admin. Enter their name, tick the tabs they
+may use (or All tabs), and click Create token. Copy the token shown once
+and send it privately to that admin. Keep your owner console token private.
+
+Admin: connect Prefabulator with the server address and your personal token
+in the Access Token field. Optional: tick Save my access token to reconnect
+when launching that server. Press F1 in game; only your allowed tabs appear.
+
+Owner: select an admin to change permissions or Revoke selected admin.
+Revoking disconnects their active sessions and blocks future connections.
+Replace selected token invalidates the old token and issues a new one.
+All tabs does not allow managing admin access. Undo/redo requires Select,
+Arrange and Build because those tools share history. Object Loader imports
+local models; server edits still require the appropriate editing tabs.
+
+Update BOTH packages and restart the server and game before using this.

@@ -429,6 +429,8 @@ namespace PrefabEditorMod
         }
         public void ResetServerSpawn(Action<EditResult> cb) { Post("/api/admin/spawn/reset", "{}", cb); }
 
+        public void Access(Action<EditResult> cb) { Send("GET", "/api/access", null, cb); }
+
         public void Command(string command, Action<EditResult> cb)
         {
             Post("/api/command", "{\"command\":\"" + EscapeJson(command) + "\"}", cb);

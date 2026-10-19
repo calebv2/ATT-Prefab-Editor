@@ -33,7 +33,7 @@ for side in ('Player', 'Server'):
             entries['addons/prefab_editor/' + target] = path.read_bytes()
     manifest = json.loads((source / 'author.json').read_text())
     if side == 'Player':
-        for name in ('__init__.py', 'author.json', 'runtime.py', 'settings.py', 'client.py'):
+        for name in ('__init__.py', 'author.json', 'runtime.py', 'settings.py', 'access.py', 'client.py'):
             add(source / name, name)
     entries['START HERE.txt'] = (repo / ('tavern-addon/' + side.lower() + '-instructions.txt')).read_bytes()
     entries['LICENSE'] = (repo / 'LICENSE').read_bytes()

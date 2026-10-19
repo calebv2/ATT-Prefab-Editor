@@ -548,6 +548,8 @@ function createServer(opts) {
                     res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
                     return res.end(editorHtml);
 
+                case 'GET /api/access':
+                    return runEdit(res, 'edit access ' + Buffer.from(JSON.stringify({action:'self'})).toString('base64'));
                 case 'GET /api/health': {
                     let console_ = { reachable: false, error: null };
                     try {

@@ -15,7 +15,7 @@ namespace PrefabEditor.Modules
 
         [Command("capabilities", "Report Prefab Editor launcher integration support")]
         public static string Capabilities()
-        { return "{\"ok\":true,\"tavernBridge\":1,\"version\":\"1.5.2\"}"; }
+        { return "{\"ok\":true,\"tavernBridge\":1,\"version\":\"1.6.0\"}"; }
 
         static string BoardFile { get { return Path.Combine(bridgeUserData, "InfoBoards.json"); } }
         static JObject BoardDocument()

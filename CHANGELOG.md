@@ -1,5 +1,9 @@
 # Changelog
 
+## 1.0.6 (2026-10-19)
+
+- Add owner-managed personal admin tokens, revocation and per-tab server permissions. Active sessions use current permissions; revocation and token replacement disconnect them. Store only token hashes. Player mod 2.3.0 and server core 1.6.0 are required together.
+
 ## Prefabulator 1.0.5 — 2026-10-19
 
 - Add Server Settings with 11 gameplay toggles and numeric settings.
