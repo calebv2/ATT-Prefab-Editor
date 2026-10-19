@@ -8,8 +8,6 @@
 // JSON. Binds 127.0.0.1 only.
 //
 // The ONE outbound path (v2): the "spawn in game" button proxies to the web
-// panel's /api/strings/spawn — which you reach through your own SSH tunnel
-// (ssh -L 1766:127.0.0.1:1766 user@your-server). The proxy refuses any non-loopback
 // panel URL, so the workbench never talks past your own machine.
 //
 // Encoding/decoding is att-string-transcoder (MIT, npm) — the same library the
@@ -31,7 +29,6 @@ const pouch = require('./tools/pouch-core');   // same encoder the CLI uses
 const DEFAULT_PORT = 1767;
 const DEFAULT_PANEL_URL = 'http://127.0.0.1:1766';
 
-// Share mode: the shippable build for people who don't have the mod + SSH
 // tunnel. It hides every feature that reaches OUR infrastructure (spawn /
 // capture / replace all POST to the web panel over the tunnel) and leaves the
 // pure string workstation — browse, build, decode, edit, library, export,
@@ -831,7 +828,6 @@ function cleanCustomData(cd) {
 
 // ---- spawn-in-game: the panel proxy --------------------------------------------
 // `spawn string <player> <s>` rides the panel's /api/strings/spawn, which the
-// owner reaches over the SSH tunnel. Loopback-to-loopback only: the workbench
 // binds 127.0.0.1 and refuses to proxy anywhere that isn't 127.0.0.1 either.
 
 const PLAYER_RE = /^[A-Za-z0-9 _()'.-]{1,80}$/;
@@ -867,7 +863,7 @@ function panelUrlOf(v) {
     catch { throw new WbError('panel url is not a URL'); }
     if (u.protocol !== 'http:') { throw new WbError('panel url must be http (the tunnel is local)'); }
     if (u.hostname !== '127.0.0.1' && u.hostname !== 'localhost') {
-        throw new WbError('panel url must be loopback — the SSH tunnel makes the VPS panel local (got ' + u.hostname + ')');
+        throw new WbError('panel url must be loopback — Prefabulator provides the local editor connection (got ' + u.hostname + ')');
     }
     return u;
 }
@@ -1101,6 +1097,7 @@ function createServer() {
                         })
                         .sort((a, b) => a.name.localeCompare(b.name));
                     return json(res, 200, {
+                        ok: true,
                         types,
                         maxQuantity: pouch.MAX_QUANTITY,
                         verifiedQuantity: pouch.VERIFIED_QUANTITY
@@ -1119,7 +1116,7 @@ function createServer() {
                     }
                     const docId = newSession(prefab);
                     return json(res, 200, {
-                        docId, ...result(getSession(docId)), note: pouch.quantityNote(quantity)
+                        ok: true, docId, ...result(getSession(docId)), note: pouch.quantityNote(quantity)
                     });
                 }
 
@@ -1440,7 +1437,7 @@ function createServer() {
                     } catch (e) {
                         return json(res, 200, {
                             ok: false,
-                            error: 'panel unreachable at ' + u.origin + ' — is the SSH tunnel up? (' + e.message + ')'
+                            error: 'panel unreachable at ' + u.origin + ' — is Prefabulator connected? (' + e.message + ')'
                         });
                     }
                     const p = out.body || {};
@@ -1470,7 +1467,7 @@ function createServer() {
                     } catch (e) {
                         return json(res, 200, {
                             ok: false,
-                            error: 'panel unreachable at ' + u.origin + ' — is the SSH tunnel up? (' + e.message + ')'
+                            error: 'panel unreachable at ' + u.origin + ' — is Prefabulator connected? (' + e.message + ')'
                         });
                     }
                     const p = out.body || {};
@@ -1498,7 +1495,7 @@ function createServer() {
                     } catch (e) {
                         return json(res, 200, {
                             ok: false,
-                            error: 'panel unreachable at ' + u.origin + ' — is the SSH tunnel up? (' + e.message + ')'
+                            error: 'panel unreachable at ' + u.origin + ' — is Prefabulator connected? (' + e.message + ')'
                         });
                     }
                     const p = out.body || {};

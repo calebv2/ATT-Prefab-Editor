@@ -1,11 +1,15 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
+using System.IO;
 using System.Reflection;
+using System.Text;
 using Alta.Console;      // ModuleAttribute, CommandAttribute, AliasAttribute
 using Alta.Chunks;       // Chunk, LocationChunkHelper
 using Alta.Networking;   // NetworkEntity, NetworkScene
 using Alta.Networking.Internal; // EntityManager
 using ATT.Saving;        // SaveMode (paste)
+using Newtonsoft.Json;
 using UnityEngine;       // Vector3, Physics, Joint, Rigidbody
 // NOTE: NetworkSceneManager, Player, Pickup and SerializedSavedDynamicObject
 // live in the GLOBAL namespace.
@@ -48,17 +52,38 @@ namespace PrefabEditor.Modules
 
         protected override void Init()
         {
+            EditorAdminModule.InitializeBridge(Ctx.UserDataDir);
+            ServerSpawn.Initialize(Ctx.CoreDir, delegate(string message) { Ctx.RawLog.Warning(message); });
+            EditorAdminModule.InitializeBlacklist(Ctx.CoreDir,
+                delegate(string message) { Ctx.RawLog.Msg("[Editor] " + message); },
+                delegate(string message) { Ctx.RawLog.Warning("[Editor] " + message); });
+            SafeTeleport.Initialize(delegate(string message) { Ctx.RawLog.Msg("[SafeTeleport] " + message); });
+            TeleporterLinks.Initialize(Ctx.CoreDir, delegate(string message) { Ctx.RawLog.Warning("[Teleporter] " + message); });
             Log.Msg("'edit' module ready: players, scan <player> [radius], scanat x y z [radius], "
                 + "info/move/rotate/transform/scale/ground <id>, delete/deletegroup, "
-                + "duplicategroup, arrangegroup, undo/redo/history, paste x y z <string>, "
+                + "duplicategroup, arrangegroup, undo/redo/history, players/kick/kill/ban/bans/unban, paste x y z <string>, "
                 + "spawnat x y z <prefab>. JSON out; the panel's /editor page and the client "
                 + "editor are the front ends.");
+        }
+
+        public override void OnUpdate()
+        {
+            EditorAdminModule.TickBlacklist();
+            SafeTeleport.Tick();
+        }
+
+        public override void Shutdown()
+        {
+            EditorAdminModule.ShutdownBlacklist();
+            TeleporterLinks.Shutdown();
+            ServerSpawn.Shutdown();
+            SafeTeleport.Shutdown();
         }
     }
 
     // Addressed as `edit ...` on the console.
     [Module("edit", "Prefab editor one-shots: scan (JSON), move, rotate, ground")]
-    public static class EditorAdminModule
+    public static partial class EditorAdminModule
     {
         const int MaxEntities = 400;
         const float MaxRadius = 200f;
@@ -66,6 +91,14 @@ namespace PrefabEditor.Modules
         const int MaxHistoryGroup = 300;
         const int MaxHistoryEntryBytes = 8 * 1024 * 1024;
         const long MaxHistoryBytes = 32L * 1024L * 1024L;
+
+        sealed class BlacklistRecord
+        {
+            public int Identifier { get; set; }
+            public string Username { get; set; }
+            public string Reason { get; set; }
+            public long ExpiresUtcTicks { get; set; }
+        }
 
         sealed class HistorySnapshot
         {
@@ -88,11 +121,165 @@ namespace PrefabEditor.Modules
         static readonly List<HistoryEntry> _redo = new List<HistoryEntry>();
         static long _historyBytes;
 
+        static readonly List<BlacklistRecord> _blacklist = new List<BlacklistRecord>();
+        static readonly HashSet<int> _kickIssuedForBlacklist = new HashSet<int>();
+        static string _blacklistPath;
+        static Action<string> _blacklistLog;
+        static Action<string> _blacklistWarn;
+        static bool _blacklistReady;
+        static bool _blacklistLoadFailed;
+        static float _nextBlacklistCheck;
+
         static FieldInfo _entityManagerField;
 
         // ---------------------------------------------------------------
         //  Commands
         // ---------------------------------------------------------------
+
+        public static void InitializeBlacklist(string coreDirectory, Action<string> log, Action<string> warn)
+        {
+            _blacklistLog = log;
+            _blacklistWarn = warn;
+            _blacklistPath = Path.Combine(coreDirectory, "blacklist.json");
+            _blacklist.Clear();
+            _kickIssuedForBlacklist.Clear();
+            _blacklistReady = false;
+            _blacklistLoadFailed = false;
+            try
+            {
+                Directory.CreateDirectory(coreDirectory);
+                if (File.Exists(_blacklistPath))
+                {
+                    List<BlacklistRecord> loaded = JsonConvert.DeserializeObject<List<BlacklistRecord>>(
+                        File.ReadAllText(_blacklistPath));
+                    if (loaded != null) _blacklist.AddRange(loaded);
+                }
+                _blacklistReady = true;
+                Player.OnPlayerAdded += OnPlayerAdded;
+                Player.OnPlayerRemoved += OnPlayerRemoved;
+                RemoveExpiredBlacklistEntries(true);
+                if (_blacklistLog != null)
+                    _blacklistLog("persistent ban list ready (" + _blacklist.Count + " active entries).");
+            }
+            catch (Exception e)
+            {
+                _blacklistLoadFailed = true;
+                if (_blacklistWarn != null) _blacklistWarn("could not load blacklist.json: " + e.Message);
+            }
+        }
+
+        public static void ShutdownBlacklist()
+        {
+            try { Player.OnPlayerAdded -= OnPlayerAdded; } catch { }
+            try { Player.OnPlayerRemoved -= OnPlayerRemoved; } catch { }
+            _blacklistReady = false;
+        }
+
+        public static void TickBlacklist()
+        {
+            if (!_blacklistReady || Time.unscaledTime < _nextBlacklistCheck) return;
+            _nextBlacklistCheck = Time.unscaledTime + 1f;
+            RemoveExpiredBlacklistEntries(true);
+            try
+            {
+                foreach (Player player in Player.AllPlayers) EnforceBlacklist(player);
+            }
+            catch (Exception e)
+            {
+                if (_blacklistWarn != null) _blacklistWarn("blacklist join check failed: " + e.Message);
+            }
+        }
+
+        static void OnPlayerAdded(Player player)
+        {
+            int identifier = PlayerIdentifier(player);
+            if (identifier > 0) _kickIssuedForBlacklist.Remove(identifier);
+            EnforceBlacklist(player);
+        }
+
+        static void OnPlayerRemoved(Player player)
+        {
+            int identifier = PlayerIdentifier(player);
+            if (identifier > 0) _kickIssuedForBlacklist.Remove(identifier);
+        }
+
+        static void EnforceBlacklist(Player player)
+        {
+            if (!_blacklistReady || player == null) return;
+            int identifier = PlayerIdentifier(player);
+            if (identifier <= 0) return;
+            BlacklistRecord record = FindBlacklistRecord(identifier);
+            if (record == null || _kickIssuedForBlacklist.Contains(identifier)) return;
+            _kickIssuedForBlacklist.Add(identifier);
+            try
+            {
+                string reason = string.IsNullOrEmpty(record.Reason) ? "This account is banned from this server." : record.Reason;
+                player.Kick("Server ban: " + reason);
+                if (_blacklistLog != null) _blacklistLog("enforced ban for " + SafeUsername(player) + " (" + identifier + ").");
+            }
+            catch (Exception e)
+            {
+                _kickIssuedForBlacklist.Remove(identifier);
+                if (_blacklistWarn != null) _blacklistWarn("could not enforce ban for " + SafeUsername(player) + ": " + e.Message);
+            }
+        }
+
+        static int PlayerIdentifier(Player player)
+        {
+            try { return player != null && player.UserInfo != null ? player.UserInfo.Identifier : 0; }
+            catch { return 0; }
+        }
+
+        static BlacklistRecord FindBlacklistRecord(int identifier)
+        {
+            for (int i = 0; i < _blacklist.Count; i++)
+                if (_blacklist[i].Identifier == identifier) return _blacklist[i];
+            return null;
+        }
+
+        static void RemoveExpiredBlacklistEntries(bool save)
+        {
+            long now = DateTime.UtcNow.Ticks;
+            bool changed = false;
+            for (int i = _blacklist.Count - 1; i >= 0; i--)
+            {
+                long expiry = _blacklist[i].ExpiresUtcTicks;
+                if (expiry > 0 && expiry <= now)
+                {
+                    _blacklist.RemoveAt(i);
+                    changed = true;
+                }
+            }
+            if (changed && save)
+            {
+                string ignored;
+                SaveBlacklist(out ignored);
+            }
+        }
+
+        static bool SaveBlacklist(out string error)
+        {
+            error = null;
+            if (!_blacklistReady || string.IsNullOrEmpty(_blacklistPath))
+            { error = "blacklist storage is unavailable"; return false; }
+            if (_blacklistLoadFailed)
+            { error = "blacklist.json could not be read; fix that file before changing bans"; return false; }
+            string temp = _blacklistPath + ".tmp";
+            try
+            {
+                string json = JsonConvert.SerializeObject(_blacklist, Formatting.Indented);
+                File.WriteAllText(temp, json, new UTF8Encoding(false));
+                if (File.Exists(_blacklistPath)) File.Replace(temp, _blacklistPath, null);
+                else File.Move(temp, _blacklistPath);
+                return true;
+            }
+            catch (Exception e)
+            {
+                try { if (File.Exists(temp)) File.Delete(temp); } catch { }
+                error = e.Message;
+                return false;
+            }
+        }
 
         [Command("history", "Show available editor undo and redo steps")]
         public static string History()
@@ -138,6 +325,7 @@ namespace PrefabEditor.Modules
                     float yaw = 0f;
                     try { yaw = p.PlayerController.Head.eulerAngles.y; } catch { }
                     records.Add("{\"name\":\"" + EditJson.Esc(SafeUsername(p)) + "\""
+                        + ",\"id\":" + PlayerIdentifier(p).ToString(CultureInfo.InvariantCulture)
                         + ",\"x\":" + EditJson.F(pos.x) + ",\"y\":" + EditJson.F(pos.y)
                         + ",\"z\":" + EditJson.F(pos.z) + ",\"yaw\":" + EditJson.F(yaw) + "}");
                 }
@@ -159,6 +347,115 @@ namespace PrefabEditor.Modules
             catch (Exception e) { return EditJson.Err("kick failed: " + e.Message); }
         }
 
+        [Command("kill", "Set an online player's health to zero")]
+        public static string Kill(Player target)
+        {
+            if (target == null || target.PlayerController == null)
+                return EditJson.Err("player not found or has no body");
+            try
+            {
+                HealthObject health = target.PlayerController.Health;
+                if (health == null) return EditJson.Err("player has no health component");
+                if (health.Health <= 0f) return EditJson.Err("player is already down");
+                health.Health = 0f;
+                if (health.Health > 0f) return EditJson.Err("server did not apply the health change");
+                return "{\"ok\":true,\"note\":\"killed " + EditJson.Esc(SafeUsername(target)) + "\"}";
+            }
+            catch (Exception e) { return EditJson.Err("kill failed: " + e.Message); }
+        }
+
+        [Command("ban", "Add an account to the persistent server mod blacklist and disconnect it")]
+        public static string Ban(Player target, int durationHours = 0, string reasonBase64 = null)
+        {
+            if (target == null) return EditJson.Err("player not found or no longer online");
+            int identifier = PlayerIdentifier(target);
+            if (identifier <= 0) return EditJson.Err("player account identifier is unavailable; no ban was saved");
+            if (durationHours < 0 || durationHours > 87600)
+                return EditJson.Err("duration must be 0 (permanent) or at most 87600 hours");
+            if (!_blacklistReady || _blacklistLoadFailed)
+                return EditJson.Err("persistent blacklist is unavailable; no ban was saved");
+
+            string reason = "Server administrator ban.";
+            if (!string.IsNullOrEmpty(reasonBase64))
+            {
+                try { reason = Encoding.UTF8.GetString(Convert.FromBase64String(reasonBase64)); }
+                catch { return EditJson.Err("ban reason could not be decoded"); }
+                reason = (reason ?? "").Trim();
+                if (reason.Length == 0) reason = "Server administrator ban.";
+                if (reason.Length > 300) return EditJson.Err("ban reason must be 300 characters or fewer");
+            }
+
+            BlacklistRecord record = FindBlacklistRecord(identifier);
+            bool added = record == null;
+            string oldUsername = record == null ? null : record.Username;
+            string oldReason = record == null ? null : record.Reason;
+            long oldExpiry = record == null ? 0 : record.ExpiresUtcTicks;
+            if (added)
+            {
+                record = new BlacklistRecord { Identifier = identifier };
+                _blacklist.Add(record);
+            }
+            record.Username = SafeUsername(target);
+            record.Reason = reason;
+            record.ExpiresUtcTicks = durationHours == 0 ? 0 : DateTime.UtcNow.AddHours(durationHours).Ticks;
+            string saveError;
+            if (!SaveBlacklist(out saveError))
+            {
+                if (added) _blacklist.Remove(record);
+                else
+                {
+                    record.Username = oldUsername;
+                    record.Reason = oldReason;
+                    record.ExpiresUtcTicks = oldExpiry;
+                }
+                return EditJson.Err("could not save ban: " + saveError);
+            }
+
+            EnforceBlacklist(target);
+            string duration = durationHours == 0 ? "permanently" : "for " + durationHours + " hour(s)";
+            return "{\"ok\":true,\"note\":\"banned " + EditJson.Esc(record.Username) + " "
+                + EditJson.Esc(duration) + "\",\"identifier\":" + identifier.ToString(CultureInfo.InvariantCulture) + "}";
+        }
+
+        [Command("bans", "List persistent server mod blacklist entries as JSON")]
+        public static string Bans()
+        {
+            if (!_blacklistReady || _blacklistLoadFailed)
+                return EditJson.Err("persistent blacklist is unavailable");
+            RemoveExpiredBlacklistEntries(true);
+            List<string> records = new List<string>();
+            for (int i = 0; i < _blacklist.Count; i++)
+            {
+                BlacklistRecord b = _blacklist[i];
+                string expires = b.ExpiresUtcTicks == 0 ? "Permanent"
+                    : new DateTime(b.ExpiresUtcTicks, DateTimeKind.Utc).ToString("yyyy-MM-dd HH:mm 'UTC'", CultureInfo.InvariantCulture);
+                records.Add("{\"identifier\":" + b.Identifier.ToString(CultureInfo.InvariantCulture)
+                    + ",\"name\":\"" + EditJson.Esc(b.Username) + "\",\"reason\":\"" + EditJson.Esc(b.Reason)
+                    + "\",\"expires\":\"" + EditJson.Esc(expires) + "\"}");
+            }
+            return "{\"ok\":true,\"bans\":[" + string.Join(",", records.ToArray()) + "]}";
+        }
+
+        [Command("unban", "Remove a user identifier from the persistent server mod blacklist")]
+        public static string Unban(int identifier)
+        {
+            if (identifier <= 0) return EditJson.Err("identifier must be a positive account identifier");
+            if (!_blacklistReady || _blacklistLoadFailed)
+                return EditJson.Err("persistent blacklist is unavailable");
+            BlacklistRecord record = FindBlacklistRecord(identifier);
+            if (record == null) return EditJson.Err("no ban found for identifier " + identifier);
+            _blacklist.Remove(record);
+            _kickIssuedForBlacklist.Remove(identifier);
+            string saveError;
+            if (!SaveBlacklist(out saveError))
+            {
+                _blacklist.Add(record);
+                return EditJson.Err("could not save unban: " + saveError);
+            }
+            return "{\"ok\":true,\"note\":\"unbanned " + EditJson.Esc(record.Username)
+                + "\",\"identifier\":" + identifier.ToString(CultureInfo.InvariantCulture) + "}";
+        }
+
         [Command("teleport", "Teleport one online player beside another: edit teleport <player> <destination-player>")]
         public static string TeleportPlayer(Player target, Player destination)
         {
@@ -173,10 +470,65 @@ namespace PrefabEditor.Modules
                 Vector3 point = destination.PlayerController.transform.position
                     + destination.PlayerController.transform.right * 1.5f;
                 target.PlayerController.ForceTeleportTo(point);
-                return "{\"ok\":true,\"note\":\"teleported " + EditJson.Esc(SafeUsername(target))
+                return "{\"ok\":true,\"note\":\"Loading destination before teleporting " + EditJson.Esc(SafeUsername(target))
                     + " beside " + EditJson.Esc(SafeUsername(destination)) + "\"}";
             }
             catch (Exception e) { return EditJson.Err("teleport failed: " + e.Message); }
+        }
+
+        [Command("nudge", "Small keep-alive movement: edit nudge <player> <direction: 1 or -1>")]
+        public static string NudgePlayer(Player player, int direction)
+        {
+            if (direction != 1 && direction != -1) return EditJson.Err("direction must be 1 or -1");
+            if (player == null || player.PlayerController == null) return EditJson.Err("player is offline or has no body");
+            try
+            {
+                Vector3 to = player.PlayerController.transform.position + Vector3.right * (0.12f * direction);
+                player.PlayerController.ForceTeleportTo(to);
+                return "{\"ok\":true,\"note\":\"Player nudged 0.12 m; home unchanged.\"}";
+            }
+            catch (Exception e) { return EditJson.Err("keep-alive failed: " + e.Message); }
+        }
+
+        static string ValidateTeleporterDestination(Vector3 point)
+        {
+            if (float.IsNaN(point.x) || float.IsNaN(point.y) || float.IsNaN(point.z)
+                || float.IsInfinity(point.x) || float.IsInfinity(point.y) || float.IsInfinity(point.z))
+                return "destination must contain three finite coordinates";
+            LocationChunkHelper.EnsureChunkLookupIsSetup();
+            return LocationChunkHelper.GetBestContaining(point) == null
+                ? "no map chunk contains that destination; check the coordinates" : null;
+        }
+
+        [Command("linkteleporter", "Link an existing teleporter: edit linkteleporter <entity-id> <x> <y> <z>")]
+        public static string LinkTeleporter(uint id, float x, float y, float z)
+        {
+            try
+            {
+                Vector3 destination = new Vector3(x, y, z);
+                string error = ValidateTeleporterDestination(destination);
+                if (error != null) return EditJson.Err(error);
+                NetworkEntity root;
+                error = ResolveRoot(id, out root);
+                if (error != null) return EditJson.Err(error);
+                TeleportationPoint[] points = root.GetComponentsInChildren<TeleportationPoint>(true);
+                if (points.Length == 0)
+                {
+                    FromPlayingToCustomization[] platforms = root.GetComponentsInChildren<FromPlayingToCustomization>(true);
+                    if (platforms.Length == 1 && root.GetComponentsInChildren<TeleporterPlatform>(true).Length == 1)
+                    {
+                        error = TeleporterLinks.Set(root, destination);
+                        return error == null ? Placed(root) : EditJson.Err(error);
+                    }
+                    return EditJson.Err("Entity #" + id + " (" + root.name + ") is selected, but it has no supported teleporter. Use a TeleportationPoint or Teleporter To Customization platform.");
+                }
+                if (points.Length > 1) return EditJson.Err("Entity #" + id + " contains " + points.Length + " teleport points; select an individual teleporter.");
+                // Native sync and world-save support. Native locomotion requests
+                // destination chunks before moving and gates fade-in on loading.
+                points[0].PositionTarget(destination);
+                return Placed(root);
+            }
+            catch (Exception e) { return EditJson.Err("link teleporter: " + e.Message); }
         }
 
         [Command("scan", "List root entities near a player as JSON")]

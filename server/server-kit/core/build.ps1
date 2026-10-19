@@ -36,8 +36,12 @@ $cscArgs = @('/target:library','/nostdlib+','/noconfig','/unsafe-','/warn:1',
              "/out:$out") + $refs + $src
 
 Write-Host "Compiling PrefabEditorCore.dll ($($refs.Count) refs, $($src.Count) sources)..."
-& $csc $cscArgs
-if ($LASTEXITCODE -ne 0) { throw "csc failed ($LASTEXITCODE)" }
+$responseFile = Join-Path $here ('build-' + [Guid]::NewGuid().ToString('N') + '.rsp')
+try {
+    [IO.File]::WriteAllLines($responseFile, @($cscArgs | Where-Object { $_ -ne '/noconfig' } | ForEach-Object { '"' + $_ + '"' }))
+    & $csc /noconfig "@$responseFile"
+    if ($LASTEXITCODE -ne 0) { throw "csc failed ($LASTEXITCODE)" }
+} finally { if (Test-Path -LiteralPath $responseFile) { Remove-Item -LiteralPath $responseFile } }
 
 New-Item -ItemType Directory -Force $dist | Out-Null
 Copy-Item $out (Join-Path $dist 'PrefabEditorCore.dll') -Force

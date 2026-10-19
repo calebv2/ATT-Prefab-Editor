@@ -1,6 +1,5 @@
-// The mod talks to the same server `edit` module the web panel drives by calling
-// the panel's /api/edit/* endpoints through PanelUrl (local loopback, SSH tunnel,
-// or private Tailscale Serve URL). The panel holds RS256 console signing, so the
+﻿// The mod talks to the same server `edit` module the web panel drives by calling
+// the panel's /api/edit/* endpoints through PanelUrl (local Prefabulator connection). The panel holds RS256 console signing, so the
 // mod needs no crypto of its own. The server stays authoritative for every edit.
 //
 // Requests go through UnityWebRequest inside a MelonCoroutine, so completion callbacks
@@ -273,10 +272,120 @@ namespace PrefabEditorMod
             Post("/api/edit/kick", "{\"player\":\"" + EscapeJson(player) + "\"}", cb);
         }
 
+        public void KillPlayer(string player, Action<EditResult> cb)
+        {
+            Post("/api/edit/kill", "{\"player\":\"" + EscapeJson(player) + "\"}", cb);
+        }
+
+        public void BlacklistPlayer(string player, int hours, string reason, Action<EditResult> cb)
+        {
+            Post("/api/edit/ban", "{\"player\":\"" + EscapeJson(player)
+                + "\",\"hours\":" + hours + ",\"reason\":\"" + EscapeJson(reason) + "\"}", cb);
+        }
+
+        public void Blacklist(Action<EditResult> cb)
+        {
+            Send("GET", "/api/edit/bans", null, cb);
+        }
+
+        public void Unblacklist(int identifier, Action<EditResult> cb)
+        {
+            Post("/api/edit/unban", "{\"identifier\":" + identifier + "}", cb);
+        }
+
         public void TeleportPlayer(string player, string destination, Action<EditResult> cb)
         {
             Post("/api/edit/teleport-player", "{\"player\":\"" + EscapeJson(player)
                 + "\",\"destination\":\"" + EscapeJson(destination) + "\"}", cb);
+        }
+
+        public void NudgePlayer(string player, int direction, Action<EditResult> cb)
+        {
+            Post("/api/edit/nudge", "{\"player\":\"" + EscapeJson(player) + "\",\"direction\":" + direction + "}", cb);
+        }
+
+        public void TradeInfo(uint id, Action<EditResult> cb)
+        {
+            TradeRequest("/api/edit/trade-info", "{\"id\":" + id + "}", "edit tradeinfo " + id, cb);
+        }
+
+        public void TradeAddStock(uint id, uint hash, int amount, Action<EditResult> cb)
+        {
+            TradeRequest("/api/edit/trade-add-stock", "{\"id\":" + id + ",\"itemHash\":" + hash + ",\"amount\":" + amount + "}",
+                "edit tradeaddstock " + id + " " + hash + " " + amount, cb);
+        }
+
+        public void TradeSet(uint id, uint hash, int price, int quantity, int stock, Action<EditResult> cb)
+        {
+            TradeRequest("/api/edit/trade-set", "{\"id\":" + id + ",\"itemHash\":" + hash
+                + ",\"price\":" + price + ",\"perPurchase\":" + quantity + ",\"stock\":" + stock + "}",
+                "edit tradeset " + id + " " + hash + " " + price + " " + quantity + " " + stock, cb);
+        }
+
+        void TradeRequest(string path, string body, string command, Action<EditResult> cb)
+        {
+            Post(path, body, delegate(EditResult result) {
+                if (result.Ok || result.Err != "no such route: POST " + path) { Invoke(cb, result); return; }
+                // Only retry an explicit missing route, never a timeout or game rejection.
+                Command(command, delegate(EditResult legacy) { Invoke(cb, ParseTradeCommand(legacy)); });
+            });
+        }
+
+        internal static EditResult ParseTradeCommand(EditResult result)
+        {
+            if (!result.Ok && string.IsNullOrEmpty(result.Raw)) return result;
+            string exception = Json.Str(result.Raw, "exception");
+            string text = Json.Str(result.Raw, "text");
+            string payload = (text ?? "").Trim();
+            if (result.Ok && string.IsNullOrEmpty(exception)) {
+                if (!payload.StartsWith("{")) payload = Json.Value(result.Raw, "structured") ?? "";
+                if (payload.StartsWith("{") && payload.EndsWith("}") && Json.Value(payload, "ok") != null) {
+                    EditResult parsed = EditResult.Parse("{\"data\":" + payload + "}");
+                    if (!parsed.Ok || (parsed.Ent != null && Json.Value(payload, "trade") != null)) return parsed;
+                }
+            }
+            return EditResult.Fail("Trade editing needs the updated PrefabEditorCore.dll on the GAME SERVER. Install the Server Kit and restart the game server. Server reply: "
+                + (exception ?? result.Err ?? text ?? "No trade settings returned"));
+        }
+
+        public void LinkTeleporter(uint id, float x, float y, float z, Action<EditResult> cb)
+        {
+            if (id == 0 || float.IsNaN(x) || float.IsNaN(y) || float.IsNaN(z)
+                || float.IsInfinity(x) || float.IsInfinity(y) || float.IsInfinity(z)
+                || Math.Abs(x) > 100000 || Math.Abs(y) > 100000 || Math.Abs(z) > 100000)
+            { Invoke(cb, EditResult.Fail("Select a teleporter and enter valid world coordinates.")); return; }
+            Post("/api/edit/link-teleporter", "{\"id\":" + id + ",\"x\":" + F(x) + ",\"y\":" + F(y) + ",\"z\":" + F(z) + "}", delegate(EditResult result)
+            {
+                // Retry only a confirmed missing route: a timeout may have applied
+                // the change already. Older panels expose the same authenticated console.
+                if (result.Ok || result.Err != "no such route: POST /api/edit/link-teleporter")
+                { Invoke(cb, result); return; }
+                if (_log != null) _log("Older panel detected; linking through its console command endpoint.");
+                Command("edit linkteleporter " + id.ToString(CultureInfo.InvariantCulture) + " " + F(x) + " " + F(y) + " " + F(z), delegate(EditResult legacy)
+                {
+                    Invoke(cb, ParseTeleporterCommand(legacy));
+                });
+            });
+        }
+
+        internal static EditResult ParseTeleporterCommand(EditResult result)
+        {
+            if (!result.Ok && string.IsNullOrEmpty(result.Raw)) return result;
+            string exception = Json.Str(result.Raw, "exception");
+            string text = Json.Str(result.Raw, "text");
+            string payload = text == null ? "" : text.Trim();
+            if (result.Ok && string.IsNullOrEmpty(exception))
+            {
+                // Raw-command HTTP success is not proof that the game applied a link.
+                if (!payload.StartsWith("{")) payload = Json.Value(result.Raw, "structured") ?? "";
+                if (payload.StartsWith("{") && payload.EndsWith("}") && Json.Value(payload, "ok") != null)
+                {
+                    EditResult parsed = EditResult.Parse("{\"data\":" + payload + "}");
+                    if (!parsed.Ok || parsed.Ent != null) return parsed;
+                }
+            }
+            string reason = exception ?? result.Err ?? text ?? "No teleporter result returned";
+            return EditResult.Fail("Teleporter linking requires the updated PrefabEditorCore.dll on the GAME SERVER. Update the Server Kit and restart the game server and panel. Server reply: " + reason);
         }
 
         public void InfoBoards(Action<EditResult> cb)
@@ -305,6 +414,20 @@ namespace PrefabEditorMod
                 + EscapeJson(text) + "\",\"rotation\":" + rotation + "}";
             Post("/api/infoboards/update", body, cb);
         }
+
+        public void SetServerSetting(string name, string value, Action<EditResult> cb)
+        {
+            Post("/api/server-settings", "{\"name\":\"" + EscapeJson(name) + "\",\"value\":" + value + "}", cb);
+        }
+        public void Broadcast(string message, Action<EditResult> cb)
+        {
+            Post("/api/admin/broadcast", "{\"message\":\"" + EscapeJson(message) + "\"}", cb);
+        }
+        public void SetServerSpawn(UnityEngine.Vector3 position, Action<EditResult> cb)
+        {
+            Post("/api/admin/spawn", "{\"x\":" + F(position.x) + ",\"y\":" + F(position.y) + ",\"z\":" + F(position.z) + "}", cb);
+        }
+        public void ResetServerSpawn(Action<EditResult> cb) { Post("/api/admin/spawn/reset", "{}", cb); }
 
         public void Command(string command, Action<EditResult> cb)
         {
@@ -337,6 +460,19 @@ namespace PrefabEditorMod
         {
             Post("/api/edit/spawnat", "{\"x\":" + F(x) + ",\"y\":" + F(y) + ",\"z\":" + F(z)
                 + ",\"prefab\":\"" + prefabHash + "\"}", cb);
+        }
+
+        // The local Workbench knows which captured dock types can be packed and
+        // builds the pouch save string with the same encoder used by its UI.
+        public void PouchTypes(Action<EditResult> cb)
+        {
+            SendUrl("http://127.0.0.1:1767/api/pouch/types", null, "workbench", cb, "GET");
+        }
+
+        public void BuildPouch(string item, int quantity, Action<EditResult> cb)
+        {
+            string body = "{\"item\":\"" + EscapeJson(item) + "\",\"quantity\":" + quantity + "}";
+            SendUrl("http://127.0.0.1:1767/api/pouch", body, "workbench", cb);
         }
 
         // Reachability probe: GET /api/health (is the tunnel + panel up?).
@@ -387,9 +523,15 @@ namespace PrefabEditorMod
             {
                 string why = req.error;
                 if (string.IsNullOrEmpty(why)) why = "HTTP " + req.responseCode;
-                r = service == "workbench"
-                    ? EditResult.Fail("resize needs the local String Workbench at 127.0.0.1:1767; run player-kit/workbench/start-workbench.bat and retry (" + why + ")")
-                    : EditResult.Fail("panel unreachable: " + why + " (panel running? tunnel up?)");
+                string errorBody = "";
+                try { errorBody = req.downloadHandler != null ? req.downloadHandler.text : ""; } catch { }
+                EditResult serverError = string.IsNullOrEmpty(errorBody) ? null : EditResult.Parse(errorBody);
+                if (serverError != null && !string.IsNullOrEmpty(serverError.Err))
+                    r = EditResult.Fail(serverError.Err);
+                else
+                    r = service == "workbench"
+                        ? EditResult.Fail("local String Workbench is unavailable at 127.0.0.1:1767; run player-kit/workbench/start-workbench.bat (" + why + ")")
+                        : EditResult.Fail("panel unreachable: " + why + " (panel running? tunnel up?)");
             }
             else
             {
@@ -416,6 +558,7 @@ namespace PrefabEditorMod
             if (float.IsNaN(v) || float.IsInfinity(v)) return "0";
             return v.ToString("0.###", CultureInfo.InvariantCulture);
         }
+
     }
 
     // A minimal, dependency-free reader for our OWN known JSON shapes. Not a general

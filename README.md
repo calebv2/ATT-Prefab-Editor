@@ -1,58 +1,24 @@
-# ATT Prefab Editor
+# ATT Prefab Editor / Prefabulator
 
-An in-game prefab editor for A Township Tale. The client mod drives edits through the server-side editor core and private web panel.
+Prefabulator connects the in-game editor through Tavern Launcher and the server remote console.
+All editing happens in game (F1). Keep Tavern Launcher open while playing.
 
-## Downloads
+- Players: use Player-Addon-and-Mod. Follow its single START HERE.txt.
+- Server owners: use Server-Mod-Only. Copy the DLL to the server game Mods folder and restart.
+- The address is remembered. Saving the console token is optional. Windows encrypts saved tokens for your account; they enable auto-connect when launching that server through Tavern.
 
-Get the current files from [GitHub Releases](https://github.com/calebv2/ATT-Prefab-Editor/releases/latest):
-
-- **Player Kit** — recommended for players; includes the client mod, install script, item previews, and optional String Workbench.
-- **Server Kit** — recommended for server owners; includes the server core, private panel, prefab catalog, and Linux and Windows installers.
-- **Standalone DLLs** — for manual installs when the rest of the matching kit is already installed.
-
-Use the full kits unless you already know where each standalone DLL and its supporting files belong. The server DLL needs the panel files from the Server Kit to provide the web panel.
-
-## Guides
-
-- [Player controls and setup](client/USER-GUIDE.md)
-- [Player Kit installation](client/README.md)
-- [Server installation and remote access](server/INSTALL.md)
-- [Server Kit overview](server/README.md)
-
-## Repository layout
-
-- `client/player-kit/mod/src/` — client C# source and build script.
-- `client/player-kit/dist/PrefabEditorImages/` — item preview images used by the game mod and workbench.
-- `client/player-kit/workbench/` — optional local prefab string editor.
-- `server/server-kit/core/` — server C# source and build script.
-- `server/server-kit/panel/` — private web panel and its console bridge.
-- `server/server-kit/data/` — prefab catalog data.
-- `client/` and `server/` — kit installers and user guides.
-
-Generated DLLs, dependency folders, and complete distribution ZIPs are kept out of the source tree. Each release includes the standalone client and server DLLs plus the complete Player and Server Kit ZIPs.
+Source instructions: [player](tavern-addon/player-instructions.txt), [server](tavern-addon/server-instructions.txt).
+Build mods using their build.ps1 scripts with -GamePath. Package using tools/package_tavern_addon.py --output <folder>.
 
 ## Build from source
 
-Build scripts use the game's own MelonLoader-patched assemblies. The game is not included in this repository.
-
-Client DLL, from the repository root:
+Use Windows, Python 3, Node.js 24 with npm, .NET Framework 4.x, and your own MelonLoader-patched game installation. Game assemblies are read locally and are not included in this repository.
 
 ```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\client\player-kit\mod\build.ps1 -GamePath 'C:\Games\A Township Tale'
+powershell -ExecutionPolicy Bypass -File client/player-kit/mod/build.ps1 -GamePath "C:/path/to/client-game"
+powershell -ExecutionPolicy Bypass -File server/server-kit/core/build.ps1 -GamePath "C:/path/to/server-game"
+npm ci --prefix client/player-kit/workbench
+python tools/package_tavern_addon.py --output release --node "C:/Program Files/nodejs/node.exe"
 ```
 
-Server DLL:
-
-```powershell
-powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\server\server-kit\core\build.ps1 -GamePath 'C:\Games\A Township Tale'
-```
-
-The client workbench needs Node.js 20 or later. From `client/player-kit/workbench`, run `npm ci` before starting it when using this source checkout; the downloadable Player Kit already includes its dependencies.
-
-## Server access
-
-The panel can issue server console commands and has no user login. Keep it on loopback or a private SSH/Tailscale connection, and do not expose ports 1764 or 1766 to the public internet. See [server/INSTALL.md](server/INSTALL.md) for setup details.
-
-## License
-
-MIT. See [LICENSE](LICENSE).
+The packaging script includes the staged mods, launcher add-on, local editor runtime, required assets and third-party license notices. Player and server ZIPs each contain one START HERE.txt. Runtime executables and installed dependencies belong in release assets, not source commits.

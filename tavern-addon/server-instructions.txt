@@ -1,0 +1,29 @@
+PREFAB EDITOR - SERVER MOD ONLY
+
+FOR THE COMPUTER HOSTING THE GAME SERVER. WINDOWS OR LINUX.
+This is a game mod, not a Tavern Launcher add-on.
+
+1. Stop the game server.
+2. Open this ZIP's Mods folder. Copy PrefabEditorCore.dll into the SERVER
+   game's Mods folder, replacing the old PrefabEditorCore.dll if present.
+   Use the game folder containing A Township Tale_Data.
+3. Start the game server again.
+4. Give trusted editor users the Player-Addon-and-Mod ZIP, your server
+   address, and the console token from Tavern Launcher.
+
+Do not put this package in the launcher's addons folder. There is no server
+add-on to enable and no separate panel to start. Keep your existing Tavern
+console authentication and working remote-console connection.
+
+If you previously installed the old Server Add-on, you can disable it in
+Tavern Launcher; it is no longer needed to install updates.
+If you host and play on the same PC, install each package in its correct place:
+server DLL in the server game's Mods; Player Add-on beside the client launcher.
+
+Existing world data, teleporter links, and server keys are preserved.
+Info Boards still require LiveInfoBoards installed on the server.
+Never put your console token in a public ZIP or Discord post.
+
+Version 1.0.5 includes core 1.5.2, required for broadcasts and persistent server
+spawn control. Spawn overrides are stored in the mod core data folder as
+server-spawn.json. Use Admin > Restore default server spawn to remove an override.

@@ -27,7 +27,7 @@ using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.InputSystem;
 
-[assembly: MelonInfo(typeof(PrefabEditorMod.EditorMod), "ATT Prefab Editor", "1.8.0", "ATT Prefab Editor")]
+[assembly: MelonInfo(typeof(PrefabEditorMod.EditorMod), "ATT Prefab Editor", "2.2.0", "ATT Prefab Editor")]
 [assembly: MelonGame("Alta", "A Township Tale")]
 
 namespace PrefabEditorMod
@@ -106,7 +106,7 @@ namespace PrefabEditorMod
             _stopVRMirror = _cfg.CreateEntry<bool>("StopVRMirror", true,
                 "Stop VR mirror", "Set XRSettings.showDeviceView=false while active so the desktop shows the editor instead of the HMD mirror (headset unaffected). F2 flips it live.");
             _panelUrl = _cfg.CreateEntry<string>("PanelUrl", "http://127.0.0.1:1766",
-                "Panel URL", "Base URL of the web panel (local loopback, SSH tunnel, or your Tailscale Serve URL). The server stays the authority for every mutation.");
+                "Panel URL", "Base URL of the web panel (local Prefabulator connection). The server stays the authority for every mutation.");
             _gizmoGrid = _cfg.CreateEntry<float>("GizmoGridSize", 0.25f,
                 "Gizmo grid size", "Translate snap grid in meters while holding Ctrl (add Shift for x4).");
             _gizmoGhost = _cfg.CreateEntry<bool>("GizmoGhostPreview", false,
@@ -114,7 +114,7 @@ namespace PrefabEditorMod
             _outlineRadius = _cfg.CreateEntry<float>("OutlineRadius", 40f,
                 "Outline radius", "Radius (m) around the editor camera for the 'outline all entities' toggle.");
 
-            _api = new EditApi(_panelUrl.Value, LogEdit);
+            _api = new EditApi(ConnectionSettings.ReadUrl(_panelUrl.Value, LogEdit), LogEdit);
             _sel = new EditSelection(_api, LogEdit);
             _sel.ConfigureGizmo(_gizmoGrid.Value, _gizmoGhost.Value);
             _sel.OutlineRadius = Mathf.Clamp(_outlineRadius.Value, 5f, 150f);
@@ -167,7 +167,7 @@ namespace PrefabEditorMod
                 MelonLogger.Msg("Editor: target display -> " + _displayNow);
             }
 
-            Fly();
+            if (_sel == null || !_sel.Watching) Fly();
 
             if (_sel != null) _sel.Update(); // pick / drag / actions (server-authoritative)
         }
@@ -213,6 +213,7 @@ namespace PrefabEditorMod
 
         private void Disable()
         {
+            if (_sel != null) _sel.StopKeepAlive();
             if (_camGO != null) _camGO.SetActive(false);
 
             if (_capturedSDV)

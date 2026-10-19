@@ -8,7 +8,18 @@
 **/PrefabEditorTravel.txt
 **/PrefabEditorWorkAreas.txt
 Thumbs.db
+server/panel-location.txt
 .DS_Store
 
 # The workbench reads the shared images from client/player-kit/dist.
 client/player-kit/workbench/data/item-images/
+
+# Local caches, credentials, runtime state and release output.
+**/__pycache__/
+*.pyc
+outputs/
+**/*.priv.xml
+**/connection.json
+**/PrefabEditorConnection.json
+**/state/
+client/player-kit/dist/PrefabEditorCatalog.json

@@ -40,6 +40,7 @@ using Alta.Networking;   // NetworkEntity (whole-Managed csc ref covers it)
 using Alta.Networking.Internal; // EntityManager (outline-all iteration)
 using UnityEngine;
 using UnityEngine.InputSystem;
+using UnityEngine.Rendering;
 
 namespace PrefabEditorMod
 {
@@ -77,7 +78,17 @@ namespace PrefabEditorMod
         sealed class OnlinePlayer
         {
             public string Name;
+            public int Identifier;
             public Vector3 Position;
+            public float Yaw;
+        }
+
+        sealed class BlacklistEntry
+        {
+            public int Identifier;
+            public string Name;
+            public string Reason;
+            public string Expires;
         }
 
         sealed class InfoBoardEntry
@@ -124,6 +135,8 @@ namespace PrefabEditorMod
         const int MaxGroupMove = 100;
         // Imported blueprint files can be larger than an interactive selection.
         const int MaxImportPrefabs = 1000;
+        const int MaxSpawnBatchCount = 100;
+        const float SpawnBatchSpacing = 1.5f;
 
         // resize amount is relative to the prefab's current serialized scale.
         // The slider previews locally and commits one server replacement on release.
@@ -147,7 +160,7 @@ namespace PrefabEditorMod
         readonly List<NetworkEntity> _cands = new List<NetworkEntity>();
         int _candAt;
         const int PickMaxCandidates = 8;
-        const float PickMaxColliderDim = 8f;   // chunk meshes are 47 m, wagons are not
+        const float PickMaxColliderDim = 100f; // larger colliders must resolve to an editable prefab
         static int _pickMask;                  // lazy - built once from live layer names
 
         // one in-flight action at a time, so a held button / double-fire can't spam the server
@@ -217,6 +230,7 @@ namespace PrefabEditorMod
         // spawn-with-preview: panel-catalog search + a cursor ghost, click to place
         bool _spawnOpen;
         string _spawnQuery = "";
+        string _spawnCountText = "1";
         string _spawnSent;
         float _spawnSendAt;
         bool _spawnBusy;
@@ -227,6 +241,14 @@ namespace PrefabEditorMod
         readonly List<SpawnCatalogEntry> _spawnCatalog = new List<SpawnCatalogEntry>();
         readonly List<string> _hitNames = new List<string>();
         readonly List<uint> _hitHashes = new List<uint>();
+        readonly List<uint> _spawnBatchIds = new List<uint>();
+        readonly HashSet<string> _pouchableSpawnNames = new HashSet<string>(StringComparer.Ordinal);
+        int _spawnBatchCount, _spawnBatchIndex, _spawnBatchFailures;
+        bool _pouchableSpawnNamesLoaded, _spawnPouchFallback;
+        float _pouchableSpawnNamesRetryAt;
+        uint _spawnBatchHash;
+        string _spawnBatchName = "";
+        Vector3 _spawnBatchOrigin, _spawnBatchRight, _spawnBatchForward;
         Rect _spawnRect;
         Rect _previewRect;
         Vector2 _spawnScroll;
@@ -234,7 +256,7 @@ namespace PrefabEditorMod
         readonly HashSet<uint> _missingPrefabImages = new HashSet<uint>();
         bool _searchFocused;
 
-        // Named camera work areas and a persisted player teleport/return transaction.
+        // Named camera work areas; saved home recovery for temporary teleport destinations.
         readonly List<WorkArea> _workAreas = new List<WorkArea>();
         readonly List<OnlinePlayer> _onlinePlayers = new List<OnlinePlayer>();
         bool _playersLoading, _workBusy, _workAreaNameFocused;
@@ -244,13 +266,25 @@ namespace PrefabEditorMod
         TravelState _travel;
         string _areasPath, _travelPath;
         int _selectedArea = -1;
-        string _travelArmedPlayer = "";
-        string _travelArmedArea = "";
-        bool _keepAlive;
-        bool _keepAlivePositive = true;
+        string _keepAlivePlayer = "";
         float _keepAliveNextAt;
-        const float KeepAliveInterval = 240f;
-        const float KeepAliveNudge = 0.12f;
+        int _keepAliveDirection = 1;
+        bool _keepAliveBusy;
+        int _keepAliveGeneration;
+        string _teleporterDestination = "-596.447,275.657,240.869";
+        string _teleporterStatus = "";
+        bool _teleporterBusy;
+        uint _tradeId, _tradeHash;
+        int _tradeGeneration;
+        bool _tradeBusy, _tradeLoaded;
+        string _tradeQuery = "", _tradeItemName = "", _tradePrice = "1", _tradeQuantity = "1", _tradeStock = "1", _tradeAddStock = "1", _tradeStatus = "";
+        readonly CoordinateTextField _tradeSearchInput = new CoordinateTextField("TradeItemSearch", false);
+        readonly CoordinateTextField _tradePriceInput = new CoordinateTextField("TradePrice");
+        readonly CoordinateTextField _tradeQuantityInput = new CoordinateTextField("TradeQuantity");
+        readonly CoordinateTextField _tradeStockInput = new CoordinateTextField("TradeStock");
+        readonly CoordinateTextField _tradeAddStockInput = new CoordinateTextField("TradeAddStock");
+        bool _teleporterDestinationFocused;
+        readonly CoordinateTextField _teleporterInput = new CoordinateTextField();
 
         // Server-authoritative admin controls.
         string _adminTime = "12";
@@ -262,6 +296,23 @@ namespace PrefabEditorMod
         float _adminKickUntil, _adminTeleportUntil;
         string _adminKickArmedPlayer = "";
         string _adminTeleportArmedFrom = "", _adminTeleportArmedTo = "";
+        string _banHours = "24", _banReason = "Rule violation";
+        float _adminKillUntil, _adminBanUntil, _adminUnbanUntil;
+        string _adminKillArmedPlayer = "", _adminBanArmedPlayer = "";
+        int _adminUnbanArmedId;
+        readonly List<BlacklistEntry> _blacklistEntries = new List<BlacklistEntry>();
+        bool _blacklistLoading;
+        string _blacklistStatus = "";
+
+        // Quiet watch streams a validated remote map chunk to the detached camera
+        // while keeping the local avatar at its current position.
+        bool _watchActive;
+        OnlinePlayer _watchTarget;
+        object _watchChunkManager;
+        Vector3 _watchLocalPosition, _watchLastChunkPosition;
+        Vector3 _watchSavedCameraPosition;
+        Quaternion _watchSavedCameraRotation;
+        float _watchNextPoll, _watchNextChunkLoad;
 
         // The LiveInfoBoards mod watches this server-side registry and applies edits live.
         readonly List<InfoBoardEntry> _infoBoards = new List<InfoBoardEntry>();
@@ -327,6 +378,19 @@ namespace PrefabEditorMod
         Vector2 _panelScroll;
         bool _mouseOverPanel;
         bool _resizePercentFocused;
+        bool _spawnCountFocused;
+        string _objectLoaderPath = "";
+        string _objectLoaderLoadedPath = "";
+        string _objectLoaderStatus = "Enter an OBJ or GLB path, or browse for a model.";
+        string _objectLoaderLoadedName = "";
+        int _objectLoaderVertexCount;
+        bool _objectLoaderPathFocused;
+        Mesh _objectLoaderMesh;
+        Texture2D _objectLoaderTexture;
+        bool _objectLoaderSkybox;
+        readonly List<GameObject> _objectLoaderSpawned = new List<GameObject>();
+        int _objectLoaderSelected = -1;
+        bool _objectLoaderGizmoSelected;
 
         static Texture2D _px;
         static GUISkin _sourceSkin;
@@ -354,6 +418,7 @@ namespace PrefabEditorMod
         }
 
         public bool HasSelection { get { return _has; } }
+        public bool Watching { get { return _watchActive; } }
 
         // true while the spawn search field has focus - the freecam must not fly
         // off WASD keystrokes that are actually someone typing a prefab name
@@ -361,9 +426,15 @@ namespace PrefabEditorMod
         {
             get
             {
-                return (_spawnOpen && _searchFocused) || (_panelTab == 3 && _workAreaNameFocused)
+                return (_panelTab == 10 && ServerSettingsFocused())
+                    || (_panelTab == 4 && (_broadcastInput.IsFocused || _spawnLocationInput.IsFocused))
+                    || (_panelTab == 9 && (_tradeSearchInput.IsFocused || _tradePriceInput.IsFocused || _tradeQuantityInput.IsFocused || _tradeStockInput.IsFocused || _tradeAddStockInput.IsFocused))
+                    || (_spawnOpen && _searchFocused) || _spawnCountFocused
+                    || (_panelTab == 3 && _workAreaNameFocused)
+                    || (_panelTab == 8 && _teleporterDestinationFocused)
                     || (_panelTab == 4 && _adminTimeFocused)
                     || (_panelTab == 5 && (_boardTextFocused || _boardIntervalFocused || _boardMessageFocused))
+                    || (_panelTab == 6 && _objectLoaderPathFocused)
                     || _importPathFocused || _resizePercentFocused
                     || _positionFocused || _rotationFocused || _stepFocused
                     || _arrangeSpacingFocused || _duplicateOffsetFocused;
@@ -378,12 +449,20 @@ namespace PrefabEditorMod
 
         public void Clear()
         {
+            _teleporterInput.Stop();
+            _broadcastInput.Stop();
+            _spawnLocationInput.Stop();
+            foreach (ServerSettingField field in _serverSettings) field.Input.Stop();
+            ResetTradeForm();
+            _teleporterDestinationFocused = false;
+            StopWatching();
             RestoreResizePreview();
             RestoreGroupPreview();
             _gizmo.Cancel(false); // restores the transform if a drag is mid-flight
             _has = false;
             _root = null;
             _info = null;
+            _objectLoaderGizmoSelected = false;
             _group.Clear();
             _groupPreviewStarts.Clear();
             _deleteArmUntil = 0f;
@@ -400,7 +479,9 @@ namespace PrefabEditorMod
             _resizePercentFocused = false;
             _positionFocused = _rotationFocused = _stepFocused = false;
             _arrangeSpacingFocused = _duplicateOffsetFocused = false;
-            _adminTimeFocused = _boardTextFocused = _boardIntervalFocused = _boardMessageFocused = false;
+            _adminTimeFocused = false;
+            _spawnCountFocused = false;
+            _boardTextFocused = _boardIntervalFocused = _boardMessageFocused = false;
         }
 
         bool TryResizePercent(out float percent)
@@ -584,6 +665,17 @@ namespace PrefabEditorMod
 
         public void Update()
         {
+            _teleporterInput.Tick(_panelTab == 8);
+            _broadcastInput.Tick(_panelTab == 4);
+            _spawnLocationInput.Tick(_panelTab == 4);
+            foreach (ServerSettingField field in _serverSettings) field.Input.Tick(_panelTab == 10);
+            bool tradeActive = _panelTab == 9 && IsTradeDeckSelected();
+            _tradeSearchInput.Tick(tradeActive);
+            _tradePriceInput.Tick(tradeActive);
+            _tradeQuantityInput.Tick(tradeActive);
+            _tradeStockInput.Tick(tradeActive);
+            _tradeAddStockInput.Tick(tradeActive);
+            if (_tradeId != 0 && (!IsTradeDeckSelected() || _tradeId != _id)) ResetTradeForm();
             if (_resizeSliderDragging)
             {
                 Mouse resizeMouse = Mouse.current;
@@ -591,6 +683,7 @@ namespace PrefabEditorMod
                     FinishResizeSlider();
             }
             if (Camera == null) return;
+            TickWatch();
             TickKeepAlive();
             Keyboard kb = Keyboard.current;
             if (!WantsKeyboard && !_gizmo.Dragging && !_marqueeActive && !_placing && kb != null)
@@ -677,10 +770,16 @@ namespace PrefabEditorMod
             // it previews locally and commits ONE move/rotate through us on release
             bool gizmoHasMouse = false;
             if (_grabPending) return;
-            if (_has)
+            GameObject localTarget = SelectedImportedObject();
+            if (_has || localTarget != null)
             {
                 Transform t = null;
-                try { if (_root != null) t = _root.transform; } catch { t = null; }
+                try
+                {
+                    if (_has && _root != null) t = _root.transform;
+                    else if (localTarget != null) t = localTarget.transform;
+                }
+                catch { t = null; }
                 bool wasDragging = _gizmo.Dragging;
                 gizmoHasMouse = _gizmo.Update(Camera, mp, t, _mouseOverPanel, !_busy, GhostWanted());
                 if (wasDragging && !_gizmo.Dragging && !_busy) RestoreGroupPreview();
@@ -722,10 +821,11 @@ namespace PrefabEditorMod
         {
             Ray ray = Camera.ScreenPointToRay(new Vector3(mp.x, mp.y, 0f));
             RaycastHit[] hits = Physics.RaycastAll(ray, 500f, PickMask(), QueryTriggerInteraction.Ignore);
-            if (hits == null || hits.Length == 0) { SetStatus("drag on empty space to box-select items"); return false; }
+            if (hits == null) hits = new RaycastHit[0];
             Array.Sort(hits, CompareHitDistance);
 
             _cands.Clear();
+            Dictionary<NetworkEntity, float> candidateDistances = new Dictionary<NetworkEntity, float>();
             _candAt = 0;
             Vector3 grabPoint = Vector3.zero;
             bool hasGrabPoint = false;
@@ -740,13 +840,27 @@ namespace PrefabEditorMod
                 try { if (col.GetComponentInParent<PlayerController>() != null) continue; }
                 catch { }
 
+                int importedIndex = ImportedModelIndex(col.transform);
+                if (importedIndex >= 0)
+                {
+                    if (_cands.Count > 0) break; // keep a nearer network prefab in priority
+                    SelectImportedObject(importedIndex);
+                    if (Mouse.current != null && Mouse.current.leftButton.isPressed)
+                    {
+                        GameObject imported = SelectedImportedObject();
+                        if (imported != null)
+                            _gizmo.BeginDirectDrag(Camera, imported.transform, hits[i].point, false);
+                    }
+                    return true;
+                }
+
                 // merged world meshes that slip through on unmasked layers - anything
                 // this big is scenery, and its parent walk lands on a whole chunk
                 try
                 {
                     Vector3 bs = col.bounds.size;
                     float dim = Mathf.Max(bs.x, Mathf.Max(bs.y, bs.z));
-                    if (dim > PickMaxColliderDim)
+                    if (dim > PickMaxColliderDim && !HasEditablePrefab(col))
                     {
                         if (blockedBy == null) blockedBy = col.name;
                         continue;
@@ -774,10 +888,35 @@ namespace PrefabEditorMod
                     catch { root = chain[c]; }
                     if (root == null || _cands.Contains(root)) continue;
                     _cands.Add(root);
+                    candidateDistances[root] = hits[i].distance;
                     if (!hasGrabPoint) { grabPoint = hits[i].point; hasGrabPoint = true; }
                 }
                 if (_cands.Count >= PickMaxCandidates) break;
             }
+
+            // Terrain exceeds the scenery-size cutoff; the enclosing sky sphere
+            // intentionally has no collider. Pick their actual visible geometry.
+            try
+            {
+                foreach (NetworkEntity root in PersistentPrefabSelection.ActiveRoots())
+                {
+                    float distance;
+                    if (!PersistentPrefabSelection.Raycast(root, ray, 500f, out distance)) continue;
+                    if (!_cands.Contains(root)) _cands.Add(root);
+                    float existing;
+                    if (!candidateDistances.TryGetValue(root, out existing) || distance < existing)
+                        candidateDistances[root] = distance;
+                }
+                _cands.Sort(delegate(NetworkEntity a, NetworkEntity b) {
+                    return candidateDistances[a].CompareTo(candidateDistances[b]);
+                });
+                if (_cands.Count > 0)
+                {
+                    grabPoint = ray.GetPoint(candidateDistances[_cands[0]]);
+                    hasGrabPoint = true;
+                }
+            }
+            catch (Exception e) { if (_log != null) _log("persistent mesh selection failed: " + e.Message); }
 
             if (_cands.Count == 0)
             {
@@ -907,7 +1046,7 @@ namespace PrefabEditorMod
                 {
                     if (!col.gameObject.activeInHierarchy) continue;
                     Vector3 size = col.bounds.size;
-                    if (Mathf.Max(size.x, Mathf.Max(size.y, size.z)) > PickMaxColliderDim) continue;
+                    if (Mathf.Max(size.x, Mathf.Max(size.y, size.z)) > PickMaxColliderDim && !HasEditablePrefab(col)) continue;
                     if (!BoundsIntersectsScreenRect(col.bounds, box)) continue;
                     if (col.GetComponentInParent<PlayerController>() != null) continue;
                 }
@@ -980,7 +1119,7 @@ namespace PrefabEditorMod
                         try
                         {
                             Vector3 size = col.bounds.size;
-                            if (Mathf.Max(size.x, Mathf.Max(size.y, size.z)) > PickMaxColliderDim) continue;
+                            if (Mathf.Max(size.x, Mathf.Max(size.y, size.z)) > PickMaxColliderDim && !HasEditablePrefab(col)) continue;
                         }
                         catch { }
                         NetworkEntity[] chain = null;
@@ -1006,6 +1145,23 @@ namespace PrefabEditorMod
         // everything except the world layers the measured raycast stacks showed eating
         // every pick: Terrain / Wall chunk meshes, the player's own particle-only
         // colliders, ambience trigger volumes on LocalPlayerIdentifier, players, UI
+        static bool HasEditablePrefab(Collider collider)
+        {
+            try
+            {
+                NetworkEntity[] chain = collider.GetComponentsInParent<NetworkEntity>();
+                foreach (NetworkEntity entity in chain)
+                {
+                    if (entity == null) continue;
+                    NetworkEntity root = entity.PrefabRoot != null ? entity.PrefabRoot : entity;
+                    if (!root.IsBeingDestroyed && root.Identifier != 0 && root.Prefab != null)
+                        return true;
+                }
+            }
+            catch { }
+            return false;
+        }
+
         static int PickMask()
         {
             if (_pickMask != 0) return _pickMask;
@@ -1162,7 +1318,7 @@ namespace PrefabEditorMod
                     {
                         if (!col.gameObject.activeInHierarchy) continue;
                         Vector3 size = col.bounds.size;
-                        if (Mathf.Max(size.x, Mathf.Max(size.y, size.z)) > PickMaxColliderDim) continue;
+                        if (Mathf.Max(size.x, Mathf.Max(size.y, size.z)) > PickMaxColliderDim && !HasEditablePrefab(col)) continue;
                         if (col.GetComponentInParent<PlayerController>() != null) continue;
                     }
                     catch { continue; }
@@ -1365,6 +1521,7 @@ namespace PrefabEditorMod
             _gizmo.Cancel(false);
             _root = root;
             _has = true;
+            _objectLoaderGizmoSelected = false;
             _info = null;
             _groupPreviewStarts.Clear();
             _gizmo.RotationEnabled = _group.Count <= MaxGroupMove;
@@ -1552,6 +1709,12 @@ namespace PrefabEditorMod
 
         void CommitGizmoMove(Vector3 p)
         {
+            GameObject local = SelectedImportedObject();
+            if (local != null)
+            {
+                SetStatus("moved imported model " + local.name, ToneOk);
+                return;
+            }
             if (!_has || _busy) { _gizmo.RestoreOriginal(); return; }
             _busy = true;
             if (_group.Count > 1)
@@ -1586,6 +1749,12 @@ namespace PrefabEditorMod
 
         void CommitGizmoRotate(Vector3 e)
         {
+            GameObject local = SelectedImportedObject();
+            if (local != null)
+            {
+                SetStatus("rotated imported model " + local.name, ToneOk);
+                return;
+            }
             if (!_has || _busy) { _gizmo.RestoreOriginal(); return; }
             _busy = true;
             SetStatus("rotating #" + _id + " ...");
@@ -1981,7 +2150,7 @@ namespace PrefabEditorMod
             _api.Replace(_id, s, OnReplaced);
         }
 
-        // Scale is applied and recorded on the server, so remote Tailscale users do
+        // Scale is applied and recorded on the server, so remote users do
         // not need a separate workbench process listening on their own PC.
         void ResizeSelected(float factor)
         {
@@ -2435,6 +2604,12 @@ namespace PrefabEditorMod
             if (_spawnBusy) return;
             if (Time.unscaledTime < _spawnSendAt) return;
 
+            if (_spawnCatalogLoaded)
+            {
+                if (_spawnQuery != _spawnSent) FilterSpawnCatalog(_spawnQuery);
+                return;
+            }
+
             if (_spawnStaticFallback)
             {
                 if (_spawnQuery == _spawnSent) return;
@@ -2465,9 +2640,17 @@ namespace PrefabEditorMod
             List<string> objs = Json.Objects(arr);
             if (!r.Ok || objs.Count == 0)
             {
+                LoadPackagedSpawnCatalog();
+                if (_spawnCatalog.Count > 0)
+                {
+                    _spawnCatalogLoaded = true;
+                    FilterSpawnCatalog(_spawnQuery);
+                    SetStatus("showing bundled spawn catalog; a reachable server is needed to spawn items", ToneErr);
+                    return;
+                }
                 _spawnStaticFallback = true;
                 _spawnSent = null;
-                SetStatus("live spawn list unavailable; using packaged catalog", ToneErr);
+                SetStatus("live spawn list unavailable; requesting the panel catalog", ToneErr);
                 return;
             }
 
@@ -2482,6 +2665,10 @@ namespace PrefabEditorMod
                 entry.Hash = hash;
                 _spawnCatalog.Add(entry);
             }
+            // Include the Workbench's bundled, spawnable reference catalog too.
+            // Live server values win on duplicate hashes; the server still validates
+            // each spawn request, so this never turns the client into the authority.
+            LoadPackagedSpawnCatalog();
             _spawnCatalog.Sort(delegate(SpawnCatalogEntry a, SpawnCatalogEntry b)
             {
                 return StringComparer.OrdinalIgnoreCase.Compare(a.Name, b.Name);
@@ -2496,7 +2683,33 @@ namespace PrefabEditorMod
 
             _spawnCatalogLoaded = true;
             FilterSpawnCatalog(_spawnQuery);
-            SetStatus("loaded " + _spawnCatalog.Count + " live server spawnables", ToneOk);
+            SetStatus("loaded " + _spawnCatalog.Count + " spawnables (server list + Workbench catalog)", ToneOk);
+        }
+
+        void LoadPackagedSpawnCatalog()
+        {
+            string file = Path.Combine(Path.GetDirectoryName(Assembly.GetExecutingAssembly().Location), "PrefabEditorCatalog.json");
+            if (!File.Exists(file)) return;
+            try
+            {
+                string json = File.ReadAllText(file);
+                List<string> records = Json.Objects(Json.Value(json, "prefabs"));
+                HashSet<uint> known = new HashSet<uint>();
+                for (int i = 0; i < _spawnCatalog.Count; i++) known.Add(_spawnCatalog[i].Hash);
+                for (int i = 0; i < records.Count; i++)
+                {
+                    string record = records[i];
+                    if (!Json.Bool(record, "spawnable", false)) continue;
+                    uint hash = Json.UInt(record, "hash");
+                    string name = Json.Str(record, "name");
+                    if (hash == 0 || string.IsNullOrEmpty(name) || !known.Add(hash)) continue;
+                    _spawnCatalog.Add(new SpawnCatalogEntry { Name = name.Replace('_', ' '), Hash = hash });
+                }
+            }
+            catch (Exception e)
+            {
+                if (_log != null) _log("[PrefabEditor] Could not load bundled Workbench catalog: " + e.Message);
+            }
         }
 
         void FilterSpawnCatalog(string q)
@@ -2556,17 +2769,131 @@ namespace PrefabEditorMod
             _placeName = name;
             _placeHash = hash;
             _placeValid = false;
-            SetStatus("placing " + name + " - click to spawn (Shift = keep placing), Esc / right-click cancels");
+            SetStatus("placing " + name + " - click to spawn " + _spawnCountText
+                + " items (pouchable items group in a pouch; Shift = keep placing), Esc / right-click cancels");
+        }
+
+        bool TrySpawnCount(out int count)
+        {
+            count = 0;
+            return int.TryParse(_spawnCountText, NumberStyles.Integer, CultureInfo.InvariantCulture, out count)
+                && count >= 1 && count <= MaxSpawnBatchCount;
+        }
+
+        bool StartSpawnBatch(string name, uint hash, Vector3 origin, bool closePicker)
+        {
+            if (_busy || Camera == null) return false;
+            int count;
+            if (!TrySpawnCount(out count))
+            {
+                SetStatus("enter a spawn count from 1 to " + MaxSpawnBatchCount, ToneErr);
+                return false;
+            }
+
+            if (closePicker) _spawnOpen = false;
+            _busy = true;
+            ContinueSpawnBatch(name, hash, origin, count);
+            return true;
+        }
+
+        void ContinueSpawnBatch(string name, uint hash, Vector3 origin, int count)
+        {
+            // Use the game's native counted spawn for multi-item requests. Its
+            // count handling is what groups compatible items into pouches; the
+            // editor's individual spawnat loop creates loose copies instead.
+            // The exact form keeps the cursor/camera placement point.
+            if (count > 1)
+            {
+                string exactName = (name ?? "").Replace(" ", "");
+                if (string.IsNullOrEmpty(exactName))
+                {
+                    _busy = false;
+                    SetStatus("could not spawn: prefab name is empty", ToneErr);
+                    return;
+                }
+                string command = "spawn exact " + VecText(origin) + " 0,0,0 " + exactName + " "
+                    + count.ToString(CultureInfo.InvariantCulture);
+                SetStatus("spawning " + count + " " + name + " at the placement point...");
+                _api.Command(command, delegate(EditResult spawned)
+                {
+                    _busy = false;
+                    if (!spawned.Ok)
+                    {
+                        SetStatus("spawn failed: " + Reason(spawned), ToneErr);
+                        return;
+                    }
+                    SetStatus("spawned " + count + " " + name + " with the game's counted spawn", ToneOk);
+                });
+                return;
+            }
+
+            _spawnBatchName = name;
+            _spawnBatchHash = hash;
+            _spawnBatchOrigin = origin;
+            _spawnBatchCount = count;
+            _spawnBatchIndex = 0;
+            _spawnBatchFailures = 0;
+            _spawnBatchIds.Clear();
+            _spawnBatchRight = Vector3.ProjectOnPlane(Camera.transform.right, Vector3.up);
+            if (_spawnBatchRight.sqrMagnitude < 0.001f) _spawnBatchRight = Vector3.right;
+            _spawnBatchRight.Normalize();
+            _spawnBatchForward = Vector3.Cross(_spawnBatchRight, Vector3.up).normalized;
+            SetStatus("spawning " + count + " " + name + (count == 1 ? "" : " copies") + " ...");
+            SpawnNextInBatch();
         }
 
         void SpawnAtCamera(string name, uint hash)
         {
             if (_busy || Camera == null) return;
             Vector3 p = Camera.transform.position + Camera.transform.forward * 3f;
-            _busy = true;
-            _spawnOpen = false;
-            SetStatus("spawning " + name + " 3 m in front of camera ...");
-            _api.SpawnAt(p.x, p.y, p.z, hash, OnSpawned);
+            StartSpawnBatch(name, hash, p, true);
+        }
+
+        Vector3 SpawnBatchPosition(int index)
+        {
+            int columns = Mathf.CeilToInt(Mathf.Sqrt(_spawnBatchCount));
+            int rows = Mathf.CeilToInt((float)_spawnBatchCount / columns);
+            int column = index % columns;
+            int row = index / columns;
+            float horizontal = (column - (columns - 1) * 0.5f) * SpawnBatchSpacing;
+            float depth = (row - (rows - 1) * 0.5f) * SpawnBatchSpacing;
+            return _spawnBatchOrigin + _spawnBatchRight * horizontal + _spawnBatchForward * depth;
+        }
+
+        void SpawnNextInBatch()
+        {
+            if (_spawnBatchIndex >= _spawnBatchCount)
+            {
+                FinishSpawnBatch();
+                return;
+            }
+            Vector3 p = SpawnBatchPosition(_spawnBatchIndex++);
+            _api.SpawnAt(p.x, p.y, p.z, _spawnBatchHash, OnSpawnBatchItem);
+        }
+
+        void OnSpawnBatchItem(EditResult r)
+        {
+            if (r.Ok)
+            {
+                if (r.Ent != null && r.Ent.Id != 0) _spawnBatchIds.Add(r.Ent.Id);
+            }
+            else _spawnBatchFailures++;
+            SpawnNextInBatch();
+        }
+
+        void FinishSpawnBatch()
+        {
+            _busy = false;
+            if (_spawnBatchIds.Count == 1) AdoptSoon(_spawnBatchIds[0]);
+            else if (_spawnBatchIds.Count > 1) AdoptManySoon(_spawnBatchIds, "spawned");
+            int spawned = _spawnBatchCount - _spawnBatchFailures;
+
+            if (_spawnBatchFailures == 0)
+                SetStatus("spawned " + spawned + " " + _spawnBatchName
+                    + (spawned == 1 ? "" : " copies"), ToneOk);
+            else
+                SetStatus("spawned " + spawned + " of " + _spawnBatchCount + " "
+                    + _spawnBatchName + "; " + _spawnBatchFailures + " failed", ToneErr);
         }
 
         void TickPlacement(Vector2 mp, Mouse mouse)
@@ -2582,23 +2909,8 @@ namespace PrefabEditorMod
             if (_placeValid && !_mouseOverPanel && !_busy && mouse.leftButton.wasPressedThisFrame)
             {
                 bool more = kb != null && (kb[Key.LeftShift].isPressed || kb[Key.RightShift].isPressed);
-                _busy = true;
-                SetStatus("spawning " + _placeName + " ...");
-                _api.SpawnAt(_placePos.x, _placePos.y, _placePos.z, _placeHash, OnSpawned);
-                if (!more) _placing = false;
+                if (StartSpawnBatch(_placeName, _placeHash, _placePos, false) && !more) _placing = false;
             }
-        }
-
-        void OnSpawned(EditResult r)
-        {
-            _busy = false;
-            if (!r.Ok) { SetStatus("spawn refused: " + Reason(r), ToneErr); return; }
-            if (r.Ent != null)
-            {
-                SetStatus("spawned " + r.Ent.Prefab + " #" + r.Ent.Id, ToneOk);
-                AdoptSoon(r.Ent.Id);
-            }
-            else SetStatus("spawned", ToneOk);
         }
 
         // The ghost aims with the CURSOR (placement is a mouse activity); Paste
@@ -2728,6 +3040,7 @@ namespace PrefabEditorMod
             }
             _root = _group[0];
             _has = true;
+            _objectLoaderGizmoSelected = false;
             _info = null;
             _groupPreviewStarts.Clear();
             _gizmo.RotationEnabled = _group.Count <= MaxGroupMove;
@@ -2772,6 +3085,22 @@ namespace PrefabEditorMod
         // because the private entityManager walk can be empty on the client.
         static IEnumerable<NetworkEntity> AllEntities()
         {
+            List<NetworkEntity> entities = new List<NetworkEntity>();
+            try { entities.AddRange(SceneEntities()); } catch { }
+            // The client scene-manager walk sometimes omits streamed roots.
+            // Include collider-free skyboxes and large terrain for adoption,
+            // rectangle selection, nearby selection, and outlines as well.
+            try
+            {
+                foreach (NetworkEntity root in PersistentPrefabSelection.ActiveRoots())
+                    if (!entities.Contains(root)) entities.Add(root);
+            }
+            catch { }
+            return entities;
+        }
+
+        static IEnumerable<NetworkEntity> SceneEntities()
+        {
             NetworkScene scene = null;
             try { scene = NetworkSceneManager.Current as NetworkScene; } catch { }
             if (scene == null) return new NetworkEntity[0];
@@ -2804,8 +3133,12 @@ namespace PrefabEditorMod
                 _ghostBox.Add(new Bounds(_placePos + Vector3.up * 0.35f, Vector3.one * 0.7f));
                 EditGizmo.DrawWireBoxes(cam, _ghostBox, new Color(0.5f, 1f, 0.6f, 0.9f));
             }
-            if (!_has) return;
-            _gizmo.Draw(cam, CurrentPos());
+            if (_has) _gizmo.Draw(cam, CurrentPos());
+            else
+            {
+                GameObject local = SelectedImportedObject();
+                if (local != null) _gizmo.Draw(cam, local.transform.position);
+            }
         }
 
         public void OnGUI()
@@ -2976,6 +3309,12 @@ namespace PrefabEditorMod
             }
             _searchFocused = GUI.GetNameOfFocusedControl() == "VelSpawnQ";
 
+            GUILayout.BeginHorizontal();
+            GUILayout.Label("Copies", GUILayout.Width(54f));
+            DrawSpawnCountField("SpawnWindowCountField", 58f);
+            GUILayout.Label("per placement (1–100)", _mutedStyle);
+            GUILayout.EndHorizontal();
+
             _spawnScroll = GUILayout.BeginScrollView(_spawnScroll, GUILayout.ExpandHeight(true));
             int hoverIndex = -1;
             if (_hitNames.Count == 0)
@@ -3126,7 +3465,7 @@ namespace PrefabEditorMod
             bool showConnectionMessage = (!_connected || panelOnly) && !_checkingConnection
                 && !string.IsNullOrEmpty(_connectionMessage);
             float contentHeight = ph - 20f;
-            float headerHeight = 158f + (showConnectionMessage ? 28f : 0f);
+            float headerHeight = 219f + (showConnectionMessage ? 28f : 0f);
             float footerHeight = 116f;
             float bodyHeight = Mathf.Max(0f, contentHeight - headerHeight - footerHeight - 8f);
 
@@ -3134,8 +3473,11 @@ namespace PrefabEditorMod
             _arrangeSpacingFocused = _duplicateOffsetFocused = false;
             _resizePercentFocused = false;
             _importPathFocused = false;
+            _objectLoaderPathFocused = false;
             _workAreaNameFocused = false;
+            _teleporterDestinationFocused = false;
             _adminTimeFocused = _boardTextFocused = _boardIntervalFocused = _boardMessageFocused = false;
+            _spawnCountFocused = false;
 
             GUILayout.BeginVertical();
             GUILayout.BeginVertical(GUILayout.Height(headerHeight));
@@ -3167,16 +3509,29 @@ namespace PrefabEditorMod
             DrawPanelTab(4, "Admin");
             DrawPanelTab(5, "Info boards");
             GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            DrawPanelTab(6, "Object Loader");
+            DrawPanelTab(10, "Server Settings");
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            DrawPanelTab(8, "Teleporter");
+            DrawPanelTab(9, "Trading");
+            GUILayout.EndHorizontal();
+            if (_panelTab != 8) _teleporterInput.Stop();
             if (_panelTab != _lastPanelTab)
             {
                 _panelScroll = Vector2.zero;
                 _lastPanelTab = _panelTab;
                 if (_panelTab == 3 || _panelTab == 4) RefreshPlayers();
                 if (_panelTab == 5) RefreshInfoBoards();
+                if (_panelTab == 6) RefreshObjectLoaderStatus();
             }
             GUILayout.Space(3f);
             string selectionSummary;
-            if (!_has) selectionSummary = "No selection  ·  click or drag objects in the world";
+            GameObject localSelection = SelectedImportedObject();
+            if (!_has && localSelection != null)
+                selectionSummary = "1 selected  ·  " + localSelection.name + " (local model)";
+            else if (!_has) selectionSummary = "No selection  ·  click or drag objects in the world";
             else
             {
                 string prefabName = _info != null ? _info.Prefab : "Loading selection";
@@ -3193,7 +3548,11 @@ namespace PrefabEditorMod
             else if (_panelTab == 2) DrawBuildTab();
             else if (_panelTab == 3) DrawWorldTab();
             else if (_panelTab == 4) DrawAdminTab();
-            else DrawInfoBoardsTab();
+            else if (_panelTab == 5) DrawInfoBoardsTab();
+            else if (_panelTab == 6) DrawObjectLoaderTab();
+            else if (_panelTab == 8) DrawTeleporterControls();
+            else if (_panelTab == 9) DrawTradeDeckControls();
+            else if (_panelTab == 10) DrawServerSettingsTab();
             GUILayout.EndScrollView();
 
             GUILayout.BeginVertical(GUILayout.Height(footerHeight));
@@ -3245,6 +3604,8 @@ namespace PrefabEditorMod
                     GUILayout.Label("Hash " + _info.Hash + "   " +
                         (_info.Flags.Length > 0 ? string.Join(", ", _info.Flags) : "no flags"), _mutedStyle);
             }
+
+            if (IsTradeDeckSelected() && GUILayout.Button("Open Trading settings")) _panelTab = 9;
 
             GUILayout.Label("Choose what Arrange will edit. Nearby searches use loaded items within "
                 + OutlineRadius.ToString("0") + " m of the camera.", _mutedStyle);
@@ -3322,7 +3683,10 @@ namespace PrefabEditorMod
         {
             if (!_has)
             {
-                GUILayout.Label("Select an object to move, rotate, scale, or duplicate it.", _mutedStyle);
+                GameObject local = SelectedImportedObject();
+                GUILayout.Label(local == null
+                    ? "Select an object to move, rotate, scale, or duplicate it."
+                    : "Imported model selected. Grab it or drag the gizmo to move or rotate it; resize it in Object Loader.", _mutedStyle);
                 return;
             }
             bool single = _group.Count == 1;
@@ -3499,6 +3863,11 @@ namespace PrefabEditorMod
             if (GUILayout.Button(PasteLabel())) Paste();
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
+            GUILayout.Label("Spawn count", _mutedStyle, GUILayout.Width(78f));
+            DrawSpawnCountField("BuildSpawnCountField", 58f);
+            GUILayout.Label("items per click or Camera", _mutedStyle);
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
             GUI.enabled = _has && !_busy;
             if (GUILayout.Button("Copy primary save string")) CopyString();
             GUI.enabled = _has && _group.Count == 1 && !_busy;
@@ -3518,13 +3887,459 @@ namespace PrefabEditorMod
             DrawImportControls();
         }
 
+        void DrawSpawnCountField(string controlName, float width)
+        {
+            bool wasEnabled = GUI.enabled;
+            GUI.enabled = !_busy;
+            GUI.SetNextControlName(controlName);
+            _spawnCountText = GUILayout.TextField(_spawnCountText, GUILayout.Width(width));
+            _spawnCountFocused = _spawnCountFocused || GUI.GetNameOfFocusedControl() == controlName;
+            GUI.enabled = wasEnabled;
+        }
+
+        void DrawObjectLoaderTab()
+        {
+            GUILayout.Label("Import a 3D model", _titleStyle);
+            GUILayout.Label("Built into Prefab Editor - no separate Object Loader mod is required.", _mutedStyle);
+            GUILayout.Space(4f);
+            GUILayout.Label(_objectLoaderStatus, _mutedStyle);
+            GUILayout.Label("Model file (.obj or binary .glb)", _mutedStyle);
+            GUI.SetNextControlName("ObjectLoaderPath");
+            string path = GUILayout.TextField(_objectLoaderPath);
+            if (path != _objectLoaderPath)
+            {
+                _objectLoaderPath = path;
+                _objectLoaderLoadedPath = "";
+                _objectLoaderLoadedName = "";
+                _objectLoaderVertexCount = 0;
+                if (_objectLoaderMesh != null) UnityEngine.Object.Destroy(_objectLoaderMesh);
+                _objectLoaderMesh = null;
+                _objectLoaderTexture = null;
+                _objectLoaderSkybox = false;
+            }
+            _objectLoaderPathFocused = GUI.GetNameOfFocusedControl() == "ObjectLoaderPath";
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Browse model...")) BrowseObjectLoaderFile();
+            GUI.enabled = !_busy && !string.IsNullOrWhiteSpace(_objectLoaderPath);
+            if (GUILayout.Button("Load Model")) LoadObjectLoaderFile();
+            GUI.enabled = true;
+            GUILayout.EndHorizontal();
+
+            if (!string.IsNullOrEmpty(_objectLoaderLoadedName))
+                GUILayout.Label("Loaded: " + _objectLoaderLoadedName + " (" + _objectLoaderVertexCount + " vertices)");
+            GUILayout.BeginHorizontal();
+            GUI.enabled = !_busy && _objectLoaderLoadedPath == _objectLoaderPath
+                && !string.IsNullOrEmpty(_objectLoaderLoadedPath);
+            if (GUILayout.Button("Spawn 3 m ahead")) SpawnObjectLoaderFile();
+            GUI.enabled = true;
+            GUILayout.EndHorizontal();
+            GUILayout.Space(6f);
+            GUILayout.Label("Imported models are local decorative objects. They are not networked prefab entities and other players will not see them.", _mutedStyle);
+            DrawImportedModelControls();
+        }
+
+        void BrowseObjectLoaderFile()
+        {
+            try
+            {
+                using (WinForms.OpenFileDialog dialog = new WinForms.OpenFileDialog())
+                {
+                    dialog.Title = "Choose a model to import";
+                    dialog.Filter = "Supported models (*.obj;*.glb)|*.obj;*.glb|All files (*.*)|*.*";
+                    dialog.CheckFileExists = true;
+                    dialog.Multiselect = false;
+                    if (dialog.ShowDialog() == WinForms.DialogResult.OK)
+                    {
+                        _objectLoaderPath = dialog.FileName;
+                        _objectLoaderLoadedPath = "";
+                        _objectLoaderLoadedName = "";
+                        _objectLoaderVertexCount = 0;
+                        if (_objectLoaderMesh != null) UnityEngine.Object.Destroy(_objectLoaderMesh);
+                        _objectLoaderMesh = null;
+                        _objectLoaderTexture = null;
+                        _objectLoaderSkybox = false;
+                    }
+                }
+            }
+            catch (Exception e)
+            {
+                _objectLoaderStatus = "Could not open model picker: " + e.Message;
+                SetStatus(_objectLoaderStatus, ToneErr);
+            }
+        }
+
+        void RefreshObjectLoaderStatus()
+        {
+            if (_objectLoaderMesh == null && string.IsNullOrEmpty(_objectLoaderLoadedPath))
+                _objectLoaderStatus = "Choose an OBJ or binary GLB file to import.";
+        }
+
+        void LoadObjectLoaderFile()
+        {
+            string path = (_objectLoaderPath ?? "").Trim().Trim('"', '\'');
+            if (path.Length == 0)
+            {
+                _objectLoaderStatus = "Enter a model file path first.";
+                SetStatus(_objectLoaderStatus, ToneErr);
+                return;
+            }
+            try
+            {
+                Mesh mesh = IntegratedModelImporter.Load(path);
+                Texture2D texture = LoadCompanionEquirectTexture(path);
+                bool skybox = texture != null;
+                if (skybox)
+                {
+                    Mesh remapped = ApplySphericalUvs(mesh);
+                    UnityEngine.Object.Destroy(mesh);
+                    mesh = remapped;
+                }
+                else texture = LoadObjDiffuseTexture(path);
+                if (_objectLoaderMesh != null) UnityEngine.Object.Destroy(_objectLoaderMesh);
+                _objectLoaderMesh = mesh;
+                _objectLoaderTexture = texture;
+                _objectLoaderSkybox = skybox;
+                _objectLoaderPath = path;
+                _objectLoaderLoadedPath = path;
+                _objectLoaderLoadedName = Path.GetFileNameWithoutExtension(path);
+                _objectLoaderVertexCount = mesh.vertexCount;
+                _objectLoaderStatus = "Loaded " + _objectLoaderLoadedName
+                    + (skybox ? " with 6 cubemap PNG faces converted to a 2D texture."
+                        : texture == null ? " without a diffuse texture." : " with its MTL diffuse texture.");
+                SetStatus(_objectLoaderStatus, ToneOk);
+            }
+            catch (Exception e)
+            {
+                _objectLoaderStatus = "Model import failed: " + e.Message;
+                SetStatus(_objectLoaderStatus, ToneErr);
+            }
+        }
+
+        static Texture2D LoadObjDiffuseTexture(string modelPath)
+        {
+            string imagePath = IntegratedModelImporter.FindObjDiffuseTexturePath(modelPath);
+            if (imagePath == null) return null;
+            Texture2D texture = new Texture2D(2, 2, TextureFormat.RGBA32, true);
+            try
+            {
+                if (!texture.LoadImage(File.ReadAllBytes(imagePath)))
+                    throw new InvalidDataException("Could not decode OBJ diffuse texture: " + imagePath);
+                texture.wrapMode = TextureWrapMode.Repeat;
+                return texture;
+            }
+            catch
+            {
+                UnityEngine.Object.Destroy(texture);
+                throw;
+            }
+        }
+
+        static Texture2D LoadCompanionEquirectTexture(string modelPath)
+        {
+            string directory = Path.GetDirectoryName(modelPath);
+            if (string.IsNullOrEmpty(directory)) return null;
+            string prefix = Path.Combine(directory, "LoadingScreenCubemap_face_");
+            string[] paths = new string[6];
+            for (int i = 0; i < paths.Length; i++)
+            {
+                paths[i] = prefix + i.ToString(CultureInfo.InvariantCulture) + ".png";
+                if (!File.Exists(paths[i])) return null;
+            }
+
+            Texture2D[] images = new Texture2D[6];
+            Texture2D result = null;
+            try
+            {
+                int size = 0;
+                for (int i = 0; i < images.Length; i++)
+                {
+                    images[i] = new Texture2D(2, 2, TextureFormat.RGBA32, false);
+                    images[i].hideFlags = HideFlags.HideAndDontSave;
+                    if (!images[i].LoadImage(File.ReadAllBytes(paths[i])))
+                        throw new InvalidDataException("could not decode cubemap PNG " + Path.GetFileName(paths[i]));
+                    images[i].wrapMode = TextureWrapMode.Clamp;
+                    if (images[i].width != images[i].height)
+                        throw new InvalidDataException("cubemap PNG faces must be square");
+                    if (size == 0) size = images[i].width;
+                    else if (images[i].width != size)
+                        throw new InvalidDataException("all cubemap PNG faces must have the same dimensions");
+                }
+
+                // The game build strips Skybox/Cubemap. Reproject the six faces to
+                // a normal 2:1 texture so a shader already present in the game can
+                // display it on the exported sphere mesh.
+                int width = size * 2;
+                int height = size;
+                Color[] pixels = new Color[width * height];
+                for (int y = 0; y < height; y++)
+                {
+                    float latitude = (((float)y + 0.5f) / height - 0.5f) * Mathf.PI;
+                    float cosLatitude = Mathf.Cos(latitude);
+                    for (int x = 0; x < width; x++)
+                    {
+                        float longitude = (((float)x + 0.5f) / width - 0.5f) * (Mathf.PI * 2f);
+                        Vector3 direction = new Vector3(Mathf.Sin(longitude) * cosLatitude,
+                            Mathf.Sin(latitude), Mathf.Cos(longitude) * cosLatitude);
+                        pixels[y * width + x] = SampleCubemapFaces(images, direction);
+                    }
+                }
+                result = new Texture2D(width, height, TextureFormat.RGBA32, false, true);
+                result.name = "Imported Loading Screen Equirectangular Texture";
+                result.hideFlags = HideFlags.HideAndDontSave;
+                result.wrapMode = TextureWrapMode.Repeat;
+                result.filterMode = FilterMode.Bilinear;
+                result.SetPixels(pixels);
+                result.Apply(false, true);
+                return result;
+            }
+            catch
+            {
+                if (result != null) UnityEngine.Object.Destroy(result);
+                throw;
+            }
+            finally
+            {
+                for (int i = 0; i < images.Length; i++)
+                    if (images[i] != null) UnityEngine.Object.Destroy(images[i]);
+            }
+        }
+
+        static Color SampleCubemapFaces(Texture2D[] faces, Vector3 direction)
+        {
+            float ax = Mathf.Abs(direction.x), ay = Mathf.Abs(direction.y), az = Mathf.Abs(direction.z);
+            int face;
+            float u, v, major;
+            if (ax >= ay && ax >= az)
+            {
+                major = ax;
+                if (direction.x >= 0f) { face = 0; u = -direction.z / major; }
+                else { face = 1; u = direction.z / major; }
+                v = -direction.y / major;
+            }
+            else if (ay >= az)
+            {
+                major = ay;
+                if (direction.y >= 0f) { face = 2; u = direction.x / major; v = direction.z / major; }
+                else { face = 3; u = direction.x / major; v = -direction.z / major; }
+            }
+            else
+            {
+                major = az;
+                if (direction.z >= 0f) { face = 4; u = direction.x / major; }
+                else { face = 5; u = -direction.x / major; }
+                v = -direction.y / major;
+            }
+            return faces[face].GetPixelBilinear(u * 0.5f + 0.5f, v * 0.5f + 0.5f);
+        }
+
+        static Mesh ApplySphericalUvs(Mesh mesh)
+        {
+            Vector3[] vertices = mesh.vertices;
+            Vector3[] normals = mesh.normals;
+            int[] triangles = mesh.triangles;
+            if (normals == null || normals.Length != vertices.Length)
+            {
+                mesh.RecalculateNormals();
+                normals = mesh.normals;
+            }
+
+            List<Vector3> outVertices = new List<Vector3>(triangles.Length);
+            List<Vector3> outNormals = new List<Vector3>(triangles.Length);
+            List<Vector2> outUvs = new List<Vector2>(triangles.Length);
+            List<int> outTriangles = new List<int>(triangles.Length);
+            for (int i = 0; i + 2 < triangles.Length; i += 3)
+            {
+                Vector2[] uv = new Vector2[3];
+                for (int j = 0; j < 3; j++)
+                {
+                    Vector3 p = vertices[triangles[i + j]];
+                    float length = p.magnitude;
+                    Vector3 d = length > 0.00001f ? p / length : Vector3.forward;
+                    uv[j] = new Vector2(Mathf.Atan2(d.x, d.z) / (Mathf.PI * 2f) + 0.5f,
+                        Mathf.Asin(Mathf.Clamp(d.y, -1f, 1f)) / Mathf.PI + 0.5f);
+                }
+                float minU = Mathf.Min(uv[0].x, Mathf.Min(uv[1].x, uv[2].x));
+                float maxU = Mathf.Max(uv[0].x, Mathf.Max(uv[1].x, uv[2].x));
+                if (maxU - minU > 0.5f)
+                    for (int j = 0; j < 3; j++) if (uv[j].x < 0.5f) uv[j].x += 1f;
+
+                for (int j = 0; j < 3; j++)
+                {
+                    int source = triangles[i + j];
+                    outTriangles.Add(outVertices.Count);
+                    outVertices.Add(vertices[source]);
+                    outNormals.Add(normals[source]);
+                    outUvs.Add(uv[j]);
+                }
+            }
+
+            Mesh remapped = new Mesh();
+            remapped.name = mesh.name + " (equirectangular UVs)";
+            if (outVertices.Count > 65535) remapped.indexFormat = IndexFormat.UInt32;
+            remapped.SetVertices(outVertices);
+            remapped.SetNormals(outNormals);
+            remapped.SetUVs(0, outUvs);
+            remapped.SetTriangles(outTriangles, 0);
+            remapped.RecalculateBounds();
+            return remapped;
+        }
+
+        void SpawnObjectLoaderFile()
+        {
+            try
+            {
+                if (_objectLoaderMesh == null) throw new InvalidOperationException("Load an OBJ or GLB model first.");
+                GameObject spawned = new GameObject("Imported Model - " + _objectLoaderLoadedName);
+                MeshFilter filter = spawned.AddComponent<MeshFilter>();
+                filter.sharedMesh = UnityEngine.Object.Instantiate(_objectLoaderMesh) as Mesh;
+                MeshRenderer renderer = spawned.AddComponent<MeshRenderer>();
+                MeshCollider modelCollider = spawned.AddComponent<MeshCollider>();
+                modelCollider.sharedMesh = filter.sharedMesh;
+                modelCollider.convex = false;
+                SphereCollider grabCollider = spawned.AddComponent<SphereCollider>();
+                grabCollider.radius = _objectLoaderSkybox ? 0.01f : 0.12f;
+                if (_objectLoaderTexture != null)
+                {
+                    Shader shader = Shader.Find("Standard");
+                    if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
+                    if (shader == null) shader = Shader.Find("Unlit/Texture");
+                    if (shader == null) throw new InvalidOperationException("the game has no compatible textured material shader");
+                    Material material = new Material(shader);
+                    if (material.HasProperty("_MainTex")) material.SetTexture("_MainTex", _objectLoaderTexture);
+                    else if (material.HasProperty("_BaseMap")) material.SetTexture("_BaseMap", _objectLoaderTexture);
+                    else
+                    {
+                        UnityEngine.Object.Destroy(material);
+                        throw new InvalidOperationException("the selected material shader has no 2D texture slot");
+                    }
+                    if (material.HasProperty("_Color")) material.SetColor("_Color", Color.white);
+                    if (material.HasProperty("_BaseColor")) material.SetColor("_BaseColor", Color.white);
+                    if (material.HasProperty("_Cull")) material.SetFloat("_Cull", (float)CullMode.Off);
+                    if (_objectLoaderSkybox && material.HasProperty("_EmissionMap"))
+                    {
+                        material.SetTexture("_EmissionMap", _objectLoaderTexture);
+                        if (material.HasProperty("_EmissionColor")) material.SetColor("_EmissionColor", Color.white);
+                        material.EnableKeyword("_EMISSION");
+                    }
+                    material.renderQueue = 2000;
+                    renderer.sharedMaterial = material;
+                    if (_objectLoaderSkybox)
+                    {
+                        renderer.receiveShadows = false;
+                        renderer.shadowCastingMode = ShadowCastingMode.Off;
+                        spawned.transform.localScale = Vector3.one * 100f;
+                    }
+                }
+                else
+                {
+                    Shader shader = Shader.Find("Standard");
+                    if (shader == null) shader = Shader.Find("Universal Render Pipeline/Lit");
+                    if (shader == null) shader = Shader.Find("Unlit/Color");
+                    if (shader != null) renderer.sharedMaterial = new Material(shader);
+                }
+                spawned.transform.position = Camera.transform.position + Camera.transform.forward * 3f;
+                spawned.transform.rotation = Camera.transform.rotation;
+                _objectLoaderSpawned.Add(spawned);
+                _objectLoaderSelected = _objectLoaderSpawned.Count - 1;
+                _objectLoaderGizmoSelected = true;
+                _gizmo.RotationEnabled = true;
+                _gizmo.GroupRotationEnabled = false;
+                _objectLoaderStatus = "Spawned " + _objectLoaderLoadedName + " 3 m ahead. This object is local to your client.";
+                SetStatus(_objectLoaderStatus, ToneOk);
+            }
+            catch (Exception e)
+            {
+                _objectLoaderStatus = "Model spawn failed: " + e.Message;
+                SetStatus(_objectLoaderStatus, ToneErr);
+            }
+        }
+
+        GameObject SelectedImportedObject()
+        {
+            if (!_objectLoaderGizmoSelected || _objectLoaderSelected < 0
+                || _objectLoaderSelected >= _objectLoaderSpawned.Count) return null;
+            return _objectLoaderSpawned[_objectLoaderSelected];
+        }
+
+        int ImportedModelIndex(Transform hit)
+        {
+            if (hit == null) return -1;
+            for (int i = 0; i < _objectLoaderSpawned.Count; i++)
+            {
+                GameObject item = _objectLoaderSpawned[i];
+                if (item == null) continue;
+                Transform root = item.transform;
+                if (hit == root || hit.IsChildOf(root)) return i;
+            }
+            return -1;
+        }
+
+        void SelectImportedObject(int index)
+        {
+            if (index < 0 || index >= _objectLoaderSpawned.Count || _objectLoaderSpawned[index] == null) return;
+            if (_objectLoaderGizmoSelected && _objectLoaderSelected == index) return;
+            Clear();
+            _objectLoaderSelected = index;
+            _objectLoaderGizmoSelected = true;
+            _gizmo.RotationEnabled = true;
+            _gizmo.GroupRotationEnabled = false;
+            _objectLoaderStatus = "Selected " + _objectLoaderSpawned[index].name + ". Grab it or drag the gizmo to move or rotate.";
+            SetStatus(_objectLoaderStatus, ToneOk);
+        }
+
+        void OpenObjectLoaderManager()
+        {
+            if (_objectLoaderSpawned.Count > 0) _objectLoaderSelected = _objectLoaderSpawned.Count - 1;
+            _objectLoaderStatus = _objectLoaderSpawned.Count == 0 ? "No imported models spawned yet." : "Selected " + _objectLoaderSpawned[_objectLoaderSelected].name + ".";
+            SetStatus(_objectLoaderStatus, _objectLoaderSpawned.Count == 0 ? ToneErr : ToneOk);
+        }
+
+        void DrawImportedModelControls()
+        {
+            if (_objectLoaderSpawned.Count == 0) return;
+            GUILayout.Space(5f);
+            GUILayout.Label("Imported models: " + _objectLoaderSpawned.Count, _titleStyle);
+            for (int i = 0; i < _objectLoaderSpawned.Count; i++)
+            {
+                GameObject item = _objectLoaderSpawned[i];
+                if (item == null) continue;
+                bool selected = GUILayout.Toggle(_objectLoaderGizmoSelected && _objectLoaderSelected == i, item.name);
+                if (selected && (!_objectLoaderGizmoSelected || _objectLoaderSelected != i))
+                    SelectImportedObject(i);
+            }
+            GameObject active = _objectLoaderSelected >= 0 && _objectLoaderSelected < _objectLoaderSpawned.Count
+                ? _objectLoaderSpawned[_objectLoaderSelected] : null;
+            if (active == null) return;
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Left")) active.transform.position += Vector3.left * 0.25f;
+            if (GUILayout.Button("Right")) active.transform.position += Vector3.right * 0.25f;
+            if (GUILayout.Button("Forward")) active.transform.position += Vector3.forward * 0.25f;
+            if (GUILayout.Button("Back")) active.transform.position += Vector3.back * 0.25f;
+            GUILayout.EndHorizontal();
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Up")) active.transform.position += Vector3.up * 0.25f;
+            if (GUILayout.Button("Down")) active.transform.position += Vector3.down * 0.25f;
+            if (GUILayout.Button("Smaller")) active.transform.localScale *= 0.9f;
+            if (GUILayout.Button("Bigger")) active.transform.localScale *= 1.1f;
+            if (GUILayout.Button("Remove"))
+            {
+                MeshFilter filter = active.GetComponent<MeshFilter>();
+                if (filter != null && filter.sharedMesh != null) UnityEngine.Object.Destroy(filter.sharedMesh);
+                UnityEngine.Object.Destroy(active);
+                _objectLoaderSpawned.RemoveAt(_objectLoaderSelected);
+                _objectLoaderSelected = _objectLoaderSpawned.Count - 1;
+                _objectLoaderGizmoSelected = false;
+            }
+            GUILayout.EndHorizontal();
+        }
+
         void DrawWorldTab()
         {
             GUILayout.Label("Player travel", _titleStyle);
-            if (_travel != null) DrawActiveTravel();
+            if (_travel != null) { DrawActiveTravel(); GUILayout.Label(_workMessage, _mutedStyle); }
             else
             {
-                GUILayout.Label("No active trip. Save an area, then choose a player to visit it.", _mutedStyle);
+                GUILayout.Label("Choose a player, then teleport them to an area or camera, go to them, or bring them to you.", _mutedStyle);
                 if (!string.IsNullOrEmpty(_workMessage)) GUILayout.Label(_workMessage, _mutedStyle);
             }
             GUILayout.Space(8f);
@@ -3540,12 +4355,39 @@ namespace PrefabEditorMod
             GUILayout.Label("WASD move   Space up   Ctrl down   Shift fast\nRight mouse look   wheel changes speed\nF2 desktop mirror   F3 display   F1 close", _mutedStyle);
         }
 
+        sealed class ServerSettingField
+        {
+            internal string Name, Label, Value = "";
+            internal bool Toggle;
+            internal CoordinateTextField Input;
+            internal ServerSettingField(string name, string label, bool toggle)
+            { Name=name; Label=label; Toggle=toggle; Input=new CoordinateTextField("Setting" + name); }
+        }
+        readonly ServerSettingField[] _serverSettings = new ServerSettingField[] {
+            new ServerSettingField("DropAllOnDeath", "Drop all on death", true),
+            new ServerSettingField("RespawnTimeSeconds", "Seconds before respawn", false),
+            new ServerSettingField("TimeSpeedMultiplier", "Time speed multiplier", false),
+            new ServerSettingField("XPX", "Experience multiplier", false),
+            new ServerSettingField("DamageX", "Global damage multiplier", false),
+            new ServerSettingField("IsPVPEnabled", "PVP damage enabled", true),
+            new ServerSettingField("PVPMultiplier", "PVP damage multiplier", false),
+            new ServerSettingField("PVPCrippleMultiplier", "PVP cripple multiplier", false),
+            new ServerSettingField("HungerDealsDamage", "Hunger deals damage", true),
+            new ServerSettingField("HungerTick", "Hunger tick rate", false),
+            new ServerSettingField("CommunityStorageMultiplier", "Community storage multiplier", false),
+        };
+        readonly CoordinateTextField _broadcastInput = new CoordinateTextField("AdminBroadcast", false);
+        readonly CoordinateTextField _spawnLocationInput = new CoordinateTextField("AdminSpawnLocation");
+        string _broadcastMessage = "", _serverSpawnLocation = "", _settingsStatus = "";
+        bool _settingsBusy;
+        bool ServerSettingsFocused()
+        {
+            foreach (ServerSettingField field in _serverSettings) if (field.Input.IsFocused) return true;
+            return false;
+        }
+
         void DrawAdminTab()
         {
-            GUILayout.Label("Server admin", _titleStyle);
-            GUILayout.Label("These actions run on the server. Share panel access only with trusted people.", _mutedStyle);
-
-            GUILayout.Space(5f);
             GUILayout.Label("Time of day", _titleStyle);
             GUILayout.BeginHorizontal();
             GUI.SetNextControlName("AdminTimeField");
@@ -3557,78 +4399,113 @@ namespace PrefabEditorMod
             GUI.enabled = true;
             GUILayout.EndHorizontal();
             GUILayout.Label("Enter a 24-hour hour (0-23) or time like 18:30. 12 is noon.", _mutedStyle);
-
-            GUILayout.Space(8f);
-            GUILayout.Label("Players", _titleStyle);
-            GUILayout.BeginHorizontal();
+            GUILayout.Space(10f);
+            GUILayout.Label("Player actions", _titleStyle);
             GUI.enabled = !_playersLoading && !_adminBusy;
-            if (GUILayout.Button(_playersLoading ? "Refreshing players..." : "Refresh players")) RefreshPlayers();
-            GUI.enabled = true;
-            string localName = CurrentUsername();
-            GUILayout.FlexibleSpace();
-            GUILayout.Label(string.IsNullOrEmpty(localName) ? "Local player not detected" : "You: " + localName, _mutedStyle);
+            if (GUILayout.Button(_playersLoading ? "Refreshing..." : "Refresh online players")) RefreshPlayers();
+            foreach (OnlinePlayer player in _onlinePlayers)
+                if (GUILayout.Button((_adminKickPlayer == player.Name ? "Selected: " : "") + player.Name)) _adminKickPlayer = player.Name;
+            if (_onlinePlayers.Count == 0) GUILayout.Label("No players loaded. Refresh the list.", _mutedStyle);
+            GUI.enabled = !_adminBusy && !string.IsNullOrEmpty(_adminKickPlayer);
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button(Time.unscaledTime < _adminKickUntil && _adminKickArmedPlayer == _adminKickPlayer ? "CONFIRM KICK" : "Kick player")) AdminKickClick();
+            if (GUILayout.Button(Time.unscaledTime < _adminKillUntil && _adminKillArmedPlayer == _adminKickPlayer ? "CONFIRM KILL" : "Kill player")) AdminKillClick();
             GUILayout.EndHorizontal();
-
-            if (_onlinePlayers.Count == 0 && !_playersLoading)
-                GUILayout.Label("No online players loaded. Refresh to try again.", _mutedStyle);
-            for (int i = 0; i < _onlinePlayers.Count; i++)
-            {
-                OnlinePlayer p = _onlinePlayers[i];
-                GUILayout.BeginHorizontal();
-                GUILayout.Label(p.Name + "  " + VecText(p.Position), _mutedStyle, GUILayout.MinWidth(70f));
-                GUI.enabled = !_adminBusy;
-                if (GUILayout.Button(_adminMovePlayer == p.Name ? "FROM ✓" : "From", GUILayout.Width(56f)))
-                    _adminMovePlayer = p.Name;
-                if (GUILayout.Button(_adminDestinationPlayer == p.Name ? "TO ✓" : "To", GUILayout.Width(48f)))
-                    _adminDestinationPlayer = p.Name;
-                if (GUILayout.Button(_adminKickPlayer == p.Name ? "Target ✓" : "Target", GUILayout.Width(60f)))
-                    _adminKickPlayer = p.Name;
-                GUILayout.EndHorizontal();
-            }
-
-            GUILayout.Space(4f);
-            GUILayout.Label("Move: " + (string.IsNullOrEmpty(_adminMovePlayer) ? "choose From" : _adminMovePlayer)
-                + "  →  " + (string.IsNullOrEmpty(_adminDestinationPlayer) ? "choose To" : _adminDestinationPlayer), _mutedStyle);
-            GUILayout.Label("From is the player who moves; To is their destination. Target selects who to kick or teleport yourself to.", _mutedStyle);
-            bool validManualTeleport = !string.IsNullOrEmpty(_adminMovePlayer)
-                && !string.IsNullOrEmpty(_adminDestinationPlayer)
-                && _adminMovePlayer != _adminDestinationPlayer;
-            GUI.enabled = !_adminBusy && validManualTeleport;
-            bool teleportArmed = Time.unscaledTime < _adminTeleportUntil
-                && _adminTeleportArmedFrom == _adminMovePlayer && _adminTeleportArmedTo == _adminDestinationPlayer;
-            if (GUILayout.Button(teleportArmed
-                ? "Confirm teleport " + _adminMovePlayer
-                : "Teleport From player beside To player", _dangerButtonStyle))
-                AdminTeleportClick(_adminMovePlayer, _adminDestinationPlayer);
             GUI.enabled = true;
-
-            if (!string.IsNullOrEmpty(localName) && !string.IsNullOrEmpty(_adminKickPlayer))
+            GUILayout.Space(10f);
+            GUILayout.Label("Broadcast to all online players", _titleStyle);
+            _broadcastMessage = _broadcastInput.Draw(_broadcastMessage);
+            GUILayout.Label("Shown in game for 10 seconds. Maximum 500 characters.", _mutedStyle);
+            GUI.enabled = !_adminBusy && !string.IsNullOrEmpty(_broadcastMessage.Trim()) && _broadcastMessage.Length <= 500;
+            if (GUILayout.Button("Send broadcast"))
             {
-                GUILayout.BeginHorizontal();
-                bool meArmed = Time.unscaledTime < _adminTeleportUntil
-                    && _adminTeleportArmedFrom == localName && _adminTeleportArmedTo == _adminKickPlayer;
-                bool bringArmed = Time.unscaledTime < _adminTeleportUntil
-                    && _adminTeleportArmedFrom == _adminKickPlayer && _adminTeleportArmedTo == localName;
-                GUI.enabled = !_adminBusy && !string.Equals(_adminKickPlayer, localName, StringComparison.OrdinalIgnoreCase);
-                if (GUILayout.Button(meArmed ? "Confirm: me to " + _adminKickPlayer : "Teleport me to " + _adminKickPlayer))
-                    AdminTeleportClick(localName, _adminKickPlayer);
-                if (GUILayout.Button(bringArmed ? "Confirm: bring " + _adminKickPlayer : "Bring " + _adminKickPlayer + " to me"))
-                    AdminTeleportClick(_adminKickPlayer, localName);
-                GUI.enabled = true;
-                GUILayout.EndHorizontal();
+                _adminBusy = true; _adminStatus = "Sending broadcast...";
+                _api.Broadcast(_broadcastMessage, AdminActionDone);
             }
-
-            if (string.IsNullOrEmpty(_adminKickPlayer))
-                GUILayout.Label("Choose a player with a Kick button above.", _mutedStyle);
-            else
+            GUI.enabled = true;
+            GUILayout.Space(10f);
+            GUILayout.Label("Server spawn location", _titleStyle);
+            GUILayout.Label("New arrivals and default respawns use this location. Personal homes are unchanged. Saved on the server across restarts.", _mutedStyle);
+            GUILayout.Label("X,Y,Z - choose a safe spot on solid ground.", _mutedStyle);
+            _serverSpawnLocation = _spawnLocationInput.Draw(_serverSpawnLocation);
+            if (GUILayout.Button("Use my last refreshed player position"))
             {
-                bool kickArmed = Time.unscaledTime < _adminKickUntil && _adminKickArmedPlayer == _adminKickPlayer;
-                GUI.enabled = !_adminBusy && !string.Equals(_adminKickPlayer, localName, StringComparison.OrdinalIgnoreCase);
-                if (GUILayout.Button(kickArmed ? "Confirm kick " + _adminKickPlayer : "Kick " + _adminKickPlayer,
-                    _dangerButtonStyle, GUILayout.Height(30f))) AdminKickClick();
-                GUI.enabled = true;
+                OnlinePlayer me = FindOnlinePlayer(CurrentUsername());
+                if (me != null) _serverSpawnLocation = me.Position.x.ToString(CultureInfo.InvariantCulture) + "," + me.Position.y.ToString(CultureInfo.InvariantCulture) + "," + me.Position.z.ToString(CultureInfo.InvariantCulture);
+                else _adminStatus = "Refresh players while your player is connected, then try again.";
             }
+            if (GUILayout.Button("Paste coordinates")) _serverSpawnLocation = CoordinateTextField.CleanPaste(GUIUtility.systemCopyBuffer);
+            GUI.enabled = !_adminBusy;
+            if (GUILayout.Button("Set server spawn location"))
+            {
+                string[] parts = _serverSpawnLocation.Split(',');
+                Vector3 position = Vector3.zero;
+                if (parts.Length != 3 || !float.TryParse(parts[0], NumberStyles.Float, CultureInfo.InvariantCulture, out position.x)
+                    || !float.TryParse(parts[1], NumberStyles.Float, CultureInfo.InvariantCulture, out position.y)
+                    || !float.TryParse(parts[2], NumberStyles.Float, CultureInfo.InvariantCulture, out position.z)
+                    || float.IsNaN(position.x) || float.IsNaN(position.y) || float.IsNaN(position.z)
+                    || float.IsInfinity(position.x) || float.IsInfinity(position.y) || float.IsInfinity(position.z))
+                    _adminStatus = "Enter three finite numbers separated by commas: X,Y,Z.";
+                else { _adminBusy = true; _adminStatus = "Saving server spawn..."; _api.SetServerSpawn(position, AdminActionDone); }
+            }
+            if (GUILayout.Button("Restore default server spawn"))
+            { _adminBusy = true; _adminStatus = "Restoring default spawn..."; _api.ResetServerSpawn(AdminActionDone); }
+            GUI.enabled = true;
             if (!string.IsNullOrEmpty(_adminStatus)) GUILayout.Label(_adminStatus, _mutedStyle);
+
+        }
+
+        void AdminActionDone(EditResult result)
+        {
+            _adminBusy = false;
+            _adminStatus = result.Ok ? (result.Note ?? "Server action completed.") : "Action failed: " + Reason(result);
+        }
+
+        void DrawServerSettingsTab()
+        {
+            GUILayout.Label("Server Settings", _titleStyle);
+            GUILayout.Label("Changes apply immediately to the server. Current values are not read back; empty boxes do not mean zero. Enter a value and click Set.", _mutedStyle);
+            foreach (ServerSettingField field in _serverSettings)
+            {
+                GUILayout.Space(6f);
+                GUILayout.Label(field.Label);
+                GUI.enabled = !_settingsBusy;
+                GUILayout.BeginHorizontal();
+                if (field.Toggle)
+                {
+                    if (GUILayout.Button("On")) ApplyServerSetting(field, "true");
+                    if (GUILayout.Button("Off")) ApplyServerSetting(field, "false");
+                }
+                else
+                {
+                    field.Value = field.Input.Draw(field.Value);
+                    if (GUILayout.Button("Set", GUILayout.Width(60f))) ApplyServerSetting(field, field.Value);
+                }
+                GUILayout.EndHorizontal();
+                GUI.enabled = true;
+            }
+            if (!string.IsNullOrEmpty(_settingsStatus)) GUILayout.Label(_settingsStatus, _mutedStyle);
+        }
+
+        void ApplyServerSetting(ServerSettingField field, string value)
+        {
+            if (_settingsBusy) return;
+            if (!field.Toggle)
+            {
+                float number;
+                if (!float.TryParse(value, NumberStyles.Float, CultureInfo.InvariantCulture, out number)
+                    || float.IsNaN(number) || float.IsInfinity(number) || number < 0f)
+                { _settingsStatus = "Enter a non-negative number for " + field.Label + "."; return; }
+                value = number.ToString("R", CultureInfo.InvariantCulture);
+            }
+            _settingsBusy = true;
+            _settingsStatus = "Applying " + field.Label + "...";
+            _api.SetServerSetting(field.Name, value, delegate(EditResult result)
+            {
+                _settingsBusy = false;
+                _settingsStatus = result.Ok ? field.Label + ": sent " + value + ". " + Json.Str(result.Raw, "text")
+                    : "Setting failed: " + Reason(result);
+            });
         }
 
         void DrawInfoBoardsTab()
@@ -3802,6 +4679,346 @@ namespace PrefabEditorMod
             });
         }
 
+        void AdminKillClick()
+        {
+            if (_adminBusy || string.IsNullOrEmpty(_adminKickPlayer)) return;
+            bool armed = Time.unscaledTime < _adminKillUntil && _adminKillArmedPlayer == _adminKickPlayer;
+            if (!armed)
+            {
+                _adminKillArmedPlayer = _adminKickPlayer;
+                _adminKillUntil = Time.unscaledTime + DeleteArmSeconds;
+                _adminStatus = "Click confirm within 6 seconds to kill " + _adminKickPlayer + ".";
+                return;
+            }
+            string player = _adminKickPlayer;
+            _adminKillUntil = 0f;
+            _adminBusy = true;
+            _adminStatus = "Killing " + player + "...";
+            _api.KillPlayer(player, delegate(EditResult r)
+            {
+                _adminBusy = false;
+                _adminStatus = r.Ok ? (r.Note ?? ("Killed " + player + ".")) : "Kill failed: " + Reason(r);
+                if (r.Ok) RefreshPlayers();
+            });
+        }
+
+        void AdminBanClick()
+        {
+            if (_adminBusy || string.IsNullOrEmpty(_adminKickPlayer)) return;
+            int hours;
+            if (!int.TryParse(_banHours, out hours) || hours < 0 || hours > 87600)
+            { _adminStatus = "Duration must be 0 (permanent) or between 1 and 87600 hours."; return; }
+            bool armed = Time.unscaledTime < _adminBanUntil && _adminBanArmedPlayer == _adminKickPlayer;
+            if (!armed)
+            {
+                _adminBanArmedPlayer = _adminKickPlayer;
+                _adminBanUntil = Time.unscaledTime + DeleteArmSeconds;
+                _adminStatus = "Click confirm within 6 seconds to blacklist " + _adminKickPlayer + ".";
+                return;
+            }
+            string player = _adminKickPlayer;
+            string reason = (_banReason ?? "").Trim();
+            if (reason.Length > 300) { _adminStatus = "Reason must be 300 characters or fewer."; return; }
+            _adminBanUntil = 0f;
+            _adminBusy = true;
+            _adminStatus = "Saving blacklist entry and disconnecting " + player + "...";
+            _api.BlacklistPlayer(player, hours, reason, delegate(EditResult r)
+            {
+                _adminBusy = false;
+                _adminStatus = r.Ok ? (r.Note ?? ("Blacklisted " + player + ".")) : "Blacklist failed: " + Reason(r);
+                RefreshBlacklist();
+                if (r.Ok) RefreshPlayers();
+            });
+        }
+
+        void AdminUnbanClick(int identifier)
+        {
+            if (_adminBusy || identifier <= 0) return;
+            bool armed = Time.unscaledTime < _adminUnbanUntil && _adminUnbanArmedId == identifier;
+            if (!armed)
+            {
+                _adminUnbanArmedId = identifier;
+                _adminUnbanUntil = Time.unscaledTime + DeleteArmSeconds;
+                _blacklistStatus = "Click confirm within 6 seconds to remove ID " + identifier + ".";
+                return;
+            }
+            _adminUnbanUntil = 0f;
+            _adminBusy = true;
+            _blacklistStatus = "Removing blacklist entry...";
+            _api.Unblacklist(identifier, delegate(EditResult r)
+            {
+                _adminBusy = false;
+                _blacklistStatus = r.Ok ? (r.Note ?? "Blacklist entry removed.") : "Unblacklist failed: " + Reason(r);
+                RefreshBlacklist();
+            });
+        }
+
+        void RefreshBlacklist()
+        {
+            if (_blacklistLoading) return;
+            _blacklistLoading = true;
+            _blacklistStatus = "Reading server blacklist...";
+            _api.Blacklist(delegate(EditResult r)
+            {
+                _blacklistLoading = false;
+                _blacklistEntries.Clear();
+                string data = Json.Value(r.Raw, "data");
+                string bans = data == null ? null : Json.Value(data, "bans");
+                if (r.Ok && bans != null)
+                {
+                    List<string> rows = Json.Objects(bans);
+                    for (int i = 0; i < rows.Count; i++)
+                    {
+                        int id = (int)Json.Num(rows[i], "identifier", 0f);
+                        if (id <= 0) continue;
+                        _blacklistEntries.Add(new BlacklistEntry {
+                            Identifier = id,
+                            Name = Json.Str(rows[i], "name") ?? "Unknown",
+                            Reason = Json.Str(rows[i], "reason") ?? "",
+                            Expires = Json.Str(rows[i], "expires") ?? "Unknown"
+                        });
+                    }
+                    _blacklistStatus = _blacklistEntries.Count == 0 ? "No blacklisted accounts." : "Blacklist loaded.";
+                }
+                else _blacklistStatus = "Could not read blacklist: " + Reason(r);
+            });
+        }
+
+        void StartWatching(string playerName)
+        {
+            if (Camera == null || string.IsNullOrEmpty(playerName)) return;
+            OnlinePlayer target = FindOnlinePlayer(playerName);
+            if (target == null)
+            {
+                _adminStatus = "Refresh the online player list before starting watch.";
+                RefreshPlayers();
+                return;
+            }
+
+            object current = null;
+            object manager = null;
+            Vector3 localPosition;
+            try
+            {
+                current = Player.Current;
+                manager = ReadMember(current, "ChunkManager");
+            }
+            catch (Exception e) { _adminStatus = "Watch unavailable: " + e.Message; return; }
+            if (manager == null || !TryPlayerPosition(current, out localPosition))
+            {
+                _adminStatus = "Watch unavailable: could not read your avatar's position or chunk manager.";
+                return;
+            }
+
+            string error;
+            if (!LoadValidatedChunk(manager, target.Position, out error))
+            {
+                _adminStatus = "Watch could not load that area safely: " + error;
+                return;
+            }
+
+            _watchChunkManager = manager;
+            _watchLocalPosition = localPosition;
+            _watchLastChunkPosition = target.Position;
+            _watchSavedCameraPosition = Camera.transform.position;
+            _watchSavedCameraRotation = Camera.transform.rotation;
+            _watchTarget = target;
+            _watchActive = true;
+            _watchNextPoll = Time.unscaledTime + 1.5f;
+            _watchNextChunkLoad = Time.unscaledTime + 1.5f;
+            _adminStatus = "Quiet camera watch started for " + target.Name + ". Your avatar was not moved.";
+            FollowWatchTarget(true);
+        }
+
+        void StopWatching()
+        {
+            if (!_watchActive)
+            {
+                _watchTarget = null;
+                _watchChunkManager = null;
+                return;
+            }
+            _watchActive = false;
+            string loadError = "local chunk manager is unavailable";
+            bool restored = _watchChunkManager != null
+                && LoadValidatedChunk(_watchChunkManager, _watchLocalPosition, out loadError);
+            if (_watchChunkManager == null) loadError = "local chunk manager is no longer available";
+            if (Camera != null)
+            {
+                Camera.transform.position = _watchSavedCameraPosition;
+                Camera.transform.rotation = _watchSavedCameraRotation;
+            }
+            string stoppedPlayer = _watchTarget == null ? "player" : _watchTarget.Name;
+            _watchTarget = null;
+            _watchChunkManager = null;
+            _adminStatus = restored ? "Stopped watching " + stoppedPlayer + "; local area restored."
+                : "Stopped watching " + stoppedPlayer + "; could not re-request the local area: " + loadError;
+        }
+
+        void TickWatch()
+        {
+            if (!_watchActive) return;
+            if (Camera == null || _watchTarget == null || _watchChunkManager == null)
+            { StopWatching(); return; }
+            if (Time.unscaledTime >= _watchNextPoll && !_playersLoading)
+            {
+                _watchNextPoll = Time.unscaledTime + 1.5f;
+                RefreshPlayers();
+            }
+            if (Time.unscaledTime >= _watchNextChunkLoad
+                && Vector3.Distance(_watchTarget.Position, _watchLastChunkPosition) > 20f)
+            {
+                _watchNextChunkLoad = Time.unscaledTime + 1.5f;
+                string error;
+                if (!LoadValidatedChunk(_watchChunkManager, _watchTarget.Position, out error))
+                {
+                    StopWatching();
+                    _adminStatus = "Watch stopped safely: could not stream the player's next area: " + error;
+                    return;
+                }
+                _watchLastChunkPosition = _watchTarget.Position;
+            }
+            FollowWatchTarget(false);
+        }
+
+        void FollowWatchTarget(bool immediate)
+        {
+            if (Camera == null || _watchTarget == null) return;
+            Transform camera = Camera.transform;
+            Quaternion facing = Quaternion.Euler(0f, _watchTarget.Yaw, 0f);
+            Vector3 lookPoint = _watchTarget.Position + Vector3.up * 1.45f;
+            Vector3 desiredPosition = _watchTarget.Position - facing * Vector3.forward * 3.2f + Vector3.up * 1.7f;
+            Vector3 direction = lookPoint - desiredPosition;
+            if (direction.sqrMagnitude < 0.01f) direction = facing * Vector3.forward;
+            Quaternion desiredRotation = Quaternion.LookRotation(direction, Vector3.up);
+            if (immediate)
+            {
+                camera.position = desiredPosition;
+                camera.rotation = desiredRotation;
+            }
+            else
+            {
+                float blend = Mathf.Clamp01(Time.unscaledDeltaTime * 5f);
+                camera.position = Vector3.Lerp(camera.position, desiredPosition, blend);
+                camera.rotation = Quaternion.Slerp(camera.rotation, desiredRotation, blend);
+            }
+        }
+
+        OnlinePlayer FindOnlinePlayer(string name)
+        {
+            for (int i = 0; i < _onlinePlayers.Count; i++)
+                if (string.Equals(_onlinePlayers[i].Name, name, StringComparison.OrdinalIgnoreCase)) return _onlinePlayers[i];
+            return null;
+        }
+
+        static object ReadMember(object instance, string name)
+        {
+            if (instance == null) return null;
+            const BindingFlags flags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+            Type type = instance.GetType();
+            try
+            {
+                PropertyInfo property = type.GetProperty(name, flags);
+                if (property != null && property.GetIndexParameters().Length == 0) return property.GetValue(instance, null);
+            }
+            catch { }
+            try
+            {
+                Type[] interfaces = type.GetInterfaces();
+                for (int i = 0; i < interfaces.Length; i++)
+                {
+                    PropertyInfo property = interfaces[i].GetProperty(name);
+                    if (property != null && property.GetIndexParameters().Length == 0)
+                        return property.GetValue(instance, null);
+                }
+            }
+            catch { }
+            try
+            {
+                FieldInfo field = type.GetField(name, flags);
+                if (field != null) return field.GetValue(instance);
+            }
+            catch { }
+            return null;
+        }
+
+        static bool TryPlayerPosition(object player, out Vector3 position)
+        {
+            position = Vector3.zero;
+            if (player == null) return false;
+            object controller = ReadMember(player, "PlayerController");
+            if (controller == null) controller = ReadMember(player, "Controller");
+            object[] candidates = new object[] { controller, player };
+            for (int i = 0; i < candidates.Length; i++)
+            {
+                object candidate = candidates[i];
+                object value = ReadMember(candidate, "Position");
+                if (value is Vector3) { position = (Vector3)value; return true; }
+                object transform = ReadMember(candidate, "transform");
+                if (transform == null) transform = ReadMember(candidate, "Transform");
+                value = ReadMember(transform, "position");
+                if (value is Vector3) { position = (Vector3)value; return true; }
+            }
+            return false;
+        }
+
+        static bool LoadValidatedChunk(object manager, Vector3 position, out string error)
+        {
+            error = "chunk API is unavailable";
+            if (manager == null) { error = "player chunk manager is unavailable"; return false; }
+            try
+            {
+                Type helper = null;
+                Assembly[] assemblies = AppDomain.CurrentDomain.GetAssemblies();
+                for (int i = 0; i < assemblies.Length && helper == null; i++)
+                    try { helper = assemblies[i].GetType("Alta.Chunks.LocationChunkHelper", false); } catch { }
+                if (helper == null) return false;
+                const BindingFlags staticFlags = BindingFlags.Static | BindingFlags.Public | BindingFlags.NonPublic;
+                MethodInfo ensure = helper.GetMethod("EnsureChunkLookupIsSetup", staticFlags, null, Type.EmptyTypes, null);
+                if (ensure == null) { error = "chunk lookup setup method is unavailable"; return false; }
+                ensure.Invoke(null, null);
+
+                object currentChunk = ReadMember(manager, "Chunk");
+                MethodInfo[] helperMethods = helper.GetMethods(staticFlags);
+                bool found = false;
+                for (int i = 0; i < helperMethods.Length; i++)
+                {
+                    MethodInfo method = helperMethods[i];
+                    if (method.Name != "GetBestContaining") continue;
+                    ParameterInfo[] parameters = method.GetParameters();
+                    if (parameters.Length != 2 || parameters[0].ParameterType != typeof(Vector3)) continue;
+                    if (currentChunk != null && !parameters[1].ParameterType.IsInstanceOfType(currentChunk)) continue;
+                    object chunk = method.Invoke(null, new object[] { position, currentChunk });
+                    if (chunk != null) { found = true; break; }
+                }
+                if (!found) { error = "no loaded map chunk contains that player position"; return false; }
+
+                MethodInfo load = null;
+                const BindingFlags instanceFlags = BindingFlags.Instance | BindingFlags.Public | BindingFlags.NonPublic;
+                for (Type type = manager.GetType(); type != null && load == null; type = type.BaseType)
+                {
+                    MethodInfo[] methods = type.GetMethods(instanceFlags | BindingFlags.DeclaredOnly);
+                    for (int i = 0; i < methods.Length; i++)
+                    {
+                        ParameterInfo[] parameters = methods[i].GetParameters();
+                        if (methods[i].Name == "LoadFromPosition" && parameters.Length == 1
+                            && parameters[0].ParameterType == typeof(Vector3)) { load = methods[i]; break; }
+                    }
+                }
+                if (load == null) { error = "player chunk streaming method is unavailable"; return false; }
+                load.Invoke(manager, new object[] { position });
+                error = null;
+                return true;
+            }
+            catch (Exception e)
+            {
+                Exception reason = e;
+                if (reason is TargetInvocationException && reason.InnerException != null) reason = reason.InnerException;
+                error = reason.Message;
+                return false;
+            }
+        }
+
         void AdminTeleportClick(string from, string to)
         {
             if (_adminBusy || string.IsNullOrEmpty(from) || string.IsNullOrEmpty(to) || from == to) return;
@@ -3969,45 +5186,14 @@ namespace PrefabEditorMod
             return "";
         }
 
+        // Recovery for old trips or a failed home restore; never moves the avatar.
         void DrawActiveTravel()
         {
-            GUILayout.BeginVertical(GUI.skin.box);
-            GUILayout.Label(_travel.Returned ? _travel.Player + " returned · restore their saved home"
-                : _travel.Player + " · trip active", _connectedStyle);
-            if (_travel.HasWorkPosition)
-                GUILayout.Label("Destination  " + VecText(_travel.WorkPosition), _mutedStyle);
-            GUILayout.Label("Saved return point  " + VecText(_travel.ReturnPosition), _mutedStyle);
+            GUILayout.Label("Saved home restore pending for " + _travel.Player, _mutedStyle);
             GUI.enabled = !_workBusy;
-            if (GUILayout.Button(_travel.Returned ? "Retry home restore" : "Return " + _travel.Player,
-                GUILayout.Height(34f))) ReturnFromWorkArea();
+            if (GUILayout.Button("Restore saved home"))
+            { _workBusy = true; RestoreOriginalHome(); }
             GUI.enabled = true;
-            if (_workBusy) GUILayout.Label("Travel command in progress.", _mutedStyle);
-            if (!_travel.Returned && _travel.HasWorkPosition)
-            {
-                GUILayout.Space(6f);
-                GUILayout.Label(_keepAlive ? "KEEP PLAYER ACTIVE · ON" : "KEEP PLAYER ACTIVE · OFF",
-                    _keepAlive ? _connectedStyle : _panelOnlyStyle);
-                GUI.enabled = !_workBusy;
-                bool keepAlive = ThemedToggle(_keepAlive, "Keep " + _travel.Player + " active every 4 minutes");
-                if (keepAlive != _keepAlive)
-                {
-                    _keepAlive = keepAlive;
-                    _keepAliveNextAt = Time.unscaledTime + KeepAliveInterval;
-                    _workMessage = keepAlive
-                        ? "Keep player active is on. Leave the editor camera open."
-                        : "Keep player active is off.";
-                    if (_log != null) _log("work-area keep-alive " + (keepAlive ? "enabled" : "disabled"));
-                }
-                GUI.enabled = true;
-                if (_keepAlive)
-                {
-                    int left = Mathf.Max(0, Mathf.CeilToInt(_keepAliveNextAt - Time.unscaledTime));
-                    GUILayout.Label("Next activity nudge in " + (left / 60) + ":" + (left % 60).ToString("00"), _connectedStyle);
-                }
-                GUILayout.Label("Moves the avatar 12 cm to avoid idle disconnect. Turn it off while actively moving or standing near hazards.", _mutedStyle);
-            }
-            if (!string.IsNullOrEmpty(_workMessage)) GUILayout.Label(_workMessage, _mutedStyle);
-            GUILayout.EndVertical();
         }
 
         void DrawWorkAreaControls()
@@ -4047,27 +5233,289 @@ namespace PrefabEditorMod
                 if (GUILayout.Button((_selectedPlayer == p.Name ? "● " : "○ ") + p.Name + "  " + VecText(p.Position)))
                     _selectedPlayer = p.Name;
             }
-            if (_travel != null)
-                GUILayout.Label("Return the active player above before starting another trip.", _mutedStyle);
+            bool valid = !string.IsNullOrEmpty(_selectedPlayer);
+            bool area = _selectedArea >= 0 && _selectedArea < _workAreas.Count;
+            GUILayout.Label("TP destination: " + (area ? _workAreas[_selectedArea].Name : "editor camera"), _mutedStyle);
+            GUI.enabled = valid && !_workBusy && (area || Camera != null);
+            if (GUILayout.Button("TP user to " + (area ? "area" : "camera"))) VisitWorkArea();
+            GUI.enabled = valid && !_workBusy && Camera != null;
+            if (area && GUILayout.Button("TP user to camera")) TeleportSelectedTo(Camera.transform.position);
+            string me = CurrentUsername();
+            GUI.enabled = valid && !_workBusy && !string.IsNullOrEmpty(me) && me != _selectedPlayer;
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("TP to user")) TeleportBetweenPlayers(me, _selectedPlayer);
+            if (GUILayout.Button("TP user to me")) TeleportBetweenPlayers(_selectedPlayer, me);
+            GUILayout.EndHorizontal();
+            GUI.enabled = true;
+            if (_workBusy) GUILayout.Label("Teleport command in progress...", _mutedStyle);
+            GUILayout.Space(6f);
+            if (string.IsNullOrEmpty(_keepAlivePlayer))
+            {
+                GUI.enabled = valid && !_keepAliveBusy;
+                if (GUILayout.Button("Keep selected player active every 5 minutes"))
+                {
+                    _keepAlivePlayer = _selectedPlayer;
+                    _keepAliveDirection = 1;
+                    _keepAliveNextAt = Time.unscaledTime + 300f;
+                    _keepAliveGeneration++;
+                }
+                GUI.enabled = true;
+            }
             else
             {
-                bool valid = _selectedArea >= 0 && _selectedArea < _workAreas.Count && !string.IsNullOrEmpty(_selectedPlayer);
-                string areaName = _selectedArea >= 0 && _selectedArea < _workAreas.Count ? _workAreas[_selectedArea].Name : "";
-                GUILayout.Label("Destination: " + (areaName.Length > 0 ? areaName : "Choose a work area")
-                    + "  ·  Player: " + (string.IsNullOrEmpty(_selectedPlayer) ? "Choose a player" : _selectedPlayer), _mutedStyle);
-                GUI.enabled = valid && !_workBusy;
-                bool armed = Time.unscaledTime < _travelArmUntil && _travelArmedPlayer == _selectedPlayer && _travelArmedArea == areaName;
-                if (GUILayout.Button(armed
-                    ? "Confirm teleport " + _selectedPlayer : "Teleport " + _selectedPlayer + " to selected area", _dangerButtonStyle))
-                    VisitWorkArea();
-                GUI.enabled = true;
-                if (!valid) GUILayout.Label("Choose a saved work area and an online player to enable teleport.", _mutedStyle);
-                else if (_workBusy) GUILayout.Label("Travel command in progress.", _mutedStyle);
-                GUILayout.Label("Teleport moves the selected player's avatar. Their original position and home are saved for Return.", _mutedStyle);
+                int seconds = Mathf.Max(0, Mathf.CeilToInt(_keepAliveNextAt - Time.unscaledTime));
+                GUILayout.Label("Keeping " + _keepAlivePlayer + " active. Next nudge: " + (seconds / 60) + ":" + (seconds % 60).ToString("00"), _mutedStyle);
+                if (GUILayout.Button("Stop keeping player active")) StopKeepAlive();
             }
+            GUILayout.Label("Moves the chosen player 0.12 m left/right every 5 minutes. Home stays unchanged. Keep F1 editor open; closing it stops nudges.", _mutedStyle);
         }
 
-        float _travelArmUntil;
+        public void StopKeepAlive()
+        {
+            _keepAlivePlayer = "";
+            _keepAliveGeneration++;
+        }
+
+        void TickKeepAlive()
+        {
+            if (string.IsNullOrEmpty(_keepAlivePlayer) || _keepAliveBusy || _workBusy
+                || Time.unscaledTime < _keepAliveNextAt) return;
+            string player = _keepAlivePlayer;
+            int generation = _keepAliveGeneration;
+            _keepAliveBusy = true;
+            _api.NudgePlayer(player, _keepAliveDirection, delegate(EditResult r)
+            {
+                _keepAliveBusy = false;
+                if (generation != _keepAliveGeneration) return;
+                if (!r.Ok)
+                {
+                    StopKeepAlive();
+                    _workMessage = "Keep-alive stopped for " + player + ": " + Reason(r);
+                    return;
+                }
+                _keepAliveDirection = -_keepAliveDirection;
+                _keepAliveNextAt = Time.unscaledTime + 300f;
+                _workMessage = player + " nudged. Next movement in 5 minutes.";
+            });
+        }
+
+        bool IsTradeDeckSelected()
+        {
+            return _has && _id != 0 && _group.Count == 1 && _root != null
+                && ((_info != null && _info.Hash == 30016)
+                    || _root.GetComponentInChildren<Alta.Trading.TradeVendor>(true) != null);
+        }
+
+        void ResetTradeForm()
+        {
+            _tradeGeneration++;
+            _tradeId = 0; _tradeHash = 0; _tradeBusy = false; _tradeLoaded = false;
+            _tradeQuery = ""; _tradeItemName = ""; _tradePrice = "1"; _tradeQuantity = "1"; _tradeStock = "1"; _tradeAddStock = "1"; _tradeStatus = "";
+            _tradeSearchInput.Stop(); _tradePriceInput.Stop(); _tradeQuantityInput.Stop(); _tradeStockInput.Stop(); _tradeAddStockInput.Stop();
+        }
+
+        void LoadTradeDeck()
+        {
+            uint id = _id;
+            int generation = ++_tradeGeneration;
+            _tradeId = id; _tradeBusy = true; _tradeLoaded = false;
+            _tradeStatus = "Reading trade deck...";
+            _api.TradeInfo(id, delegate(EditResult r) {
+                if (generation != _tradeGeneration || !_has || _id != id) return;
+                _tradeBusy = false;
+                ReadTradeReply(r, "Loaded current settings.");
+            });
+        }
+
+        static int TradeInteger(string data, string key)
+        {
+            int value;
+            return int.TryParse(Json.Value(data, key), NumberStyles.Integer, CultureInfo.InvariantCulture, out value) ? value : 0;
+        }
+
+        void ReadTradeReply(EditResult r, string success)
+        {
+            string data = Json.Value(r.Raw, "data");
+            string trade = Json.Value(data, "trade");
+            if (!r.Ok || trade == null)
+            {
+                _tradeLoaded = false;
+                _tradeStatus = r.Ok ? "The server did not return trade settings. Update the Server Kit and restart the game server and panel." : "Trade deck failed: " + Reason(r);
+                if (r.Err != null && r.Err.Contains("no such route"))
+                    _tradeStatus = "Update the Server Kit, then restart the game server and panel to enable trade deck editing.";
+                return;
+            }
+            _tradeLoaded = true;
+            _tradeHash = Json.UInt(trade, "itemHash");
+            _tradeItemName = Json.Str(trade, "itemName") ?? "";
+            _tradeQuery = _tradeHash == 0 ? "" : _tradeHash.ToString(CultureInfo.InvariantCulture);
+            _tradePrice = Math.Max(1, TradeInteger(trade, "price")).ToString(CultureInfo.InvariantCulture);
+            _tradeQuantity = Math.Max(1, TradeInteger(trade, "perPurchase")).ToString(CultureInfo.InvariantCulture);
+            _tradeStock = Math.Max(1, TradeInteger(trade, "stock")).ToString(CultureInfo.InvariantCulture);
+            if (_tradeHash == 0) { _tradeQuantity = "1"; _tradeStock = "1"; }
+            _tradeStatus = success + " Current stock: " + TradeInteger(trade, "stock") + ".";
+            if (Json.Num(trade, "owner", 0) == 0) _tradeStatus += " Claim this deck in-game before selling.";
+        }
+
+        void DrawTradeDeckControls()
+        {
+            GUILayout.Space(6f);
+            GUILayout.Label("Trading", _titleStyle);
+            if (!IsTradeDeckSelected()) {
+                GUILayout.Label("Click one trade deck (prefab 30016) in the world, then edit it here.", _mutedStyle);
+                if (_group.Count > 1) GUILayout.Label("Select only one deck at a time.", _mutedStyle);
+                return;
+            }
+            GUILayout.Label("Selected trade deck #" + _id, _mutedStyle);
+            if (_tradeId != _id) { ResetTradeForm(); LoadTradeDeck(); }
+            GUILayout.Label(_tradeBusy ? "Reading or updating the game server..." : _tradeStatus, _mutedStyle);
+            GUI.enabled = !_tradeBusy;
+            if (GUILayout.Button("Reload current deck settings")) LoadTradeDeck();
+            GUI.enabled = true;
+            if (!_tradeLoaded && !_tradeBusy)
+                GUILayout.Label("You can enter a new offer below. Apply sends it to the server for validation. Adding stock needs a successful reload first.", _mutedStyle);
+            if (!_spawnCatalogAttempted && !_spawnBusy)
+            {
+                _spawnCatalogAttempted = true; _spawnBusy = true; _spawnCatalogLoading = true;
+                _api.Prefabs(OnPrefabs);
+            }
+            GUILayout.Label("Item to sell - search by name or enter a prefab ID:", _mutedStyle);
+            GUI.enabled = !_tradeBusy;
+            string query = _tradeSearchInput.Draw(_tradeQuery);
+            if (query != _tradeQuery) {
+                _tradeQuery = query; _tradeItemName = "";
+                if (!uint.TryParse(query.Trim(), out _tradeHash)) _tradeHash = 0;
+            }
+            int shown = 0;
+            if (_tradeHash == 0 && !string.IsNullOrEmpty(_tradeQuery.Trim()))
+                foreach (SpawnCatalogEntry entry in _spawnCatalog)
+                {
+                    if (entry.Name.IndexOf(_tradeQuery.Trim(), StringComparison.OrdinalIgnoreCase) < 0) continue;
+                    if (GUILayout.Button(entry.Name + "  #" + entry.Hash)) {
+                        _tradeHash = entry.Hash; _tradeItemName = entry.Name;
+                        _tradeQuery = entry.Hash.ToString(CultureInfo.InvariantCulture);
+                        GUI.FocusControl(null); _tradeSearchInput.Stop();
+                    }
+                    if (++shown >= 6) break;
+                }
+            if (_tradeHash != 0) GUILayout.Label("Item: " + _tradeItemName + "  #" + _tradeHash, _mutedStyle);
+            else if (shown == 0 && _tradeQuery.Length > 0) GUILayout.Label("No matches yet. You can enter the item's prefab ID directly.", _mutedStyle);
+            GUILayout.Label("Price in coins per purchase:", _mutedStyle);
+            _tradePrice = _tradePriceInput.Draw(_tradePrice);
+            GUILayout.Label("Items given per purchase:", _mutedStyle);
+            _tradeQuantity = _tradeQuantityInput.Draw(_tradeQuantity);
+            GUILayout.Label("Total stock available (sets the total, not an amount to add):", _mutedStyle);
+            _tradeStock = _tradeStockInput.Draw(_tradeStock);
+            int price, quantity, stock;
+            bool valid = _tradeHash != 0 && int.TryParse(_tradePrice, out price) && price > 0 && price <= 1000000
+                && int.TryParse(_tradeQuantity, out quantity) && quantity > 0
+                && int.TryParse(_tradeStock, out stock) && stock >= quantity;
+            if (!_tradeBusy && !valid)
+                GUILayout.Label("Choose an item and enter whole numbers: coins 1-1000000, positive quantity, and stock at least the purchase quantity.", _mutedStyle);
+            GUI.enabled = !_tradeBusy && valid;
+            if (GUILayout.Button("Apply item, price and stock to selected deck")) ApplyTradeDeck();
+            GUI.enabled = !_tradeBusy && _tradeLoaded;
+            GUILayout.Label("Add more stock (keeps the current price and purchase quantity):", _mutedStyle);
+            _tradeAddStock = _tradeAddStockInput.Draw(_tradeAddStock);
+            int added;
+            GUI.enabled = !_tradeBusy && _tradeLoaded && _tradeHash != 0
+                && int.TryParse(_tradeAddStock, out added) && added > 0;
+            if (GUILayout.Button("Add this many to current stock")) AddTradeStock();
+            GUI.enabled = true;
+            GUILayout.Label("Empty the deck's stock in-game before changing to a different item. Non-stackable items use 1 per purchase. The game enforces deck capacity. Changes are server-side and saved with the deck.", _mutedStyle);
+
+        }
+
+        void AddTradeStock()
+        {
+            if (_tradeBusy || !_tradeLoaded || !IsTradeDeckSelected() || _tradeId != _id) return;
+            int amount;
+            if (!int.TryParse(_tradeAddStock, out amount) || amount < 1) return;
+            uint id = _id;
+            int generation = ++_tradeGeneration;
+            _tradeBusy = true;
+            _api.TradeAddStock(id, _tradeHash, amount, delegate(EditResult r) {
+                if (generation != _tradeGeneration || !_has || _id != id) return;
+                _tradeBusy = false;
+                ReadTradeReply(r, "Added " + amount + " items; price and items per purchase unchanged.");
+            });
+        }
+
+        void ApplyTradeDeck()
+        {
+            if (_tradeBusy || !IsTradeDeckSelected() || _tradeId != _id) return;
+            int price, quantity, stock;
+            if (!int.TryParse(_tradePrice, out price) || !int.TryParse(_tradeQuantity, out quantity) || !int.TryParse(_tradeStock, out stock)) return;
+            uint id = _id;
+            int generation = ++_tradeGeneration;
+            _tradeBusy = true;
+            _api.TradeSet(id, _tradeHash, price, quantity, stock, delegate(EditResult r) {
+                if (generation != _tradeGeneration || !_has || _id != id) return;
+                _tradeBusy = false;
+                ReadTradeReply(r, "Trade deck updated for everyone.");
+            });
+        }
+
+        void DrawTeleporterControls()
+        {
+            GUILayout.Label("Teleporter destination", _titleStyle);
+            GUILayout.Label("Spawn and place your teleporter, then click it in the world to select it. Enter its destination below and click Link.", _mutedStyle);
+            GUILayout.Label("Destination X,Y,Z (click to type):", _mutedStyle);
+            _teleporterDestination = _teleporterInput.Draw(_teleporterDestination);
+            _teleporterDestinationFocused = GUI.GetNameOfFocusedControl() == "TeleporterDestination";
+            if (GUILayout.Button("Paste coordinates"))
+            {
+                _teleporterInput.Stop();
+                _teleporterDestination = CoordinateTextField.CleanPaste(GUIUtility.systemCopyBuffer);
+                GUI.FocusControl(null);
+                _teleporterDestinationFocused = false;
+            }
+            GUILayout.Label("Type or paste X,Y,Z, then click Link to apply. Ctrl+A selects all; Backspace deletes.", _mutedStyle);
+            GUILayout.Label(_has && _id != 0 ? "Selected entity #" + _id : "No teleporter selected. Click your teleporter in the world first.", _mutedStyle);
+            GUI.enabled = !_teleporterBusy && _has && _id != 0 && _group.Count == 1;
+            if (GUILayout.Button(_teleporterBusy ? "Linking..." : "Link selected teleporter to destination")) ConfigureTeleporter();
+            GUI.enabled = true;
+            if (_group.Count > 1) GUILayout.Label("Select one teleporter at a time.", _mutedStyle);
+            GUILayout.Label("If you move the teleporter afterward, link it again to keep these exact destination coordinates.", _mutedStyle);
+            GUILayout.Label("Use its normal in-game teleport interaction. The game streams destination chunks. Platform links are saved on the server; relink after moving the platform.", _mutedStyle);
+            if (!string.IsNullOrEmpty(_teleporterStatus)) GUILayout.Label(_teleporterStatus, _mutedStyle);
+        }
+
+        void ConfigureTeleporter()
+        {
+            if (_teleporterBusy || !_has || _id == 0 || _group.Count != 1) return;
+            string[] values = _teleporterDestination.Split(',');
+            Vector3 destination = Vector3.zero;
+            if (values.Length != 3 || !float.TryParse(values[0], NumberStyles.Float, CultureInfo.InvariantCulture, out destination.x)
+                || !float.TryParse(values[1], NumberStyles.Float, CultureInfo.InvariantCulture, out destination.y)
+                || !float.TryParse(values[2], NumberStyles.Float, CultureInfo.InvariantCulture, out destination.z)
+                || float.IsNaN(destination.x) || float.IsNaN(destination.y) || float.IsNaN(destination.z)
+                || float.IsInfinity(destination.x) || float.IsInfinity(destination.y) || float.IsInfinity(destination.z))
+            { _teleporterStatus = "Enter three coordinates separated by commas, for example -596.447,275.657,240.869"; return; }
+            _teleporterBusy = true;
+            _teleporterStatus = "Linking selected teleporter...";
+            Action<EditResult> done = delegate(EditResult r)
+            {
+                _teleporterBusy = false;
+                _teleporterStatus = r.Ok ? "Teleporter linked to " + VecText(destination) + "." : "Teleporter failed: " + Reason(r);
+                if (r.Ok && r.Ent != null) _teleporterStatus += " Entity #" + r.Ent.Id + ".";
+            };
+            _api.LinkTeleporter(_id, destination.x, destination.y, destination.z, done);
+        }
+
+        void TeleportBetweenPlayers(string from, string to)
+        {
+            if (_workBusy || string.IsNullOrEmpty(from) || string.IsNullOrEmpty(to) || from == to) return;
+            _workBusy = true;
+            _workMessage = "Teleporting " + from + " to " + to + "...";
+            _api.TeleportPlayer(from, to, delegate(EditResult r)
+            {
+                _workBusy = false;
+                _workMessage = r.Ok ? "Teleported " + from + " to " + to + "." : "Teleport failed: " + Reason(r);
+                if (r.Ok) RefreshPlayers();
+            });
+        }
+
 
         void SaveWorkArea()
         {
@@ -4108,8 +5556,21 @@ namespace PrefabEditorMod
                         string n = Json.Str(rows[i], "name");
                         if (string.IsNullOrEmpty(n)) continue;
                         _onlinePlayers.Add(new OnlinePlayer { Name = n,
-                            Position = new Vector3(Json.Num(rows[i], "x", 0f), Json.Num(rows[i], "y", 0f), Json.Num(rows[i], "z", 0f)) });
+                            Identifier = (int)Json.Num(rows[i], "id", 0f),
+                            Position = new Vector3(Json.Num(rows[i], "x", 0f), Json.Num(rows[i], "y", 0f), Json.Num(rows[i], "z", 0f)),
+                            Yaw = Json.Num(rows[i], "yaw", 0f) });
                     }
+                }
+                if (_watchActive)
+                {
+                    string watchName = _watchTarget == null ? "selected player" : _watchTarget.Name;
+                    OnlinePlayer updated = FindOnlinePlayer(watchName);
+                    if (updated == null)
+                    {
+                        StopWatching();
+                        _adminStatus = "Watch stopped: " + watchName + " is no longer online.";
+                    }
+                    else _watchTarget = updated;
                 }
                 if (_onlinePlayers.Count == 0) _workMessage = r.Ok ? "No online players found." : "Player refresh failed: " + Reason(r);
                 else
@@ -4140,68 +5601,6 @@ namespace PrefabEditorMod
             });
         }
 
-        void TickKeepAlive()
-        {
-            if (!_keepAlive || _travel == null || _travel.Returned || !_travel.HasWorkPosition
-                || _workBusy || Time.unscaledTime < _keepAliveNextAt) return;
-            _workBusy = true;
-            _workMessage = "Checking " + _travel.Player + " before the keep-alive nudge...";
-            string playerName = _travel.Player;
-            _api.Players(delegate(EditResult list)
-            {
-                OnlinePlayer player = FindPlayer(list, playerName);
-                if (player == null)
-                {
-                    _workBusy = false;
-                    _keepAlive = false;
-                    _workMessage = list.Ok ? "Keep-alive stopped: " + playerName + " is no longer online."
-                        : "Keep-alive stopped: player check failed (" + Reason(list) + ").";
-                    if (_log != null) _log("work-area keep-alive stopped: player unavailable");
-                    return;
-                }
-
-                Vector3 offset = new Vector3(_keepAlivePositive ? KeepAliveNudge : -KeepAliveNudge, 0f, 0f);
-                Vector3 nudgePosition = player.Position + offset;
-                _workMessage = "Moving " + playerName + " a few centimeters...";
-                _api.Command("player set-home \"" + playerName + "\" \"" + VecText(nudgePosition) + "\"", delegate(EditResult set)
-                {
-                    if (!set.Ok)
-                    {
-                        _workBusy = false; _keepAlive = false;
-                        _workMessage = "Keep-alive stopped: could not set temporary nudge point (" + Reason(set) + ").";
-                        if (_log != null) _log("work-area keep-alive stopped: temporary home command failed");
-                        return;
-                    }
-                    _api.Command("player teleport \"" + playerName + "\" Home", delegate(EditResult tp)
-                    {
-                        // Restore the work-area home even if the teleport itself failed.
-                        _api.Command("player set-home \"" + playerName + "\" \"" + VecText(_travel.WorkPosition) + "\"", delegate(EditResult restore)
-                        {
-                            _workBusy = false;
-                            if (!restore.Ok)
-                            {
-                                _keepAlive = false;
-                                _workMessage = "Keep-alive stopped: could not restore work-area home. Use Return to restore the original home. " + Reason(restore);
-                                if (_log != null) _log("work-area keep-alive failed to restore the work-area home");
-                                return;
-                            }
-                            if (!tp.Ok)
-                            {
-                                _keepAlive = false;
-                                _workMessage = "Keep-alive stopped: nudge teleport failed (" + Reason(tp) + ").";
-                                if (_log != null) _log("work-area keep-alive stopped: nudge teleport failed");
-                                return;
-                            }
-                            _keepAlivePositive = !_keepAlivePositive;
-                            _keepAliveNextAt = Time.unscaledTime + KeepAliveInterval;
-                            _workMessage = playerName + " nudged; work-area home restored. Next check in 4 minutes.";
-                            if (_log != null) _log("work-area keep-alive nudge completed; work-area home restored");
-                        });
-                    });
-                });
-            });
-        }
-
         static OnlinePlayer FindPlayer(EditResult result, string name)
         {
             if (result == null || !result.Ok) return null;
@@ -4214,28 +5613,31 @@ namespace PrefabEditorMod
                 string n = Json.Str(rows[i], "name");
                 if (string.Equals(n, name, StringComparison.OrdinalIgnoreCase))
                     return new OnlinePlayer { Name = n, Position = new Vector3(
-                        Json.Num(rows[i], "x", 0f), Json.Num(rows[i], "y", 0f), Json.Num(rows[i], "z", 0f)) };
+                        Json.Num(rows[i], "x", 0f), Json.Num(rows[i], "y", 0f), Json.Num(rows[i], "z", 0f)),
+                        Identifier = (int)Json.Num(rows[i], "id", 0f), Yaw = Json.Num(rows[i], "yaw", 0f) };
             }
             return null;
         }
 
         void VisitWorkArea()
         {
-            if (_workBusy || _selectedArea < 0 || _selectedArea >= _workAreas.Count || string.IsNullOrEmpty(_selectedPlayer)) return;
-            string selectedAreaName = _workAreas[_selectedArea].Name;
-            bool armed = Time.unscaledTime < _travelArmUntil && _travelArmedPlayer == _selectedPlayer && _travelArmedArea == selectedAreaName;
-            if (!armed)
+            if (_selectedArea >= 0 && _selectedArea < _workAreas.Count)
+                TeleportSelectedTo(_workAreas[_selectedArea].Position);
+            else if (Camera != null) TeleportSelectedTo(Camera.transform.position);
+        }
+
+        void TeleportSelectedTo(Vector3 destination)
+        {
+            if (_workBusy || string.IsNullOrEmpty(_selectedPlayer)) return;
+            if (_travel != null)
             {
-                _travelArmedPlayer = _selectedPlayer; _travelArmedArea = selectedAreaName;
-                _travelArmUntil = Time.unscaledTime + 6f;
-                _workMessage = "Click confirm within 6 seconds to teleport " + _selectedPlayer + " to " + selectedAreaName + ".";
+                _workBusy = true;
+                RestoreOriginalHome(delegate { TeleportSelectedTo(destination); });
                 return;
             }
-            _travelArmUntil = 0f;
             OnlinePlayer target = null;
             for (int i = 0; i < _onlinePlayers.Count; i++) if (_onlinePlayers[i].Name == _selectedPlayer) target = _onlinePlayers[i];
             if (target == null) { _workMessage = "Refresh and select an online player."; return; }
-            Vector3 destination = _workAreas[_selectedArea].Position;
             _workBusy = true; _workMessage = "Reading " + target.Name + "'s saved home...";
             _api.Command("player get-home \"" + target.Name + "\"", delegate(EditResult r)
             {
@@ -4243,7 +5645,6 @@ namespace PrefabEditorMod
                 if (!r.Ok) { _workBusy = false; _workMessage = "Could not read saved home: " + Reason(r); return; }
                 if (!TryCommandVector(r.Raw, out home))
                 { _workBusy = false; _workMessage = "Server returned an unreadable home position. Teleport canceled."; return; }
-                _keepAlive = false;
                 _travel = new TravelState { Player = target.Name, ReturnPosition = target.Position,
                     OriginalHome = home, WorkPosition = destination, HasWorkPosition = true, Returned = false };
                 SaveTravel();
@@ -4254,50 +5655,29 @@ namespace PrefabEditorMod
         void SetTravelHomeAndTeleport(Vector3 destination)
         {
             string player = _travel.Player;
-            _workMessage = "Setting temporary return point for " + player + "...";
+            _workMessage = "Setting teleport destination for " + player + "...";
             _api.Command("player set-home \"" + player + "\" \"" + VecText(destination) + "\"", delegate(EditResult set)
             {
                 if (!set.Ok) { _workBusy = false; _workMessage = "Could not set temporary home: " + Reason(set); _travel = null; SaveTravel(); return; }
                 _workMessage = "Teleporting " + player + "...";
                 _api.Command("player teleport \"" + player + "\" Home", delegate(EditResult tp)
                 {
-                    _workBusy = false;
-                    if (!tp.Ok) { _workMessage = "Teleport failed: " + Reason(tp) + ". Return is available to restore position and home."; return; }
-                    _workMessage = "At work area. Return " + player + " when finished.";
-                    SaveTravel();
+                    string result = tp.Ok ? "Teleported " + player + "." : "Teleport failed: " + Reason(tp);
+                    RestoreOriginalHome(delegate { _workMessage = result; RefreshPlayers(); });
                 });
             });
         }
 
-        void ReturnFromWorkArea()
-        {
-            if (_workBusy || _travel == null) return;
-            _keepAlive = false;
-            _workBusy = true;
-            if (_travel.Returned) { RestoreOriginalHome(); return; }
-            string p = _travel.Player;
-            _workMessage = "Restoring " + p + "'s return point...";
-            _api.Command("player set-home \"" + p + "\" \"" + VecText(_travel.ReturnPosition) + "\"", delegate(EditResult set)
-            {
-                if (!set.Ok) { _workBusy = false; _workMessage = "Return point setup failed: " + Reason(set); return; }
-                _api.Command("player teleport \"" + p + "\" Home", delegate(EditResult tp)
-                {
-                    if (!tp.Ok) { _workBusy = false; _workMessage = "Return teleport failed: " + Reason(tp); return; }
-                    _travel.Returned = true; SaveTravel();
-                    RestoreOriginalHome();
-                });
-            });
-        }
-
-        void RestoreOriginalHome()
+        void RestoreOriginalHome(Action after = null)
         {
             string p = _travel.Player;
             _workMessage = "Restoring " + p + "'s original home...";
             _api.Command("player set-home \"" + p + "\" \"" + VecText(_travel.OriginalHome) + "\"", delegate(EditResult r)
             {
                 _workBusy = false;
-                if (!r.Ok) { _workMessage = "Player is back; home restore failed: " + Reason(r) + ". Retry is available."; return; }
-                _travel = null; SaveTravel(); _workMessage = p + " returned; original home restored.";
+                if (!r.Ok) { _workMessage = "Home restore failed: " + Reason(r) + ". Retry Restore saved home."; return; }
+                _travel = null; SaveTravel(); _workMessage = p + "'s saved home restored.";
+                if (after != null) after();
             });
         }
 

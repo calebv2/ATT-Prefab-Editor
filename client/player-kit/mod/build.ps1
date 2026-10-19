@@ -23,6 +23,8 @@ $src  = Join-Path $here 'src'
 $out  = Join-Path $here 'PrefabEditor.dll'
 $dist = Join-Path (Split-Path -Parent $here) 'dist'
 $imageIndex = Join-Path $dist 'PrefabEditorImages\index.json'
+$catalogSource = Join-Path (Split-Path -Parent $here) 'workbench\data\prefabs.json'
+$catalogDist = Join-Path $dist 'PrefabEditorCatalog.json'
 
 if (-not (Test-Path $csc)) { throw "csc not found ($csc). Install .NET Framework 4.x developer tools." }
 if (-not (Test-Path $mgd)) { throw "Managed dir not found: $mgd - pass -GamePath <your game folder>" }
@@ -45,6 +47,9 @@ New-Item -ItemType Directory -Force $dist | Out-Null
 Copy-Item $out (Join-Path $dist 'PrefabEditor.dll') -Force
 Write-Host "OK -> $out"
 Write-Host "Staged -> $(Join-Path $dist 'PrefabEditor.dll')"
+if (-not (Test-Path $catalogSource)) { throw "Workbench prefab catalog not found: $catalogSource" }
+Copy-Item $catalogSource $catalogDist -Force
+Write-Host "Bundled Workbench catalog -> $catalogDist"
 
 # Keep the bundled preview images beside the compiled mod and report how many
 # catalog entries have a staged image. The Workbench uses this same folder.
@@ -66,6 +71,8 @@ if ($Deploy) {
     New-Item -ItemType Directory -Force $mods | Out-Null
     Copy-Item $out (Join-Path $mods 'PrefabEditor.dll') -Force
     Write-Host "Deployed -> $(Join-Path $mods 'PrefabEditor.dll')"
+    Copy-Item $catalogDist (Join-Path $mods 'PrefabEditorCatalog.json') -Force
+    Write-Host "Deployed prefab catalog -> $(Join-Path $mods 'PrefabEditorCatalog.json')"
     $modsImages = Join-Path $mods 'PrefabEditorImages'
     New-Item -ItemType Directory -Force $modsImages | Out-Null
     if (Test-Path (Join-Path $dist 'PrefabEditorImages')) {

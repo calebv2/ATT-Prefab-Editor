@@ -302,7 +302,7 @@
   <span class="mark">&#9874;</span>
   <h1>TAVERN STRING WORKBENCH</h1>
   <span class="chip">local only</span>
-  <span class="chip" id="chipPanel" title="spawns go through your SSH tunnel to the web panel">panel: &hellip;</span>
+  <span class="chip" id="chipPanel" title="spawns use your Prefabulator connection">panel: &hellip;</span>
   <span class="chip" id="connChip" style="display:none" title="live check of the web panel through your tunnel"><span id="connDot"></span><span id="connText">panel?</span></span>
   <span class="spacer"></span>
   <button id="btnGear" title="settings">&#9881;</button>
@@ -2112,7 +2112,7 @@ async function pingPanel() {
     chip.style.display = '';
     dot.className = r.ok ? 'up' : 'down';
     txt.textContent = r.ok ? 'panel up' : 'panel offline';
-    chip.title = r.ok ? 'panel reachable at ' + (r.origin || '') : 'no panel — is the SSH tunnel up? ' + (r.error || '');
+    chip.title = r.ok ? 'panel reachable at ' + (r.origin || '') : 'no panel — is Prefabulator connected? ' + (r.error || '');
   } catch { /* server gone; leave the dot */ }
 }
 function startConnPoll() {

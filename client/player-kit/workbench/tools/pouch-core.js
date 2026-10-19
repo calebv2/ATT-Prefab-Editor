@@ -34,7 +34,7 @@ const STORAGE_HASH = 36080;
 // discovered limit. Only quantity 5 has ever been spawned and counted in-game
 // (Flint x5). Anything above VERIFIED_QUANTITY builds fine and is reported as
 // unverified rather than blocked.
-const MAX_QUANTITY = 99;
+const MAX_QUANTITY = 100;
 const VERIFIED_QUANTITY = 5;
 
 class PouchError extends Error { }

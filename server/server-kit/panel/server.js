@@ -1,20 +1,10 @@
 #!/usr/bin/env node
-// ATT Prefab Editor — loopback web panel over the PrefabEditorCore console pipe.
+// ATT Prefab Editor — loopback admin panel.
 //
 //   node panel/server.js            # 127.0.0.1:1766 (PANEL_PORT / --port to change)
 //
-// LOOPBACK ONLY, by construction: the listener binds 127.0.0.1 and refuses any
-// other bind host. Nothing new is exposed — remote players can use an SSH tunnel
-// or a private Tailscale Serve proxy to this loopback listener:
-//
-//   ssh -L 1766:127.0.0.1:1766 user@your-server   ->   http://localhost:1766
-//
-// Auth to the game console: a fresh RS256 token signed from
-// UserData/att_console/cli/<kid>.priv.xml (ATT_CONSOLE_DIR et al. respected),
-// POSTed to /console on the port in console_port.txt (default 1764). The panel
-// itself has no login. Its listener binds loopback only; the Host guard accepts
-// loopback and *.ts.net for Tailscale Serve. Use Tailscale ACLs or SSH access as
-// the admin gate, since anyone who can reach the panel has full console power.
+// Loopback only. Prefabulator supplies the authenticated Tavern console transport.
+// The local listener is not a public server endpoint.
 //
 // Endpoints (all JSON):
 //   GET  /api/health                     signer + console reachability
@@ -46,6 +36,10 @@
 //   POST /api/edit/tostring { id }                    save string of one entity (one-shot)
 //   POST /api/edit/time { time }                      set time of day
 //   POST /api/edit/kick { player }                    kick an online player
+//   POST /api/edit/kill { player }                    set an online player's health to zero
+//   POST /api/edit/ban { player, hours, reason }       blacklist account + disconnect (0 hours = permanent)
+//   GET  /api/edit/bans                               persistent mod-managed blacklist
+//   POST /api/edit/unban { identifier }                remove a blacklist entry
 //   POST /api/edit/teleport-player { player, destination } move between players
 //   GET  /api/infoboards                              LiveInfoBoards registry
 //   POST /api/infoboards/update { key, text, rotation } edit one board
@@ -129,6 +123,18 @@ function coord(v, what) {
     const n = num(v, what);
     if (Math.abs(n) > 100000) { throw new PanelError(what + ' is outside the world (|v| > 100000)'); }
     return String(Math.round(n * 1000) / 1000);
+}
+
+function teleporterCoord(v, what) {
+    if (typeof v !== 'number' || !Number.isFinite(v)) throw new PanelError(what + ' must be a finite number');
+    return coord(v, what);
+}
+
+function tradeEntityId(value) {
+    const text = String(value == null ? '' : value);
+    if (!/^\d+$/.test(text) || !Number.isSafeInteger(Number(text)) || Number(text) < 1 || Number(text) > 4294967295)
+        throw new PanelError('id must be a positive entity ID');
+    return Number(text);
 }
 
 function intId(v, what) {
@@ -258,7 +264,69 @@ const builders = {
     spawnString: (player, s) => 'spawn string ' + nameOrId(player, 'player') + ' ' + saveString(s, 'string'),
     editPlayers: () => 'edit players',
     adminSetTime: (b) => adminTimeCommand(b),
+    serverSetting: (b) => {
+        const toggles = ['DropAllOnDeath','IsPVPEnabled','HungerDealsDamage'];
+        const numbers = ['RespawnTimeSeconds','TimeSpeedMultiplier','XPX','DamageX','PVPMultiplier','PVPCrippleMultiplier','HungerTick','CommunityStorageMultiplier'];
+        if (toggles.includes(b.name)) {
+            if (typeof b.value !== 'boolean') throw new PanelError('Choose On or Off');
+        } else if (numbers.includes(b.name)) {
+            if (typeof b.value !== 'number' || !Number.isFinite(b.value) || b.value < 0 || b.value > 3.402823466e38)
+                throw new PanelError('Enter a finite, non-negative number');
+        } else throw new PanelError('Unknown server setting');
+        return 'settings changesetting server ' + b.name + ' ' + b.value;
+    },
+    adminBroadcast: (b) => {
+        if (typeof b.message !== 'string' || !b.message.trim() || b.message.length > 500)
+            throw new PanelError('Enter a message of 1-500 characters');
+        return 'edit broadcast ' + Buffer.from(b.message, 'utf8').toString('base64');
+    },
+    adminSpawn: (b) => {
+        for (const key of ['x','y','z']) if (typeof b[key] !== 'number' || !Number.isFinite(b[key]) || Math.abs(b[key]) > 3.402823466e38)
+            throw new PanelError('Enter three finite coordinates');
+        return 'edit setserverspawn ' + b.x + ' ' + b.y + ' ' + b.z;
+    },
     editKick: (b) => 'edit kick ' + nameOrId(b.player, 'player'),
+    editKill: (b) => 'edit kill ' + nameOrId(b.player, 'player'),
+    editBan: (b) => {
+        const rawHours = b.hours == null ? '0' : String(b.hours);
+        if (!/^\d+$/.test(rawHours)) throw new PanelError('hours must be a whole number');
+        const hours = parseInt(rawHours, 10);
+        if (hours > 87600) throw new PanelError('hours must be 0 (permanent) or at most 87600');
+        const reason = b.reason == null || String(b.reason).trim() === ''
+            ? 'Server administrator ban.' : String(b.reason);
+        if (reason.length > 300) throw new PanelError('reason must be at most 300 characters');
+        const encoded = Buffer.from(reason, 'utf8').toString('base64');
+        return 'edit ban ' + nameOrId(b.player, 'player') + ' ' + hours + ' ' + encoded;
+    },
+    editBans: () => 'edit bans',
+    editUnban: (b) => {
+        const identifier = String(b.identifier == null ? '' : b.identifier);
+        if (!/^\d+$/.test(identifier) || Number(identifier) <= 0) {
+            throw new PanelError('identifier must be a positive account ID');
+        }
+        return 'edit unban ' + identifier;
+    },
+    editNudge: (b) => {
+        if (b.direction !== 1 && b.direction !== -1) throw new PanelError('direction must be 1 or -1');
+        return 'edit nudge ' + nameOrId(b.player, 'player') + ' ' + b.direction;
+    },
+    editTradeInfo: (b) => 'edit tradeinfo ' + tradeEntityId(b.id),
+    editTradeAddStock: (b) => {
+        if (!Number.isInteger(b.amount) || b.amount < 1 || b.amount > 2147483647)
+            throw new PanelError('amount must be a positive whole number within the game limit');
+        return 'edit tradeaddstock ' + tradeEntityId(b.id) + ' ' + tradeEntityId(b.itemHash) + ' ' + b.amount;
+    },
+    editTradeSet: (b) => {
+        const limits = { itemHash: 4294967295, price: 1000000, perPurchase: 2147483647, stock: 2147483647 };
+        for (const [key, max] of Object.entries(limits)) {
+            if (!Number.isInteger(b[key]) || b[key] < 1 || b[key] > max)
+                throw new PanelError(key + ' must be a whole number from 1 to ' + max);
+        }
+        if (b.stock < b.perPurchase) throw new PanelError('stock must cover at least one purchase');
+        return 'edit tradeset ' + tradeEntityId(b.id) + ' ' + b.itemHash + ' ' + b.price + ' ' + b.perPurchase + ' ' + b.stock;
+    },
+    editLinkTeleporter: (b) => 'edit linkteleporter ' + intId(b.id, 'id') + ' '
+        + teleporterCoord(b.x, 'x') + ' ' + teleporterCoord(b.y, 'y') + ' ' + teleporterCoord(b.z, 'z'),
     editTeleportPlayer: (b) => 'edit teleport ' + nameOrId(b.player, 'player')
         + ' ' + nameOrId(b.destination, 'destination player'),
     editScan: (b) => 'edit scan ' + nameOrId(b.player, 'player') + ' ' + coord(b.radius == null ? 30 : b.radius, 'radius'),
@@ -449,14 +517,16 @@ function createServer(opts) {
     }
 
     const server = http.createServer(async (req, res) => {
+        if (opts.requireSameOrigin && req.headers.origin && req.headers.origin !== 'http://' + req.headers.host) {
+            return json(res, 403, { error: 'cross-origin console requests are not allowed' });
+        }
         const url = new URL(req.url, 'http://localhost');
         const route = req.method + ' ' + url.pathname;
 
         // DNS-rebinding guard: a hostile page can point its own hostname at
         // 127.0.0.1 and script requests here — the Host header gives it away.
         const hostname = String(req.headers.host || '').replace(/:\d+$/, '').toLowerCase();
-        if (hostname !== '127.0.0.1' && hostname !== 'localhost' && hostname !== '[::1]'
-            && !hostname.endsWith('.ts.net')) {
+        if (hostname !== '127.0.0.1' && hostname !== 'localhost' && hostname !== '[::1]') {
             return json(res, 403, { error: 'panel accepts loopback requests only' });
         }
         // Cross-site form posts can reach localhost without CORS ever applying;
@@ -499,6 +569,14 @@ function createServer(opts) {
                     return json(res, 200, { count: results.length, results });
                 }
 
+                case 'POST /api/server-settings':
+                    return run(res, builders.serverSetting(await readBody(req)));
+                case 'POST /api/admin/broadcast':
+                    return runEdit(res, builders.adminBroadcast(await readBody(req)));
+                case 'POST /api/admin/spawn':
+                    return runEdit(res, builders.adminSpawn(await readBody(req)));
+                case 'POST /api/admin/spawn/reset':
+                    return runEdit(res, 'edit resetserverspawn');
                 case 'POST /api/command':
                     return run(res, cleanCommand((await readBody(req)).command));
                 case 'POST /api/spawn':
@@ -532,9 +610,48 @@ function createServer(opts) {
                         throw e;
                     }
                 }
+                case 'POST /api/edit/kill': {
+                    try { return runEdit(res, builders.editKill(await readBody(req))); }
+                    catch (e) {
+                        if (e instanceof PanelError) return json(res, 200, { ok: false, error: e.message });
+                        throw e;
+                    }
+                }
+                case 'POST /api/edit/ban': {
+                    try { return runEdit(res, builders.editBan(await readBody(req))); }
+                    catch (e) {
+                        if (e instanceof PanelError) return json(res, 200, { ok: false, error: e.message });
+                        throw e;
+                    }
+                }
+                case 'GET /api/edit/bans':
+                    return runEdit(res, builders.editBans());
+                case 'POST /api/edit/unban': {
+                    try { return runEdit(res, builders.editUnban(await readBody(req))); }
+                    catch (e) {
+                        if (e instanceof PanelError) return json(res, 200, { ok: false, error: e.message });
+                        throw e;
+                    }
+                }
                 case 'POST /api/edit/teleport-player': {
                     try { return runEdit(res, builders.editTeleportPlayer(await readBody(req))); }
                     catch (e) {
+                        if (e instanceof PanelError) return json(res, 200, { ok: false, error: e.message });
+                        throw e;
+                    }
+                }
+                case 'POST /api/edit/trade-info':
+                case 'POST /api/edit/trade-add-stock':
+                case 'POST /api/edit/trade-set':
+                case 'POST /api/edit/nudge':
+                case 'POST /api/edit/link-teleporter': {
+                    try {
+                        const builder = { '/api/edit/trade-info': builders.editTradeInfo,
+                            '/api/edit/trade-add-stock': builders.editTradeAddStock,
+                            '/api/edit/trade-set': builders.editTradeSet, '/api/edit/nudge': builders.editNudge,
+                            '/api/edit/link-teleporter': builders.editLinkTeleporter }[url.pathname];
+                        return runEdit(res, builder(await readBody(req)));
+                    } catch (e) {
                         if (e instanceof PanelError) return json(res, 200, { ok: false, error: e.message });
                         throw e;
                     }
@@ -587,6 +704,11 @@ function createServer(opts) {
                     return runEdit(res, builders.editSpawnAt(await readBody(req)));
 
                 case 'GET /api/infoboards': {
+                    if (opts.remoteInfoBoards) {
+                        const r = await pipe.send('edit infoboards');
+                        if (r.exception) return json(res, 200, { ok: false, error: r.exception });
+                        return json(res, 200, JSON.parse(r.text));
+                    }
                     try {
                         const loaded = readInfoBoardDocument(infoBoardsFile);
                         const boards = Object.keys(loaded.boards).sort().map((key) => {
@@ -600,6 +722,12 @@ function createServer(opts) {
                     }
                 }
                 case 'POST /api/infoboards/update': {
+                    if (opts.remoteInfoBoards) {
+                        const body = await readBody(req, 150000);
+                        const r = await pipe.send('edit infoboardset ' + Buffer.from(JSON.stringify(body), 'utf8').toString('base64'));
+                        if (r.exception) return json(res, 200, { ok: false, error: r.exception });
+                        return json(res, 200, JSON.parse(r.text));
+                    }
                     try { return json(res, 200, updateInfoBoardDocument(infoBoardsFile, await readBody(req, 150000))); }
                     catch (e) {
                         if (e instanceof PanelError) return json(res, 200, { ok: false, error: e.message });
@@ -668,10 +796,11 @@ if (require.main === module) {
     const argPort = process.argv.indexOf('--port');
     const port = argPort !== -1 ? parseInt(process.argv[argPort + 1], 10)
         : parseInt(process.env.PANEL_PORT || '', 10) || DEFAULT_PANEL_PORT;
-    const server = createServer({ consoleDir: process.env.ATT_CONSOLE_DIR });
+    const stateDir = process.env.PANEL_STATE_DIR || path.join(__dirname, 'state');
+    const server = createServer({ consoleDir: process.env.ATT_CONSOLE_DIR, stateDir });
     start(server, port).then((p) => {
         console.log('[panel] up on http://127.0.0.1:' + p
-            + ' (remote? tunnel in with: ssh -L ' + p + ':127.0.0.1:' + p + ' user@your-server)');
+            + ' (connect through Prefabulator in Tavern Launcher)');
     }).catch((e) => {
         console.error('[panel] failed to start: ' + e.message);
         process.exit(1);

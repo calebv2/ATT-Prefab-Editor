@@ -44,9 +44,9 @@ function locateKey(consoleDir) {
     try {
         priv = fs.readdirSync(cliDir).filter((f) => f.endsWith('.priv.xml'));
     } catch (e) {
-        throw new Error('console key dir not found: ' + cliDir + ' (' + e.message + ')');
+        throw new Error('Cannot read the server console key folder: ' + cliDir + '\nStart the game server after installing PrefabEditorCore and wait for it to finish loading, then restart this panel.\nThe mod creates keys automatically on a fresh server. If this folder is wrong, rerun Setup Server and choose the game folder your server actually uses; then use its generated start-panel.bat. On Linux, rerun install-linux.sh with the correct server folder.\nIf the folder still does not appear, check the server MelonLoader/Latest.log for PrefabEditorCore loading errors.\nTechnical detail: ' + e.message);
     }
-    if (priv.length === 0) { throw new Error('no *.priv.xml in ' + cliDir); }
+    if (priv.length === 0) { throw new Error('No private console key (*.priv.xml) found in ' + cliDir + '\nStart/restart the game server with PrefabEditorCore installed, wait for it to load, then restart the panel.\nIf this is an existing server with trusted keys, restore its matching private key from the owner backup; existing trust is preserved. Do not delete trusted keys to force regeneration.\nPlayers do not need this file. Do not send private keys with connection files.'); }
     if (priv.length > 1) { throw new Error('multiple keys in ' + cliDir + '; set ATT_CONSOLE_KID'); }
     return { kid: priv[0].replace(/\.priv\.xml$/, ''), file: path.join(cliDir, priv[0]) };
 }
