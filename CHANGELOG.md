@@ -1,5 +1,9 @@
 # Changelog
 
+## Prefabulator 1.0.7 - 2026-10-20
+
+- Start destination chunk loading on platform contact and wait for the native finished activation before moving the player. Keep client acknowledgement, server readiness and floor checks. Server core 1.6.1; player mod remains 2.3.0.
+
 ## 1.0.6 (2026-10-19)
 
 - Add owner-managed personal admin tokens, revocation and per-tab server permissions. Active sessions use current permissions; revocation and token replacement disconnect them. Store only token hashes. Player mod 2.3.0 and server core 1.6.0 are required together.

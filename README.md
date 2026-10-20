@@ -24,3 +24,5 @@ python tools/package_tavern_addon.py --output release --node "C:/Program Files/n
 The packaging script includes the staged mods, launcher add-on, local editor runtime, required assets and third-party license notices. Player and server ZIPs each contain one START HERE.txt. Runtime executables and installed dependencies belong in release assets, not source commits.
 
 Owners can use Manage Admin Access in Prefabulator to issue personal admin tokens, select allowed tabs, change permissions or revoke access. Update both packages to 1.0.6 first. All tabs never grants access management.
+
+Version 1.0.7 fixes linked teleporter timing: destination chunks start loading on contact, and travel waits for the native platform animation to finish. The server mod update is required; player mod remains 2.3.0.

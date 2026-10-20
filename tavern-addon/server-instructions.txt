@@ -48,3 +48,8 @@ local models; server edits still require the appropriate editing tabs.
 Update BOTH packages and restart the server and game before using this.
 Admin profiles persist in UserData/PrefabEditor/admin-access.json (only token hashes).
 Keep this file with your server backups; do not share it in release packages.
+
+TELEPORTER FIX IN 1.0.7
+Linked teleporters preload destination chunks on contact, let the platform
+animation finish, then move the player once the destination is safe. Replace
+the server DLL with core 1.6.1 and restart the server to get this fix.

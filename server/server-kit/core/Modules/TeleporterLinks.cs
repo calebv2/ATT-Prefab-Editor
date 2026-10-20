@@ -11,7 +11,7 @@ using UnityEngine;
 namespace PrefabEditor.Modules
 {
     // Customization platforms have no TeleportationPoint. Intercept their existing
-    // server request, preserving the platform animation and native client loading.
+    // server request after the platform animation finishes. Contact only preloads.
     internal static class TeleporterLinks
     {
         internal sealed class Link
@@ -23,8 +23,6 @@ namespace PrefabEditor.Modules
         const string PatchId = "prefabeditor.teleporter-links";
         static List<Link> links = new List<Link>();
         static readonly Dictionary<NetworkEntity, Link> bound = new Dictionary<NetworkEntity, Link>();
-        sealed class ContactTravel { public NetworkEntity Root; public float Until; }
-        static readonly Dictionary<PlayerController, ContactTravel> contacts = new Dictionary<PlayerController, ContactTravel>();
         static string file;
         static string unavailable = "teleporter support has not initialized";
         static Action<string> log;
@@ -69,7 +67,6 @@ namespace PrefabEditor.Modules
             if (harmony != null) harmony.UnpatchSelf();
             harmony = null;
             bound.Clear();
-            contacts.Clear();
             links.Clear();
             unavailable = "teleporter support has stopped";
         }
@@ -137,13 +134,9 @@ namespace PrefabEditor.Modules
             NetworkEntity root = Root(platform);
             Link link = Find(root);
             if (link == null) return false;
-            ContactTravel contact;
-            // The native countdown/fade can finish after our contact trip. Consume
-            // that late activation rather than teleporting twice or opening customization.
-            if (contacts.TryGetValue(player, out contact) && contact.Root == root && Time.unscaledTime < contact.Until) return true;
             bound[root] = link;
-            // SafeTeleport gates this call on native client chunk acknowledgement
-            // and a server floor check before PlayerEffectController moves the client.
+            // Native finished activation permits the move. SafeTeleport also waits
+            // for client chunk acknowledgement and a solid destination floor.
             player.ForceTeleportTo(new Vector3(link.X, link.Y, link.Z));
             return true;
         }
@@ -157,9 +150,6 @@ namespace PrefabEditor.Modules
             if (link == null) return;
             try {
                 if (!SafeTeleport.Preload(player, new Vector3(link.X, link.Y, link.Z), platform)) return;
-                foreach (var item in new List<KeyValuePair<PlayerController, ContactTravel>>(contacts))
-                    if (item.Key == null || Time.unscaledTime >= item.Value.Until) contacts.Remove(item.Key);
-                contacts[player] = new ContactTravel { Root = root, Until = Time.unscaledTime + 60f };
             }
             catch (Exception e) { if (log != null) log("Contact preload unavailable: " + e.Message); }
         }

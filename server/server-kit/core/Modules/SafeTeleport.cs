@@ -97,7 +97,7 @@ namespace PrefabEditor.Modules
             Trip trip = new Trip { Player = player, Body = __instance, Manager = player.ChunkManager,
                 Target = target, Destination = __0, Origin = __instance.transform.position,
                 OriginChunk = player.ChunkManager.Chunk, OriginChunks = new List<Chunk>(player.LoadedChunks).ToArray(),
-                Deadline = Time.unscaledTime + 30f, PreloadOwner = owner, MoveRequested = true };
+                Deadline = Time.unscaledTime + 30f, PreloadOwner = owner, MoveRequested = owner == null };
             trips.Add(trip.Manager, trip);
             try {
                 foreach (Chunk chunk in trip.OriginChunks) PinChunk(chunk);
@@ -197,8 +197,11 @@ namespace PrefabEditor.Modules
                 trips.Remove(trip.Manager); Release(trip); return;
             }
             if (trip.Error != null) { Cancel(trip, trip.Error); return; }
-            if (Time.unscaledTime >= trip.Deadline) { Cancel(trip, "destination did not finish loading with solid ground within 30 seconds"); return; }
+            if (Time.unscaledTime >= trip.Deadline) { Cancel(trip, "destination did not finish loading with solid ground within 30 seconds", trip.MoveRequested); return; }
             if (trip.Loading.IsFaulted || trip.Loading.IsCanceled) { Cancel(trip, "client chunk loading failed"); return; }
+            // Contact loads the destination while the native platform animation
+            // runs. Only the platform's finished event requests the actual move.
+            if (!trip.MoveRequested) return;
             if (!trip.Loading.IsCompleted || !trip.Target.IsFullyLoaded) return;
             Physics.SyncTransforms();
             if (!HasFloor(trip.Destination)) return;
