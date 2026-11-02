@@ -1,3 +1,10 @@
+## 1.0.17 - Use the server already selected in Tavern Launcher
+
+- Prefabulator follows the Client launcher server selection instead of asking users to type the same address twice. A blank launcher address means this computer (127.0.0.1).
+- Moderator codes select their embedded server in the launcher before connecting. Saved owner tokens are only restored for the same server.
+- Show the connected and selected server addresses immediately when they differ, with Change server / reconnect on the connection dashboard. Keep the launch-time server check to avoid editing a different server.
+- Add-on-only update; player DLL remains 2.3.5 and server DLL remains 1.6.5. No server restart is needed.
+
 ## 1.0.16 - Restore the button in packaged Tavern launchers
 
 - Remove the uuid import introduced in 1.0.15, which is unavailable in the shipped Tavern client executable and prevented the add-on from loading. Use the already available os.urandom for unique session and temporary-file identifiers.

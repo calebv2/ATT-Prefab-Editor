@@ -16,8 +16,9 @@ INSTALL OR UPDATE
    Keep the whole addons/prefab_editor folder, including payload.
 4. Start the server normally. Open the player launcher, enable Prefabulator
    under Addons if needed, and restart the launcher if asked.
-5. Open Prefabulator. Connect with your server address and owner console token,
-   or paste your personal moderator code. Wait for CONNECTED.
+5. Choose your server in the CLIENT launcher, then open Prefabulator.
+   It uses that address automatically. Enter your owner console token or
+   paste your personal moderator code and Connect. Wait for CONNECTED.
 6. Launch the player game, join your server, and press F1 to open the editor.
    Keep Tavern Launcher and Prefabulator open; minimizing them is fine.
 
@@ -44,11 +45,15 @@ colored squares for two axes, or the white center square for free movement.
 Drag rings to rotate. Esc cancels a handle drag.
 
 CONNECTION TROUBLE
-Use the exact same server address in Prefabulator and the game launcher.
+Choose the server in the CLIENT launcher first. Prefabulator uses that address
+automatically; you do not type it twice. Blank means this computer (127.0.0.1).
+A moderator code also selects its own server in the launcher when you Connect.
+If you change servers after connecting, click Change server / reconnect before
+joining and use access for that server. Saved tokens stay tied to their server.
 CONNECTED now shows the local connection-file path and editor address.
 Retry editor connection repairs a missing file while its helper is running.
 After connecting, relaunch the player game if it was already open.
-For update 1.0.16, close the player launcher and replace addons/prefab_editor;
+For update 1.0.17, close the player launcher and replace addons/prefab_editor;
 the game DLLs are unchanged. Keep payload, runtime and all included folders.
 
 MISSING PREFABULATOR BUTTON

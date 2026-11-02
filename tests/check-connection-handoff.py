@@ -46,10 +46,10 @@ with tempfile.TemporaryDirectory(prefix='prefab-handoff-') as folder:
     assert status.get().startswith('CONNECTED') and str(target) in details.get() and tracked[0] is active and target.exists()
     # UI must clear CONNECTED after the launch hook closes the helper for a mismatched host.
     _,logs=hook(active,b,'203.0.113.10');assert active.closed and initial.read_bytes()==prior and not target.exists()
-    assert 'different server addresses' in logs[0]
+    assert '127.0.0.1' in logs[0] and '203.0.113.10' in logs[0] and 'Change server / reconnect' in logs[0]
     env.update(busy=[False],window=SimpleNamespace(winfo_exists=lambda:False))
     exec(compile(ast.Module(body=[nested['monitor']],type_ignores=[]),'monitor','exec'),env);env['monitor']()
-    assert not status.get().startswith('CONNECTED') and 'different server addresses' in status.get() and details.get()==''
+    assert not status.get().startswith('CONNECTED') and '203.0.113.10' in status.get() and details.get()==''
     active=bridge(a);active.connection.write_bytes(b'newer session');
     try:active.ensure_connection();raise AssertionError('newer connection was overwritten')
     except RuntimeError:pass
