@@ -44,8 +44,10 @@ class Settings:
     def token(self, data):
         return protect(data["protectedToken"], True) if data.get("protectedToken") else ""
 
-    def save(self, host, token="", remember=False):
+    def save(self, host, token="", remember=False, game_host=None):
         data = {"host": host.strip() or "127.0.0.1"}
+        if game_host:
+            data["gameHost"] = game_host.strip() or "127.0.0.1"
         if remember and token:
             data["protectedToken"] = protect(token)
         self.path.parent.mkdir(parents=True, exist_ok=True)

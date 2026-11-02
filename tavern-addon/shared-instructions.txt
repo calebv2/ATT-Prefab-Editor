@@ -62,3 +62,17 @@ Close the CLIENT launcher, replace addons/prefab_editor beside its EXE, then
 reopen it. Under Addons, enable Prefabulator and Save, then restart the client
 launcher. The Prefabulator button appears beside TavernKeeper. No DLL update,
 server restart or Python installation is needed for this fix.
+
+LOCAL SERVER ON YOUR PLAYING COMPUTER
+If you join using a public/LAN IP but the console only connects on localhost:
+1. Keep the working game server address in the main Client launcher.
+2. Open Prefabulator. Tick "I run this server on THIS computer" before entering
+   the owner console token. The console address becomes 127.0.0.1.
+3. Enter the token and Connect. Optional: Save my access token remembers this
+   pairing for this game server. Keep Prefabulator open, then join and press F1.
+Only tick this if the game server runs on the computer you are using to play.
+Changing game servers clears the pairing and token. Use Change server / reconnect
+if a different server was selected while already connected.
+Update 1.0.18: close the player game and Client launcher, replace only the complete
+addons/prefab_editor folder, reopen and connect before launching the player game.
+The server can stay running; no DLL replacement is needed for this update.

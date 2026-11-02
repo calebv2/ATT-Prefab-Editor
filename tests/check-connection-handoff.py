@@ -40,7 +40,7 @@ with tempfile.TemporaryDirectory(prefix='prefab-handoff-') as folder:
     # Retry uses the existing live helper rather than claiming it is already running.
     (b/'Mods').mkdir();(b/'Mods/PrefabEditor.dll').write_bytes(b'installed');target.unlink()
     status=Value('');details=Value('');tracked=[None]
-    env=dict(ns,status=status,details=details,tracked_bridge=tracked,game=Value(str(b)),window=SimpleNamespace(_connected=True,v_host=Value('127.0.0.1'),v_token=Value('dummy-owner')),background=lambda action,done:status.set(done(action())))
+    env=dict(ns,status=status,details=details,tracked_bridge=tracked,game=Value(str(b)),window=SimpleNamespace(_connected=True,_game_host=None,v_host=Value('127.0.0.1'),v_token=Value('dummy-owner')),background=lambda action,done:status.set(done(action())))
     nested={n.name:n for n in ast.walk(functions['build']) if isinstance(n,ast.FunctionDef)}
     exec(compile(ast.Module(body=[nested['connection_ready'],nested['start_editor']],type_ignores=[]),'retry','exec'),env);env['start_editor']()
     assert status.get().startswith('CONNECTED') and str(target) in details.get() and tracked[0] is active and target.exists()

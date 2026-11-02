@@ -1,3 +1,10 @@
+## 1.0.18 - Local console with a separate game address
+
+- Add an explicit local-console option for people who host the server on their playing computer but join through a public or LAN address. Join the selected game server while connecting its console through 127.0.0.1.
+- Save the console/game pairing together with optional encrypted credentials. Reuse and reconnect only for the paired game address; changing servers clears the local override and credential. Moderator codes select their own destination.
+- Freeze the route during connection so changing the launcher address or editing the token mid-connection cannot retarget the authenticated session.
+- Add-on-only update; player DLL remains 2.3.5 and server DLL remains 1.6.5. No server restart or port forwarding is needed for this local-console option.
+
 ## 1.0.17 - Use the server already selected in Tavern Launcher
 
 - Prefabulator follows the Client launcher server selection instead of asking users to type the same address twice. A blank launcher address means this computer (127.0.0.1).
