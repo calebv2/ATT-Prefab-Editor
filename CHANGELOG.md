@@ -1,3 +1,9 @@
+## 1.0.16 - Restore the button in packaged Tavern launchers
+
+- Remove the uuid import introduced in 1.0.15, which is unavailable in the shipped Tavern client executable and prevented the add-on from loading. Use the already available os.urandom for unique session and temporary-file identifiers.
+- Test enabled-addon loading, button creation and opening the connection form with uuid imports deliberately blocked. Keep descriptor ownership and atomic writes intact.
+- Add-on-only fix; player DLL remains 2.3.5 and server DLL remains 1.6.5. No server restart is needed.
+
 ## 1.0.15 - Repair the launcher-to-game connection handoff
 
 - Re-publish a live helper's descriptor to the actual game folder before reusing a connection for launch, including sessions without saved access tokens.
