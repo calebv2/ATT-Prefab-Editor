@@ -65,6 +65,7 @@ with tempfile.TemporaryDirectory() as temp:
             self.closed = False
             self.process = SimpleNamespace(poll=lambda: None)
         def start(self): events.append('bridge')
+        def ensure_connection(self, game=None): pass
         def close(self): self.closed = True
     addon.WsConsoleClient = Client; addon.Bridge = Bridge
     launcher = SimpleNamespace(v_ip=SimpleNamespace(get=lambda: 'localhost'),

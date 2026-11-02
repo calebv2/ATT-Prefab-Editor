@@ -1,3 +1,11 @@
+## 1.0.15 - Repair the launcher-to-game connection handoff
+
+- Re-publish a live helper's descriptor to the actual game folder before reusing a connection for launch, including sessions without saved access tokens.
+- Retry editor connection now verifies/repairs the descriptor for a running helper. Write descriptors atomically, track ownership per target folder, and avoid deleting a newer session's file on shutdown.
+- Monitor the bridge belonging to the window even after it closes, clearing stale CONNECTED text. Explain a mismatch between the game join address and console address instead of silently dropping the helper.
+- Display the local descriptor path and helper address after connection. Live monitors can repair a missing owned descriptor without recreating the helper.
+- Add-on-only fix. Player DLL remains 2.3.5; server DLL remains 1.6.5. Shared-folder and separate packages remain available.
+
 ## 1.0.14 - All-in-one shared Mods package
 
 - Add an All-in-One-Shared-Mods ZIP alongside the separate player and server packages. Includes both DLLs in Mods, player catalog/images, and the complete launcher add-on with both DLLs in its update payload. One START HERE.txt explains shared-folder setup.

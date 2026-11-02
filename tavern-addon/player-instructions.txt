@@ -87,3 +87,11 @@ and use Install / update player mod before playing. This ZIP includes player
 mod 2.3.5 with detailed import errors. Keep your connection settings.
 The server needs core 1.6.5 for the standalone-fixture deletion fix.
 Existing teleporter links remain saved; no relinking is needed.
+
+CONNECTION TROUBLE
+Use the exact same server address in Prefabulator and the game launcher.
+CONNECTED now shows the local connection-file path and editor address.
+Retry editor connection repairs a missing file while its helper is running.
+After connecting, relaunch the player game if it was already open.
+For update 1.0.15, close the player launcher and replace addons/prefab_editor;
+the game DLLs are unchanged. Keep payload, runtime and all included folders.
