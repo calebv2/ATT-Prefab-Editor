@@ -471,7 +471,7 @@ namespace PrefabEditor.Modules
             {
                 Vector3 point = destination.PlayerController.transform.position
                     + destination.PlayerController.transform.right * 1.5f;
-                target.PlayerController.ForceTeleportTo(point);
+                SafeTeleport.Request(target.PlayerController,point);
                 return "{\"ok\":true,\"note\":\"Loading destination before teleporting " + EditJson.Esc(SafeUsername(target))
                     + " beside " + EditJson.Esc(SafeUsername(destination)) + "\"}";
             }
@@ -867,14 +867,14 @@ namespace PrefabEditor.Modules
 
         // Deliberately two-step: without the literal word `confirm` it only
         // answers WHAT would be deleted (blueprint-place idiom). Id-targeted,
-        // never area. Mounted parts refuse so a wall's fittings can't be eaten
-        // by mistake.
+        // never area. Externally mounted parts refuse so a wall's fittings can't
+        // be eaten by mistake; a standalone fixture's world anchor is deletable.
         [Command("delete", "Delete an entity - two-step: edit delete <id>, then edit delete <id> confirm")]
         public static string Delete(uint id, string confirm = null)
         {
             NetworkEntity root;
             string err = ResolveRoot(id, out root);
-            if (err == null) err = VetoMove(root);
+            if (err == null) err = VetoDelete(root);
             if (err != null) return EditJson.Err(err);
             string record = EntityRecord(root, root.transform.position);
             HistorySnapshot before;
@@ -905,7 +905,7 @@ namespace PrefabEditor.Modules
             List<HistorySnapshot> before = new List<HistorySnapshot>();
             for (int i = 0; i < roots.Count; i++)
             {
-                err = VetoMove(roots[i]);
+                err = VetoDelete(roots[i]);
                 if (err != null) return EditJson.Err("delete stopped before changing anything: " + err);
                 HistorySnapshot snapshot;
                 err = CaptureSerialized(roots[i], out snapshot);
@@ -1341,7 +1341,7 @@ namespace PrefabEditor.Modules
                 NetworkEntity root;
                 string err = ResolveRoot(from[i].Id, out root);
                 if (err != null) return err;
-                err = VetoMove(root);
+                err = !to[i].Exists ? VetoDelete(root) : VetoMove(root);
                 if (err != null) return "#" + from[i].Id + " cannot be changed now: " + err;
             }
 
@@ -1574,14 +1574,26 @@ namespace PrefabEditor.Modules
         // that is what the editor is for.
         static string VetoMove(NetworkEntity root)
         {
-            if (IsPlayer(root)) return "that's a player - use `player teleport`";
+            return VetoAttachment(root, true);
+        }
+
+        static string VetoDelete(NetworkEntity root)
+        {
+            return VetoAttachment(root, false);
+        }
+
+        static string VetoAttachment(NetworkEntity root, bool moving)
+        {
+            if (IsPlayer(root)) return moving ? "that's a player - use `player teleport`" : "that's a player - players cannot be deleted";
             Pickup p = root.CommonPickup;
             if (p != null)
             {
                 try { if (p.IsDocked) return "entity " + root.Identifier + " is docked in storage - take it out first"; } catch { }
                 try { if (p.IsInteractedWith) return "entity " + root.Identifier + " is in someone's hand"; } catch { }
             }
-            if (IsMounted(root)) return "entity " + root.Identifier + " is mounted on another item - move the base";
+            if (IsMounted(root, moving)) return "entity " + root.Identifier + (moving
+                ? " is mounted on another item or anchored to the world - move the base"
+                : " is mounted on another item - select its base prefab to delete it");
             return null;
         }
 
@@ -1624,7 +1636,7 @@ namespace PrefabEditor.Modules
         // (a fresh chest refused both move and delete). Mounted = a joint
         // that anchors OUTSIDE this prefab root: connectedBody under another root,
         // under no NetworkEntity at all, or missing entirely (pinned to the world).
-        static bool IsMounted(NetworkEntity root)
+        static bool IsMounted(NetworkEntity root, bool includeWorldAnchors = true)
         {
             try
             {
@@ -1635,7 +1647,14 @@ namespace PrefabEditor.Modules
                     Joint j = joints[i];
                     if (j == null) continue;
                     Rigidbody other = j.connectedBody;
-                    if (other == null) return true;
+                    if (other == null)
+                    {
+                        // A joint with no connected body pins this prefab to the
+                        // world. That blocks movement, but does not attach it to
+                        // another item and must not block undoable root deletion.
+                        if (includeWorldAnchors) return true;
+                        continue;
+                    }
                     NetworkEntity oe = other.GetComponentInParent<NetworkEntity>();
                     NetworkEntity oroot = (oe != null && oe.PrefabRoot != null) ? oe.PrefabRoot : oe;
                     if (oroot != root) return true;

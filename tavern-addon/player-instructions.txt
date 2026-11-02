@@ -3,13 +3,15 @@ PREFABULATOR - PLAYER LAUNCHER ADD-ON + IN-GAME MOD
 FOR THE COMPUTER YOU PLAY ON. Both parts are included in this ZIP.
 The launcher only connects the editor. All editing happens IN THE GAME.
 The server owner needs the separate Server-Mod-Only package.
+If server and player share ONE game/Mods folder, use All-in-One-Shared-Mods instead.
 
 FIRST TIME
 1. Close Tavern Launcher. Extract this ZIP beside the CLIENT launcher EXE.
    Merge addons if asked. Keep all of addons/prefab_editor, including payload.
 2. Open the launcher > Addons, enable Prefabulator, then restart the launcher.
 3. Click Prefabulator on the MAIN launcher, beside TavernKeeper.
-4. Enter your server address and your personal admin token (owners use their console token). Your address is saved.
+4. Paste your moderator code into the access field and click Connect. It fills
+   in your server address. Owners enter their address and owner console token.
    Optional: check Save my access token to auto-connect on future launches.
    Click Connect. Saved tokens are encrypted for your Windows account.
 5. If asked, close the game and click Install / update player mod. The mod
@@ -25,6 +27,12 @@ Without a saved token: open Prefabulator, enter your token and Connect before pl
 To stop saving: uncheck Save my access token (or click Forget saved access token
 if already connected). Your server address stays saved.
 Launching outside Tavern does not start the connection automatically.
+
+MOVING ITEMS
+Click an item to select it, then release the mouse. Drag an arrow for one axis,
+a colored square between arrows for two axes, or the white center square for
+free movement across your camera view. Object bodies only select. Drag a ring
+to rotate. Esc cancels a handle drag.
 
 If a server update is requested, the owner copies PrefabEditorCore.dll from
 Server-Mod-Only into the SERVER game's Mods folder and restarts the server.
@@ -47,18 +55,35 @@ These Admin features require Server-Mod-Only 1.0.5 (core 1.5.2) or newer.
 PERSONAL ADMIN ACCESS (requires player and server package 1.0.6 or newer)
 Owner: connect Prefabulator with your existing owner console token. Click
 Manage Admin Access, then New admin. Enter their name, tick the tabs they
-may use (or All tabs), and click Create token. Copy the token shown once
+may use (or All tabs), and click Create code. Copy the code shown once
 and send it privately to that admin. Keep your owner console token private.
 
-Admin: connect Prefabulator with the server address and your personal token
-in the Access Token field. Optional: tick Save my access token to reconnect
+Moderator: paste your code into the access field and click Connect.
+The code supplies the server address and your personal token automatically. Optional: tick Save my access token to reconnect
 when launching that server. Press F1 in game; only your allowed tabs appear.
 
 Owner: select an admin to change permissions or Revoke selected admin.
 Revoking disconnects their active sessions and blocks future connections.
-Replace selected token invalidates the old token and issues a new one.
+Replace selected code invalidates the old credential and issues a new code.
 All tabs does not allow managing admin access. Undo/redo requires Select,
 Arrange and Build because those tools share history. Object Loader imports
 local models; server edits still require the appropriate editing tabs.
 
 Update BOTH packages and restart the server and game before using this.
+
+VERSION 1.0.8 - SINGLE COMMAND EXECUTION
+Owner editor commands use the authenticated HTTP console on TCP port 1761.
+Moderator commands and owner access management use the authenticated WebSocket
+connection so personal tab permissions and revocation remain enforced.
+This bypasses duplicate command execution observed on the WebSocket connection.
+Requests are not automatically retried after errors. Refresh before retrying.
+The launcher still uses its existing connection form and encrypted saved token.
+Keep one addons/prefab_editor folder and one Mods/PrefabEditor.dll. Both are
+required parts of the same editor. Do not reinstall the older 1.0.7 ZIP.
+
+UPDATING
+Close the game and launcher, replace the add-on files, then open Prefabulator
+and use Install / update player mod before playing. This ZIP includes player
+mod 2.3.5 with detailed import errors. Keep your connection settings.
+The server needs core 1.6.5 for the standalone-fixture deletion fix.
+Existing teleporter links remain saved; no relinking is needed.

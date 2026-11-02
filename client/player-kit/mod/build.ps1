@@ -33,6 +33,7 @@ if (-not (Test-Path $ml))  { throw "MelonLoader\net35 not found under $GamePath 
 $refs = @()
 Get-ChildItem (Join-Path $mgd '*.dll') | ForEach-Object { $refs += "/r:$($_.FullName)" }
 $refs += "/r:$(Join-Path $ml 'MelonLoader.dll')"
+$refs += "/r:$(Join-Path $ml '0Harmony.dll')"
 
 $files = @(Get-ChildItem $src -Filter '*.cs' | ForEach-Object { $_.FullName })
 

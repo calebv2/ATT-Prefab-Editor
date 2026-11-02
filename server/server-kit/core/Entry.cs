@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using Alta.Console;
 using MelonLoader;
 
-[assembly: MelonInfo(typeof(PrefabEditor.Entry), "PrefabEditorCore", "1.6.1", "ATT Prefab Editor")]
+[assembly: MelonInfo(typeof(PrefabEditor.Entry), "PrefabEditorCore", "1.6.5", "ATT Prefab Editor")]
 [assembly: MelonGame(null, null)]
 [assembly: RuntimeCompatibility(WrapNonExceptionThrows = true)]
 
@@ -23,10 +23,27 @@ namespace PrefabEditor
         CoreContext _ctx;
         TavernModule[] _modules;
         bool _up;
+        bool _waitingForServer, _bootAttempted;
 
         public override void OnInitializeMelon()
         {
-            MelonEvents.OnApplicationLateStart.Subscribe(Boot, 0, false);
+            MelonEvents.OnApplicationLateStart.Subscribe(TryBoot, 0, false);
+        }
+
+        void TryBoot()
+        {
+            if (_up || _bootAttempted) return;
+            // Shared Mods folders load this DLL in both processes. Only the
+            // dedicated server or a process hosting a world owns server services.
+            if (!UnityEngine.Application.isBatchMode && !NetworkSceneManager.IsServer)
+            {
+                _waitingForServer = true;
+                LoggerInstance.Msg("PrefabEditorCore idle in this player process; server services start only when hosting.");
+                return;
+            }
+            _waitingForServer = false;
+            _bootAttempted = true;
+            Boot();
         }
 
         void Boot()
@@ -92,7 +109,7 @@ namespace PrefabEditor
                 RegisterCommandModules(log);
 
                 _up = true;
-                log.Msg("PrefabEditorCore 1.6.1 up: " + string.Join(", ", status.ToArray()));
+                log.Msg("PrefabEditorCore 1.6.5 up: " + string.Join(", ", status.ToArray()));
             }
             catch (Exception e)
             {
@@ -166,6 +183,7 @@ namespace PrefabEditor
 
         public override void OnUpdate()
         {
+            if (_waitingForServer && NetworkSceneManager.IsServer) TryBoot();
             if (!_up) return;
             _ctx.Dispatcher.Drain(64);
             for (int i = 0; i < _modules.Length; i++)

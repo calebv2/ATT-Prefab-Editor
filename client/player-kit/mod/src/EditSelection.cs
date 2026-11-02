@@ -10,7 +10,7 @@
 //                         then the distinct PrefabRoots along the ancestor chain become
 //                         a candidate list - nearest first, Tab / panel rows cycle it.
 //                         A docked item resolves to ITSELF before the bench under it.
-//   Drag the item         camera-plane move; drag an arrow for fine one-axis control;
+//   Click the item        selects only; drag an arrow handle to move on one axis;
 //                         drag a ring to rotate. Ctrl snaps, Alt slows translation, Esc cancels.
 //   Ground / Yaw buttons  edit ground / edit rotate
 //   Delete                two-click, server-confirmed (mounted parts + designated boxes veto)
@@ -334,6 +334,8 @@ namespace PrefabEditorMod
         Queue<ImportedPrefab> _importQueue = new Queue<ImportedPrefab>();
         bool _importing;
         int _importTotal, _importDone, _importFailed;
+        int _importRotationFailed;
+        string _importFirstFailure = "";
         readonly List<uint> _importSpawnedIds = new List<uint>();
         List<LayoutPrefab> _layoutToSave = new List<LayoutPrefab>();
         string _layoutSavePath;
@@ -344,12 +346,6 @@ namespace PrefabEditorMod
         bool _marqueeTracking, _marqueeActive, _marqueeAdditive;
         Vector2 _marqueeStart, _marqueeCurrent;
         const float MarqueeThresholdPixels = 12f;
-
-        // Body-grab waits for the server info response so mounted/docked objects
-        // can use the same safe ghost-preview decision as gizmo moves.
-        bool _grabPending;
-        NetworkEntity _grabPendingRoot;
-        Vector3 _grabPendingPoint;
 
         bool _placing;
         string _placeName = "";
@@ -716,11 +712,6 @@ namespace PrefabEditorMod
             if (_pendingId != 0 || _pendingIds.Count > 0) TryAdoptPending();
             if (_spawnOpen) TickSearch();
 
-            if (_grabPending && !mouse.leftButton.isPressed)
-            {
-                _grabPending = false;
-                _grabPendingRoot = null;
-            }
             if (_marqueeTracking)
             {
                 _marqueeCurrent = mp;
@@ -729,8 +720,6 @@ namespace PrefabEditorMod
                     if (!_marqueeActive && Vector2.Distance(_marqueeStart, mp) >= MarqueeThresholdPixels)
                     {
                         _marqueeActive = true;
-                        _grabPending = false;
-                        _grabPendingRoot = null;
                         if (_gizmo.Dragging) _gizmo.Cancel(false);
                         RestoreGroupPreview();
                         SetStatus(_marqueeAdditive
@@ -770,7 +759,6 @@ namespace PrefabEditorMod
             // the gizmo owns the mouse while a handle is hovered-and-clicked or dragged;
             // it previews locally and commits ONE move/rotate through us on release
             bool gizmoHasMouse = false;
-            if (_grabPending) return;
             GameObject localTarget = SelectedImportedObject();
             if (_has || localTarget != null)
             {
@@ -828,8 +816,6 @@ namespace PrefabEditorMod
             _cands.Clear();
             Dictionary<NetworkEntity, float> candidateDistances = new Dictionary<NetworkEntity, float>();
             _candAt = 0;
-            Vector3 grabPoint = Vector3.zero;
-            bool hasGrabPoint = false;
             string blockedBy = null;   // best "why not" name for the status line
             for (int i = 0; i < hits.Length; i++)
             {
@@ -846,12 +832,6 @@ namespace PrefabEditorMod
                 {
                     if (_cands.Count > 0) break; // keep a nearer network prefab in priority
                     SelectImportedObject(importedIndex);
-                    if (Mouse.current != null && Mouse.current.leftButton.isPressed)
-                    {
-                        GameObject imported = SelectedImportedObject();
-                        if (imported != null)
-                            _gizmo.BeginDirectDrag(Camera, imported.transform, hits[i].point, false);
-                    }
                     return true;
                 }
 
@@ -890,7 +870,6 @@ namespace PrefabEditorMod
                     if (root == null || _cands.Contains(root)) continue;
                     _cands.Add(root);
                     candidateDistances[root] = hits[i].distance;
-                    if (!hasGrabPoint) { grabPoint = hits[i].point; hasGrabPoint = true; }
                 }
                 if (_cands.Count >= PickMaxCandidates) break;
             }
@@ -911,11 +890,6 @@ namespace PrefabEditorMod
                 _cands.Sort(delegate(NetworkEntity a, NetworkEntity b) {
                     return candidateDistances[a].CompareTo(candidateDistances[b]);
                 });
-                if (_cands.Count > 0)
-                {
-                    grabPoint = ray.GetPoint(candidateDistances[_cands[0]]);
-                    hasGrabPoint = true;
-                }
             }
             catch (Exception e) { if (_log != null) _log("persistent mesh selection failed: " + e.Message); }
 
@@ -927,13 +901,9 @@ namespace PrefabEditorMod
                 return false;
             }
             bool addToGroup = ShiftHeld();
+            // Clicking geometry selects only. Movement starts on a fresh press
+            // over a gizmo handle, never from this click or a later info response.
             Select(_cands[0], addToGroup);
-            if (!addToGroup && hasGrabPoint && Mouse.current != null && Mouse.current.leftButton.isPressed)
-            {
-                _grabPending = true;
-                _grabPendingRoot = _root;
-                _grabPendingPoint = grabPoint;
-            }
             return true;
         }
 
@@ -1682,28 +1652,14 @@ namespace PrefabEditorMod
 
         void OnInfo(EditResult r)
         {
-            if (!r.Ok) { _grabPending = false; _grabPendingRoot = null; SetStatus("info: " + Reason(r)); return; }
+            if (!r.Ok) { SetStatus("info: " + Reason(r)); return; }
             if (r.Ent != null)
             {
                 _info = r.Ent;
                 SyncTransformFields(r.Ent);
                 SetStatus("selected " + r.Ent.Prefab + " #" + r.Ent.Id +
                     (_group.Count > 1 ? " with " + (_group.Count - 1) + " others" : "") + CandNote());
-                TryBeginPendingGrab();
             }
-        }
-
-        void TryBeginPendingGrab()
-        {
-            if (!_grabPending || _root == null || _root != _grabPendingRoot ||
-                Mouse.current == null || !Mouse.current.leftButton.isPressed)
-                return;
-            Transform target = null;
-            try { target = _root.transform; } catch { }
-            if (target != null)
-                _gizmo.BeginDirectDrag(Camera, target, _grabPendingPoint, GhostWanted());
-            _grabPending = false;
-            _grabPendingRoot = null;
         }
 
         // ---- gizmo commits: ONE server call per released drag ----
@@ -2503,6 +2459,8 @@ namespace PrefabEditorMod
             _importTotal = _importQueue.Count;
             _importDone = 0;
             _importFailed = 0;
+            _importRotationFailed = 0;
+            _importFirstFailure = "";
             _importSpawnedIds.Clear();
             _importOffset = Vector3.zero;
             if (_importAtCamera && Camera != null && _importEntries.Count > 0)
@@ -2520,8 +2478,10 @@ namespace PrefabEditorMod
             {
                 _importing = false;
                 if (_importSpawnedIds.Count > 0) AdoptManySoon(_importSpawnedIds, "imported");
-                SetStatus("import finished: " + _importDone + " placed, " + _importFailed + " failed",
-                    _importFailed == 0 ? ToneOk : ToneErr);
+                string result = "import finished: " + _importDone + " placed, " + _importFailed + " not placed";
+                if (_importRotationFailed > 0) result += ", " + _importRotationFailed + " rotation error(s) (items were placed)";
+                if (_importFirstFailure.Length > 0) result += ". First error: " + _importFirstFailure;
+                SetStatus(result, _importFailed == 0 && _importRotationFailed == 0 ? ToneOk : ToneErr);
                 return;
             }
             ImportedPrefab entry = _importQueue.Dequeue();
@@ -2534,9 +2494,11 @@ namespace PrefabEditorMod
                     if (!r.Ok || r.Ent == null)
                     {
                         _importFailed++;
+                        ReportImportFailure(entry.Name, "placement", r.Ok ? "server returned no spawned entity" : Reason(r));
                         ImportNext();
                         return;
                     }
+                    _importDone++;
                     if (!_importSpawnedIds.Contains(r.Ent.Id)) _importSpawnedIds.Add(r.Ent.Id);
                     if (Mathf.Abs(entry.Rotation.x) > 0.01f || Mathf.Abs(entry.Rotation.y) > 0.01f ||
                         Mathf.Abs(entry.Rotation.z) > 0.01f)
@@ -2544,17 +2506,26 @@ namespace PrefabEditorMod
                         _api.Rotate(r.Ent.Id, entry.Rotation.x, entry.Rotation.y, entry.Rotation.z,
                             delegate(EditResult rr)
                             {
-                                if (rr.Ok) _importDone++;
-                                else _importFailed++;
+                                if (!rr.Ok)
+                                {
+                                    _importRotationFailed++;
+                                    ReportImportFailure(entry.Name + " #" + r.Ent.Id, "rotation (item was placed)", Reason(rr));
+                                }
                                 ImportNext();
                             });
                     }
                     else
                     {
-                        _importDone++;
                         ImportNext();
                     }
                 });
+        }
+
+        void ReportImportFailure(string name, string stage, string reason)
+        {
+            string detail = name + " - " + stage + ": " + reason;
+            if (_importFirstFailure.Length == 0) _importFirstFailure = detail;
+            if (_log != null) _log("import item failed: " + detail);
         }
 
         bool PasteTarget(out Vector3 at)
@@ -3532,7 +3503,7 @@ namespace PrefabEditorMod
             GameObject localSelection = SelectedImportedObject();
             if (!_has && localSelection != null)
                 selectionSummary = "1 selected  ·  " + localSelection.name + " (local model)";
-            else if (!_has) selectionSummary = "No selection  ·  click or drag objects in the world";
+            else if (!_has) selectionSummary = "No selection  ·  click an object to select";
             else
             {
                 string prefabName = _info != null ? _info.Prefab : "Loading selection";
@@ -3727,7 +3698,7 @@ namespace PrefabEditorMod
                 GameObject local = SelectedImportedObject();
                 GUILayout.Label(local == null
                     ? "Select an object to move, rotate, scale, or duplicate it."
-                    : "Imported model selected. Grab it or drag the gizmo to move or rotate it; resize it in Object Loader.", _mutedStyle);
+                    : "Imported model selected. Drag arrows for one axis, colored squares for two, or the white center square for free movement; rings rotate; resize it in Object Loader.", _mutedStyle);
                 return;
             }
             bool single = _group.Count == 1;
@@ -4324,7 +4295,7 @@ namespace PrefabEditorMod
             _objectLoaderGizmoSelected = true;
             _gizmo.RotationEnabled = true;
             _gizmo.GroupRotationEnabled = false;
-            _objectLoaderStatus = "Selected " + _objectLoaderSpawned[index].name + ". Grab it or drag the gizmo to move or rotate.";
+            _objectLoaderStatus = "Selected " + _objectLoaderSpawned[index].name + ". Drag arrows for one axis, colored squares for two, or the white center square for free movement; rings rotate.";
             SetStatus(_objectLoaderStatus, ToneOk);
         }
 

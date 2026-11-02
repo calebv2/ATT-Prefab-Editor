@@ -1,4 +1,4 @@
-// The Unity-style transform gizmo - direct object dragging + translate arrows +
+// The Unity-style transform gizmo - arrows, plane squares and a free-move center +
 // rotate rings + snapping. Scale is applied through the save-string workbench path.
 //
 // Same architecture rule as ever: CLIENT previews, SERVER decides. A drag writes the
@@ -16,8 +16,8 @@
 // visible (and grabbable) inside geometry. Everything is sized by distance-to-camera,
 // so the gizmo keeps a constant on-screen size.
 //
-// Pick: screen-space - arrows translate on one axis, rings rotate; clicking the object
-// body begins a camera-plane move. A grabbed mode is locked until mouse-up. Esc cancels.
+// Pick: screen-space - arrows translate on one axis and rings rotate. A fresh click
+// must hit a handle; object bodies only select. A handle stays locked until mouse-up.
 //
 // C# 5 / net35 - no interpolation, no ?., no expression-bodied members.
 
@@ -50,11 +50,12 @@ namespace PrefabEditorMod
 
     public class EditGizmo
     {
-        // handle ids: 0..2 translate along world X/Y/Z, 3..5 rotate rings about X/Y/Z
+        // Handle ids: 0..2 world axes, 3..5 rotation rings, 6..8 plane squares, 9 free move.
         const int H_NONE = -1;
         const int H_AXIS_X = 0;
         const int H_AXIS_Z = 2;
         const int H_RING_X = 3;
+        const int H_PLANE_XY = 6, H_PLANE_XZ = 7, H_PLANE_YZ = 8, H_FREE = 9;
 
         // on-screen sizing in px, converted to world units per frame by distance
         const float AXIS_PX = 105f;       // arrow length
@@ -79,7 +80,6 @@ namespace PrefabEditorMod
         int _locked = H_NONE;
         bool _dragging;
         bool _ghost;              // this drag: don't touch the transform; gizmo = ghost
-        bool _directDrag;         // grab the object body and move on a camera-facing plane
 
         Transform _t;             // locked drag target
         Vector3 _origPos;
@@ -91,8 +91,8 @@ namespace PrefabEditorMod
         Vector3 _axisDir;
         float _grabS;             // axis parameter under the mouse at grab
         float _delta;
-        Plane _dragPlane;
-        Vector3 _grabOffset;
+        Plane _movePlane;
+        Vector3 _planeGrab;
 
         // rotate drag
         Vector3 _ringAxis;
@@ -145,7 +145,7 @@ namespace PrefabEditorMod
                 if (!_ghost && _t == null) { Abort(); return false; } // target died mid-drag
                 Keyboard kb = Keyboard.current;
                 if (kb != null && kb[Key.Escape].wasPressedThisFrame) { Cancel(true); return true; }
-                if (_directDrag) UpdateDirectMove(cam, mp);
+                if (_locked >= H_PLANE_XY) UpdatePlaneMove(cam, mp);
                 else if (_locked <= H_AXIS_Z) UpdateTranslate(cam, mp);
                 else UpdateRotate(cam, mp);
                 Mouse held = Mouse.current;
@@ -169,10 +169,18 @@ namespace PrefabEditorMod
 
         bool BeginDrag(Camera cam, Vector2 mp, Transform target, Vector3 c, bool ghost)
         {
-            _directDrag = false;
             Ray ray = cam.ScreenPointToRay(new Vector3(mp.x, mp.y, 0f));
 
-            if (_hover >= H_RING_X)
+            if (_hover >= H_PLANE_XY)
+            {
+                Vector3 normal = _hover == H_FREE ? cam.transform.forward : PlaneNormal(_hover);
+                _movePlane = new Plane(normal, c);
+                float enter;
+                if (!_movePlane.Raycast(ray, out enter) || enter <= 0f) return false;
+                _planeGrab = ray.GetPoint(enter);
+                _delta = 0f;
+            }
+            else if (_hover >= H_RING_X)
             {
                 if (!RotationEnabled) return false;
                 Vector3 axis = AxisVec(_hover - H_RING_X);
@@ -211,32 +219,11 @@ namespace PrefabEditorMod
             _locked = _hover;
             _dragging = true;
             DragLabel = "";
-            if (GroupRotationEnabled && _locked >= H_RING_X && PreviewGroupRotation != null)
+            if (GroupRotationEnabled && IsRotation(_locked) && PreviewGroupRotation != null)
                 PreviewGroupRotation(_ringAxis, 0f);
-            Say((_locked <= H_AXIS_Z ? "move " : "rotate ") + HandleName(_locked) +
+            Say((IsRotation(_locked) ? "rotate " : "move ") + HandleName(_locked) +
                 (_ghost ? "  (ghost preview)" : "") + "  -  Esc cancels");
             return true;
-        }
-
-        // Start a move by grabbing the clicked point on the object. The initial
-        // screen point is retained because selection info arrives asynchronously.
-        public void BeginDirectDrag(Camera cam, Transform target, Vector3 hitPoint, bool ghost)
-        {
-            if (cam == null || target == null) return;
-            _t = target;
-            _origPos = target.position;
-            try { _origRot = target.rotation; } catch { _origRot = Quaternion.identity; }
-            _previewPos = _origPos;
-            _previewRot = _origRot;
-            _dragPlane = new Plane(cam.transform.forward, hitPoint);
-            _grabOffset = _origPos - hitPoint;
-            _ghost = ghost;
-            _directDrag = true;
-            _locked = H_NONE;
-            _dragging = true;
-            _delta = 0f;
-            DragLabel = "Grab to move" + (_ghost ? "  (ghost preview)" : "");
-            Say(DragLabel + "  -  Esc cancels");
         }
 
         void UpdateTranslate(Camera cam, Vector2 mp)
@@ -267,32 +254,52 @@ namespace PrefabEditorMod
             if (_previewMove != null) _previewMove(_previewPos - _origPos);
         }
 
-        void UpdateDirectMove(Camera cam, Vector2 mp)
+        static bool IsRotation(int handle) { return handle >= H_RING_X && handle < H_PLANE_XY; }
+        static Vector3 PlaneNormal(int handle) {
+            return handle == H_PLANE_XY ? Vector3.forward : handle == H_PLANE_XZ ? Vector3.up : Vector3.right;
+        }
+        void UpdatePlaneMove(Camera cam, Vector2 mp)
         {
-            Ray ray = cam.ScreenPointToRay(new Vector3(mp.x, mp.y, 0f));
             float enter;
-            if (!_dragPlane.Raycast(ray, out enter) || enter < 0f) return;
-            Vector3 point = ray.GetPoint(enter) + _grabOffset;
-            Vector3 delta = point - _origPos;
-            bool snap = CtrlHeld();
-            if (snap)
-            {
-                float grid = GridSize;
-                if (grid < 0.001f) grid = 0.25f;
-                if (ShiftHeld()) grid *= 4f;
-                delta.x = Mathf.Round(delta.x / grid) * grid;
-                delta.y = Mathf.Round(delta.y / grid) * grid;
-                delta.z = Mathf.Round(delta.z / grid) * grid;
+            Ray ray = cam.ScreenPointToRay(new Vector3(mp.x,mp.y,0f));
+            if (!_movePlane.Raycast(ray,out enter) || enter <= 0f) return;
+            Vector3 delta = ray.GetPoint(enter) - _planeGrab;
+            if (AltHeld()) delta *= .1f;
+            if (CtrlHeld()) {
+                float grid = Mathf.Max(.001f,GridSize) * (ShiftHeld() ? 4f : 1f) * (AltHeld() ? .1f : 1f);
+                delta = new Vector3(Mathf.Round(delta.x/grid)*grid,Mathf.Round(delta.y/grid)*grid,Mathf.Round(delta.z/grid)*grid);
+                // Screen-plane snapping must not introduce depth movement.
+                delta = Vector3.ProjectOnPlane(delta,_movePlane.normal);
             }
-            delta = new Vector3(Mathf.Clamp(delta.x, -300f, 300f),
-                Mathf.Clamp(delta.y, -300f, 300f), Mathf.Clamp(delta.z, -300f, 300f));
+            delta = Vector3.ClampMagnitude(delta,300f);
             _delta = delta.magnitude;
             _previewPos = _origPos + delta;
-            DragLabel = "move " + Signed(delta.x) + ", " + Signed(delta.y) + ", " +
-                Signed(delta.z) + " m" + (snap ? "  snap" : "");
-            _previewPos = ApplySurfaceSnap(_previewPos, mp);
+            DragLabel = HandleName(_locked) + "  " + Signed(delta.x) + ", " + Signed(delta.y) + ", " + Signed(delta.z) + " m";
+            if (_locked == H_FREE) _previewPos = ApplySurfaceSnap(_previewPos,mp);
             if (!_ghost) SafeSetPos(_previewPos);
-            if (_previewMove != null) _previewMove(_previewPos - _origPos);
+            if (_previewMove != null) _previewMove(_previewPos-_origPos);
+        }
+
+        static void SquareCorners(Camera cam, Vector3 c, float ptw, int handle,
+            out Vector3 a,out Vector3 b,out Vector3 d,out Vector3 e)
+        {
+            Vector3 u,v;
+            float low,high;
+            if (handle == H_FREE) { u=cam.transform.right; v=cam.transform.up; low=-6f*ptw; high=6f*ptw; }
+            else {
+                u = handle == H_PLANE_YZ ? Vector3.up : Vector3.right;
+                v = handle == H_PLANE_XY ? Vector3.up : Vector3.forward;
+                low=AXIS_PX*.24f*ptw; high=AXIS_PX*.42f*ptw;
+            }
+            a=c+u*low+v*low; b=c+u*high+v*low;
+            d=c+u*high+v*high; e=c+u*low+v*high;
+        }
+        static float Side(Vector2 a,Vector2 b,Vector2 p) { return (b.x-a.x)*(p.y-a.y)-(b.y-a.y)*(p.x-a.x); }
+        static bool InTriangle(Vector2 p,Vector2 a,Vector2 b,Vector2 c) {
+            // An edge-on square has no grabbable interior.
+            if (Mathf.Abs(Side(a,b,c)) < 1f) return false;
+            float x=Side(a,b,p),y=Side(b,c,p),z=Side(c,a,p);
+            return !((x<0f || y<0f || z<0f) && (x>0f || y>0f || z>0f));
         }
 
         Vector3 ApplySurfaceSnap(Vector3 position, Vector2 mousePosition)
@@ -344,10 +351,7 @@ namespace PrefabEditorMod
             _locked = H_NONE;
             DragLabel = "";
 
-            bool moved = _directDrag ? _delta > 0.0005f :
-                ((h <= H_AXIS_Z) ? Mathf.Abs(_delta) > 0.0005f : Mathf.Abs(_angle) > 0.01f);
-            bool wasDirectDrag = _directDrag;
-            _directDrag = false;
+            bool moved = !IsRotation(h) ? Mathf.Abs(_delta) > 0.0005f : Mathf.Abs(_angle) > 0.01f;
             if (!moved)
             {
                 if (!_ghost) { SafeSetPos(_origPos); SafeSetRot(_origRot); }
@@ -358,7 +362,7 @@ namespace PrefabEditorMod
             _commitPos = _origPos;
             _commitRot = _origRot;
 
-            if (wasDirectDrag || h <= H_AXIS_Z) _commitMove(_previewPos);
+            if (!IsRotation(h)) _commitMove(_previewPos);
             else if (GroupRotationEnabled && CommitGroupRotation != null)
                 CommitGroupRotation(_ringAxis, _angle);
             else _commitEuler(_previewRot.eulerAngles);
@@ -371,7 +375,6 @@ namespace PrefabEditorMod
             if (!_dragging) return;
             _dragging = false;
             _locked = H_NONE;
-            _directDrag = false;
             DragLabel = "";
             if (!_ghost) { SafeSetPos(_origPos); SafeSetRot(_origRot); }
             if (sayIt) Say("drag canceled");
@@ -381,7 +384,6 @@ namespace PrefabEditorMod
         {
             _dragging = false;
             _locked = H_NONE;
-            _directDrag = false;
             DragLabel = "";
         }
 
@@ -415,6 +417,14 @@ namespace PrefabEditorMod
             float len = AXIS_PX * ptw;
             float ringR = RING_PX * ptw;
 
+            // Square interiors take priority; they are distinct from object geometry.
+            for (int handle = H_FREE; handle >= H_PLANE_XY; handle--) {
+                Vector3 a, b, d, e;
+                SquareCorners(cam, c, ptw, handle, out a, out b, out d, out e);
+                Vector2 sa, sb, sd, se;
+                if (ToScreen(cam,a,out sa) && ToScreen(cam,b,out sb) && ToScreen(cam,d,out sd) && ToScreen(cam,e,out se)
+                    && (InTriangle(mp,sa,sb,sd) || InTriangle(mp,sa,sd,se))) return handle;
+            }
             int best = H_NONE;
             float bestScore = PICK_PX;
 
@@ -524,12 +534,21 @@ namespace PrefabEditorMod
                 if (id == _hover || (_dragging && id == _locked))
                     DrawRingLoop(c, u, v, ringR * 1.012f, HandleColor(id)); // double-stroke = bold
             }
-            if (_dragging && !_directDrag && _locked <= H_AXIS_Z) DrawTranslateGuides(len);
-            if (_dragging && _locked >= H_RING_X) DrawSpokes(c, ringR);
+            if (_dragging && _locked <= H_AXIS_Z) DrawTranslateGuides(len);
+            if (_dragging && IsRotation(_locked)) DrawSpokes(c, ringR);
             GL.End();
 
             Vector3 eye = cam.transform.position;
             GL.Begin(GL.QUADS);
+            for (int handle = H_PLANE_XY; handle <= H_FREE; handle++) {
+                Vector3 a,b,d,e;
+                SquareCorners(cam,c,ptw,handle,out a,out b,out d,out e);
+                Color square = HandleColor(handle);
+                square.a *= handle == H_FREE ? .95f : .65f;
+                GL.Color(square); GL.Vertex(a); GL.Vertex(b); GL.Vertex(d); GL.Vertex(e);
+                // Render both sides so world-plane handles remain visible from behind.
+                GL.Vertex(e); GL.Vertex(d); GL.Vertex(b); GL.Vertex(a);
+            }
             for (int i = 0; i < 3; i++) DrawShaft(c, i, len, ptw, eye);
             GL.End();
 
@@ -670,8 +689,8 @@ namespace PrefabEditorMod
 
         Color HandleColor(int id)
         {
-            int axis = (id >= H_RING_X) ? id - H_RING_X : id;
-            Color col = AxisColor(axis);
+            int axis = IsRotation(id) ? id - H_RING_X : id;
+            Color col = id == H_FREE ? Color.white : AxisColor(id >= H_PLANE_XY ? (id == H_PLANE_XY ? 2 : id == H_PLANE_XZ ? 1 : 0) : axis);
             if (_dragging)
             {
                 if (id == _locked) return new Color(1f, 0.92f, 0.25f, 1f);
@@ -726,6 +745,10 @@ namespace PrefabEditorMod
 
         static string HandleName(int id)
         {
+            if (id == H_FREE) return "Free move";
+            if (id == H_PLANE_XY) return "XY plane";
+            if (id == H_PLANE_XZ) return "XZ plane";
+            if (id == H_PLANE_YZ) return "YZ plane";
             if (id == 0) return "X";
             if (id == 1) return "Y";
             if (id == 2) return "Z";

@@ -1,21 +1,56 @@
+## 1.0.14 - All-in-one shared Mods package
+
+- Add an All-in-One-Shared-Mods ZIP alongside the separate player and server packages. Includes both DLLs in Mods, player catalog/images, and the complete launcher add-on with both DLLs in its update payload. One START HERE.txt explains shared-folder setup.
+- Core 1.6.5 boots server services only in a dedicated batch process or a process hosting a world. A player process sharing the Mods folder stays idle, preventing duplicate console listeners and key provisioning.
+- Player mod 2.3.5 stays idle in dedicated batch processes. Local hosting can run both halves in the same interactive process.
+- The shared add-on identifies its installation mode explicitly and updates both DLLs together. The regular player package continues installing only player files, even if an old server payload remains on disk.
+
+## 1.0.13 - Delete world-anchored fixtures and explain import failures
+
+- Separate deletion from movement checks: a standalone prefab joint anchored to the world no longer prevents deleting its root. Keep player/held/docked/external-mount guards, all-or-nothing group preflight, confirmation and undo capture.
+- Redo of deletion uses the same deletion guard, allowing restored world-anchored fixtures to be deleted again.
+- Import reporting distinguishes objects that never spawned from placed objects whose rotation failed. Log each failing item, stage and reason, and retain the first error in the completion status.
+- Includes server core 1.6.4 and player mod 2.3.4. Production-method regressions and game-assembly builds pass. The reported smelter prefab still needs live verification; its exact joint configuration and original import failure are not visible in the screenshots.
+
+## 1.0.12 - Square movement handles and teleport compatibility
+
+- Add colored XY/XZ/YZ square handles and a white center square for movement in the camera plane. Object clicks remain selection-only; handles preserve group preview, snapping, cancellation and a single server commit.
+- Scope safe loading to explicit Prefabulator requests instead of wrapping other mods' ForceTeleportTo calls. Release Prefabulator pins when another teleport system requests chunks.
+- Finish canceled contact preloads before unloading their chunks, so their native load acknowledgement can complete. Queue behind prior unfinished native load requests instead of throwing during platform activation.
+- Retain linked-pad moves during the native client teleport cooldown, then execute once it ends and fade in only after arrival/loading readiness.
+- Player mod 2.3.3 and server core 1.6.3. Update both sides; existing links are preserved. Deterministic input/teleport regressions and game-assembly builds pass; live multiplayer verification remains necessary.
+
+## 1.0.11 - Move using gizmo handles
+
+- Clicking a prefab or imported model selects it without starting a drag. To move it, release the mouse and drag an arrow handle. Rotation rings and box selection remain available.
+- Includes player mod 2.3.2. This movement change only requires updating the player mod.
+
+## 1.0.10 - Linked teleporter black-screen recovery
+
+- Keep departure and destination chunks subscribed until the remote player actually arrives, rather than releasing them when the teleport request is sent.
+- Ignore platform exit events during arrival; roll back transfers that do not confirm arrival within ten seconds.
+- Player mod 2.3.1 releases the customization-platform fade after an in-world teleport arrives in a loaded chunk, respecting native fade locks. Runs with the editor closed.
+- Includes server core 1.6.2. Update the server and affected players. Existing teleporter-links.json destinations are preserved; no relinking is required.
+- Checked with chunk/arrival and fade regression harnesses and builds against the installed game assemblies. Live multiplayer verification is still required.
+
 # Changelog
 
-## Prefabulator 1.0.7 - 2026-10-20
+## 1.0.9 (2026-10-22)
 
-- Start destination chunk loading on platform contact and wait for the native finished activation before moving the player. Keep client acknowledgement, server readiness and floor checks. Server core 1.6.1; player mod remains 2.3.0.
+- Fix blank owner editor tabs after a successful connection: route the in-game access lookup through the authenticated WebSocket handler. Ordinary owner editor commands continue using HTTP. Share the launcher management transport without stacking or prematurely closing handlers.
+
+## 1.0.8 (2026-10-22)
+
+- Restore personal moderator connections through the server's restricted WebSocket handler. Owner editor commands use HTTP; owner access management uses its authenticated WebSocket handler.
+- Owners can copy a private moderator code containing the server address and a personal token. Moderators paste the code and connect; existing tab permissions, revocation, and optional encrypted credential saving apply. The owner console token is never included in these codes.
+
+## 1.0.7 (2026-10-20)
+
+- Linked teleporters begin loading destination chunks when touched, then wait for the platform's native finished activation before moving the player. Arrival still requires client acknowledgement, loaded server chunks and a solid floor. Server core 1.6.1; player mod remains 2.3.0.
 
 ## 1.0.6 (2026-10-19)
 
 - Add owner-managed personal admin tokens, revocation and per-tab server permissions. Active sessions use current permissions; revocation and token replacement disconnect them. Store only token hashes. Player mod 2.3.0 and server core 1.6.0 are required together.
-
-## Prefabulator 1.0.5 — 2026-10-19
-
-- Add Server Settings with 11 gameplay toggles and numeric settings.
-- Restore Admin player kick/kill controls; add broadcasts and persistent server spawn with default restore.
-- Remember the server address and optionally save the console token with Windows account encryption for automatic connection.
-- Connect through Tavern Launcher; remove legacy tunnel setup.
-- Player mod 2.2.0; server core 1.5.2.
-
 
 ## Unreleased — 2026-10-19
 

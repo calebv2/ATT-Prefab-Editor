@@ -10,7 +10,8 @@ from client.core.tavernkeeper.window import TavernKeeperWindow
 from client.core.launcher_window import ClientLauncher
 from tavern_shared.paths import _tavern_data_dir
 from tavern_shared.theme import BG, PARCH, MUTED, _btn
-from .runtime import Bridge, install, SessionTransport
+from .runtime import Bridge, install, shared_install, SessionTransport
+from .invite import PREFIX, read_code
 from .settings import Settings
 from .access import AccessWindow, request as access_request
 from tavern_shared.ws_console_client import WsConsoleClient
@@ -23,10 +24,13 @@ _preferences = Settings(Path(_tavern_data_dir()) / "prefab_editor")
 def build(parent, window):
     global _active
     cfg = load_cfg()
+    shared = shared_install()
     game = tk.StringVar(value=str(Path(cfg['game_exe']).parent) if cfg.get('game_exe') else '')
     status = tk.StringVar(value='Console connected. Starting the in-game editor connection...')
     tk.Label(parent, text='Prefabulator', bg=BG, fg=PARCH, font=('Segoe UI', 14, 'bold')).pack(anchor='w', padx=12, pady=12)
-    tk.Label(parent, text='Prefabulator connects your in-game editor. All editing happens in the game.\nFirst time: close the game and install the included player mod below.\nThen launch/join this server normally and press F1.\nKeep Prefabulator open; minimizing it is fine.',
+    install_hint = ('Shared Mods setup: stop BOTH the server and game before updating both included mods.\n'
+                    if shared else 'First time: close the game and install the included player mod below.\n')
+    tk.Label(parent, text='Prefabulator connects your in-game editor. All editing happens in the game.\n' + install_hint + 'Then launch/join this server normally and press F1.\nKeep Prefabulator open; minimizing it is fine.',
              bg=BG, fg=MUTED, justify='left', wraplength=680).pack(anchor='w', padx=12)
     tk.Entry(parent, textvariable=game, width=80).pack(fill='x', padx=12, pady=8)
     _btn(parent, 'Choose game folder', lambda: choose(), 'primary').pack(anchor='w', padx=12)
@@ -61,8 +65,10 @@ def build(parent, window):
             path = game.get().strip()
         if path:
             def installed(_):
-                window.after(0, start_editor)
-                return 'Player mod installed. Connecting the editor...'
+                if not shared:
+                    window.after(0, start_editor)
+                return ('Server and player mods installed in the shared Mods folder. Start the server, reconnect Prefabulator, then launch the game.'
+                        if shared else 'Player mod installed. Connecting the editor...')
             background(lambda: install(path, 'client'), installed)
 
     def start_editor():
@@ -83,7 +89,9 @@ def build(parent, window):
             with _session_lock:
                 if _active and not _active.closed:
                     raise RuntimeError('An editor connection is already running.')
-                bridge = Bridge(window._ws_client, path, Path(_tavern_data_dir()) / 'prefab_editor')
+                bridge = Bridge(window._ws_client, path, Path(_tavern_data_dir()) / 'prefab_editor',
+                                host=window.v_host.get().strip() or '127.0.0.1',
+                                token=window.v_token.get().strip(), access_transport=management_transport)
                 bridge.host = connection_host
                 _active = bridge
                 try:
@@ -97,7 +105,8 @@ def build(parent, window):
         if _active and not _active.closed:
             background(_active.close, lambda _: 'Stopped. Restart the game after starting a different editor connection.')
 
-    _btn(parent, '1. Install / update player mod (game closed)', install_player, 'primary').pack(anchor='w', padx=12, pady=6)
+    install_label = ('1. Update BOTH mods (server and game stopped)' if shared else '1. Install / update player mod (game closed)')
+    _btn(parent, install_label, install_player, 'primary').pack(anchor='w', padx=12, pady=6)
     _btn(parent, 'Retry editor connection', start_editor, 'primary').pack(anchor='w', padx=12, pady=6)
     _btn(parent, 'Disconnect editor', stop_editor).pack(anchor='w', padx=12, pady=6)
     def forget_token():
@@ -107,9 +116,15 @@ def build(parent, window):
         except OSError:
             status.set('Could not remove saved token. Check your user settings folder permissions.')
     _btn(parent, 'Forget saved access token', forget_token).pack(anchor='w', padx=12, pady=6)
-    management_transport = SessionTransport(window._ws_client)
-    owner_button = _btn(parent, 'Manage Admin Access (owner)', lambda: AccessWindow(window, management_transport))
+    # Access management is intercepted on WebSocket, not the native HTTP console.
+    # Personal sessions already have a transport owned by their editor bridge.
+    management_transport = (None if window.v_token.get().strip().startswith('pfa1.')
+                            else SessionTransport(window._ws_client))
+    owner_button = _btn(parent, 'Manage Admin Access (owner)', lambda: AccessWindow(
+        window, management_transport, window.v_host.get().strip() or '127.0.0.1'))
     def check_owner():
+        if management_transport is None:
+            return
         def check():
             try:
                 result = access_request(management_transport, 'self')
@@ -122,7 +137,7 @@ def build(parent, window):
             owner_button.pack(anchor='w', padx=12, pady=6)
     window.after(0, start_editor)
     window.after(500, check_owner)
-    window.bind('<Destroy>', lambda event: management_transport.close() if event.widget is window else None, add='+')
+    window.bind('<Destroy>', lambda event: management_transport.close() if event.widget is window and management_transport else None, add='+')
 
     # Toplevel destruction also happens on disconnect/closing the launcher.
     def destroyed(event):
@@ -149,7 +164,7 @@ class PrefabulatorWindow(TavernKeeperWindow):
             if isinstance(widget, tk.Label) and 'TavernKeeper' in str(widget.cget('text')):
                 widget.configure(text='Prefabulator')
             if isinstance(widget, tk.Label) and str(widget.cget('text')) == 'CONSOLE TOKEN':
-                widget.configure(text='ACCESS TOKEN (owner console token or personal admin token)')
+                widget.configure(text='MODERATOR CODE or owner console token')
             for child in widget.winfo_children():
                 relabel(child)
         relabel(self)
@@ -163,7 +178,7 @@ class PrefabulatorWindow(TavernKeeperWindow):
         tk.Checkbutton(self, text='Save my access token and auto-connect when I launch this server',
                        variable=self.v_remember, command=self._remember_changed,
                        bg=BG, fg=PARCH, selectcolor=BG, wraplength=390).pack(fill='x', padx=20)
-        tk.Label(self, text='Server address is remembered. Saved tokens are encrypted for this Windows account.',
+        tk.Label(self, text='Moderator: paste the code from your owner and click Connect; it fills in the server address.\nSaved tokens are encrypted for this Windows account.',
                  bg=BG, fg=MUTED, wraplength=390, justify='left').pack(padx=20, pady=8)
         self.v_host.trace_add('write', self._host_changed)
         self.update_idletasks()
@@ -176,11 +191,23 @@ class PrefabulatorWindow(TavernKeeperWindow):
 
     def _remember_changed(self):
         try:
-            _preferences.save(self.v_host.get(), self.v_token.get(), self.v_remember.get())
+            host, token = self.v_host.get(), self.v_token.get().strip()
+            if token.startswith(PREFIX):
+                host, token = read_code(token)
+            _preferences.save(host, token, self.v_remember.get())
         except Exception:
             self._connect_status.set('Could not save preferences. You can connect with saving unchecked.')
 
     def _attempt_connect(self):
+        value = self.v_token.get().strip()
+        if value.startswith(PREFIX):
+            try:
+                host, token = read_code(value)
+            except ValueError as error:
+                self._connect_status.set(str(error))
+                return
+            self.v_host.set(host)  # Changing the address clears the old token.
+            self.v_token.set(token)
         self._remember_changed()
         super()._attempt_connect()
 
@@ -264,7 +291,8 @@ def _auto_connect(launcher):
                                    on_disc=lambda _: bridge.close() if bridge else None)
             if not ok:
                 raise RuntimeError('Console connection failed')
-            bridge = Bridge(client, game, Path(_tavern_data_dir()) / 'prefab_editor')
+            bridge = Bridge(client, game, Path(_tavern_data_dir()) / 'prefab_editor',
+                            host=saved['host'], token=token)
             bridge.host = saved['host']
             original_close = bridge.close
             def close_session():

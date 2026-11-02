@@ -1,0 +1,44 @@
+PREFABULATOR - ALL-IN-ONE FOR ONE SHARED GAME / MODS FOLDER
+
+Use this ZIP when the server and player use the SAME game installation and Mods
+folder. It includes both DLLs, player preview assets and the launcher add-on.
+Use the separate Player and Server ZIPs when their game folders are different.
+
+INSTALL OR UPDATE
+1. Stop BOTH the server and player game. Close Tavern Launcher too.
+2. Copy this ZIP's Mods folder into the shared GAME folder containing
+   A Township Tale_Data. Merge folders and replace the old files if asked.
+   The shared Mods folder must contain BOTH:
+     PrefabEditorCore.dll - server tools
+     PrefabEditor.dll     - player editor
+   Keep PrefabEditorCatalog.json and PrefabEditorImages beside them.
+3. Copy this ZIP's addons folder beside the CLIENT Tavern Launcher EXE.
+   Keep the whole addons/prefab_editor folder, including payload.
+4. Start the server normally. Open the player launcher, enable Prefabulator
+   under Addons if needed, and restart the launcher if asked.
+5. Open Prefabulator. Connect with your server address and owner console token,
+   or paste your personal moderator code. Wait for CONNECTED.
+6. Launch the player game, join your server, and press F1 to open the editor.
+   Keep Tavern Launcher and Prefabulator open; minimizing them is fine.
+
+The server core stays idle in the player process. The player editor stays idle
+in the dedicated server process. Both DLLs can stay in the same Mods folder.
+Shared-folder setup uses the Windows player launcher; it does not combine the
+server and client executables or change how your server normally launches.
+
+UPDATES FROM PREFABULATOR
+The all-in-one add-on's update button installs BOTH DLLs into the game folder
+you choose. Stop both server and game before using it, then restart the server,
+reconnect Prefabulator, and launch the game. You can also repeat steps 1-3.
+
+Keep your existing UserData, world saves, teleporter-links.json and admin access
+settings. Existing teleporters do not need relinking. Never share console tokens.
+
+Owner: Manage Admin Access creates personal moderator codes and tab permissions.
+Give other players the Player-Addon-and-Mod ZIP and their own code; they only
+need the all-in-one ZIP if they also share a server/player Mods folder.
+
+MOVING ITEMS
+Click an item to select, release the mouse, then drag arrows for one axis,
+colored squares for two axes, or the white center square for free movement.
+Drag rings to rotate. Esc cancels a handle drag.

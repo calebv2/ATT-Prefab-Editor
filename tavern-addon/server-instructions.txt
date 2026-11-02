@@ -1,6 +1,7 @@
 PREFAB EDITOR - SERVER MOD ONLY
 
 FOR THE COMPUTER HOSTING THE GAME SERVER. WINDOWS OR LINUX.
+If server and player share ONE game/Mods folder, use All-in-One-Shared-Mods instead.
 This is a game mod, not a Tavern Launcher add-on.
 
 1. Stop the game server.
@@ -8,8 +9,10 @@ This is a game mod, not a Tavern Launcher add-on.
    game's Mods folder, replacing the old PrefabEditorCore.dll if present.
    Use the game folder containing A Township Tale_Data.
 3. Start the game server again.
-4. Give trusted editor users the Player-Addon-and-Mod ZIP, your server
-   address, and the console token from Tavern Launcher.
+4. Connect your own Prefabulator with your owner console token. Open Manage
+   Admin Access, enter a moderator name, choose tabs, and click Create code.
+   Give that moderator the Player-Addon-and-Mod ZIP and their private code.
+   Keep your owner console token private.
 
 Do not put this package in the launcher's addons folder. There is no server
 add-on to enable and no separate panel to start. Keep your existing Tavern
@@ -31,16 +34,16 @@ server-spawn.json. Use Admin > Restore default server spawn to remove an overrid
 PERSONAL ADMIN ACCESS (requires player and server package 1.0.6 or newer)
 Owner: connect Prefabulator with your existing owner console token. Click
 Manage Admin Access, then New admin. Enter their name, tick the tabs they
-may use (or All tabs), and click Create token. Copy the token shown once
+may use (or All tabs), and click Create code. Copy the code shown once
 and send it privately to that admin. Keep your owner console token private.
 
-Admin: connect Prefabulator with the server address and your personal token
-in the Access Token field. Optional: tick Save my access token to reconnect
+Moderator: paste your code into the access field and click Connect.
+The code supplies the server address and your personal token automatically. Optional: tick Save my access token to reconnect
 when launching that server. Press F1 in game; only your allowed tabs appear.
 
 Owner: select an admin to change permissions or Revoke selected admin.
 Revoking disconnects their active sessions and blocks future connections.
-Replace selected token invalidates the old token and issues a new one.
+Replace selected code invalidates the old credential and issues a new code.
 All tabs does not allow managing admin access. Undo/redo requires Select,
 Arrange and Build because those tools share history. Object Loader imports
 local models; server edits still require the appropriate editing tabs.
@@ -53,3 +56,8 @@ TELEPORTER FIX IN 1.0.7
 Linked teleporters preload destination chunks on contact, let the platform
 animation finish, then move the player once the destination is safe. Replace
 the server DLL with core 1.6.1 and restart the server to get this fix.
+
+UPDATING
+This ZIP includes server core 1.6.5 with the standalone-fixture deletion fix.
+Replace the server DLL and restart. Players can update to player mod 2.3.5
+for detailed import errors. Keep existing mod data and teleporter-links.json.

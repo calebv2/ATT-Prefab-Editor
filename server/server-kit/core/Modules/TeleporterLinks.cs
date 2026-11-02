@@ -137,7 +137,7 @@ namespace PrefabEditor.Modules
             bound[root] = link;
             // Native finished activation permits the move. SafeTeleport also waits
             // for client chunk acknowledgement and a solid destination floor.
-            player.ForceTeleportTo(new Vector3(link.X, link.Y, link.Z));
+            SafeTeleport.Request(player,new Vector3(link.X, link.Y, link.Z));
             return true;
         }
         static void Contact(TeleporterPlatform platform, PlayerController player, bool pressed)

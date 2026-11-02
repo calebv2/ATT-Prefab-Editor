@@ -27,7 +27,7 @@ using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.InputSystem;
 
-[assembly: MelonInfo(typeof(PrefabEditorMod.EditorMod), "ATT Prefab Editor", "2.3.0", "ATT Prefab Editor")]
+[assembly: MelonInfo(typeof(PrefabEditorMod.EditorMod), "ATT Prefab Editor", "2.3.5", "ATT Prefab Editor")]
 [assembly: MelonGame("Alta", "A Township Tale")]
 
 namespace PrefabEditorMod
@@ -59,6 +59,7 @@ namespace PrefabEditorMod
 
         // --- runtime state ---
         private bool _active;
+        private bool _clientReady;
         private GameObject _camGO;
         private Camera _cam;
 
@@ -86,6 +87,12 @@ namespace PrefabEditorMod
 
         public override void OnInitializeMelon()
         {
+            if (Application.isBatchMode)
+            {
+                MelonLogger.Msg("ATT Prefab Editor idle in the dedicated server process; player editor starts in the player process.");
+                return;
+            }
+            PlatformFadeRecovery.Initialize(LogEdit);
             _cfg = MelonPreferences.CreateCategory("PrefabEditor");
             _toggleKey = _cfg.CreateEntry<Key>("ToggleKey", Key.F1,
                 "Toggle key", "Key that toggles the flat editor camera (new Input System Key names).");
@@ -120,6 +127,7 @@ namespace PrefabEditorMod
             _sel.OutlineRadius = Mathf.Clamp(_outlineRadius.Value, 5f, 150f);
 
             _speed = _moveSpeed.Value;
+            _clientReady = true;
             MelonLogger.Msg("ATT Prefab Editor loaded. Default OFF - press " +
                 _toggleKey.Value.ToString() + " in-game to toggle the flat freecam.");
         }
@@ -146,6 +154,8 @@ namespace PrefabEditorMod
 
         public override void OnUpdate()
         {
+            if (!_clientReady) return;
+            PlatformFadeRecovery.Tick();
             if (KeyDown(_toggleKey.Value))
             {
                 if (_active) Disable();
@@ -432,6 +442,7 @@ namespace PrefabEditorMod
 
         public override void OnDeinitializeMelon()
         {
+            PlatformFadeRecovery.Shutdown();
             if (_active) Disable();
         }
     }
