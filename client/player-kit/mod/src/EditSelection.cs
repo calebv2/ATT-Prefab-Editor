@@ -4427,6 +4427,8 @@ namespace PrefabEditorMod
             GUILayout.Space(10f);
             GUILayout.Label("Broadcast to all online players", _titleStyle);
             _broadcastMessage = _broadcastInput.Draw(_broadcastMessage);
+            if (GUILayout.Button("Paste message"))
+                _broadcastMessage = CoordinateTextField.CleanPaste(GUIUtility.systemCopyBuffer);
             GUILayout.Label("Shown in game for 10 seconds. Maximum 500 characters.", _mutedStyle);
             GUI.enabled = !_adminBusy && !string.IsNullOrEmpty(_broadcastMessage.Trim()) && _broadcastMessage.Length <= 500;
             if (GUILayout.Button("Send broadcast"))

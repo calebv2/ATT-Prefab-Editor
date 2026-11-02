@@ -1,3 +1,10 @@
+## 1.0.19 - Restore broadcast typing
+
+- Accept Unity IMGUI keyboard events as well as Input System text callbacks in the editor input bridge. Previously the bridge discarded IMGUI keys even when the separate text callback never arrived.
+- Suppress duplicate characters and edit shortcuts when both streams arrive, including across separate GUI layout/repaint calls in the same frame. Keep numeric filtering, focus isolation and keyboard cleanup.
+- Add Paste message beside the broadcast field. The same compatibility fix applies to teleporter, trading, spawn-coordinate and server-setting fields using this bridge.
+- Player DLL is now 2.3.6; server core stays 1.6.5. Existing users must install/update the player mod after replacing the add-on. A shared Mods folder requires both server and player stopped while replacing its DLLs.
+
 ## 1.0.18 - Local console with a separate game address
 
 - Add an explicit local-console option for people who host the server on their playing computer but join through a public or LAN address. Join the selected game server while connecting its console through 127.0.0.1.

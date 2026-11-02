@@ -16,17 +16,65 @@ namespace PrefabEditorMod
         Keyboard keyboard;
         bool focused;
         readonly Queue<string> pending = new Queue<string>();
+        readonly Dictionary<string, int> primaryInput = new Dictionary<string, int>();
+        readonly Dictionary<string, int> legacyInput = new Dictionary<string, int>();
+        int inputFrame = -1;
         public void Stop()
         {
             if (keyboard != null) keyboard.onTextInput -= Character;
             keyboard = null;
             focused = false;
             pending.Clear();
+            primaryInput.Clear();
+            legacyInput.Clear();
+            inputFrame = -1;
         }
         void Character(char c)
         {
             if (!focused || keyboard == null || keyboard.ctrlKey.isPressed || keyboard.altKey.isPressed) return;
-            if (numeric ? Allowed(c) : !char.IsControl(c)) pending.Enqueue("text:" + c);
+            if (numeric ? Allowed(c) : !char.IsControl(c)) QueueInput("text:" + c, false);
+        }
+        void QueueInput(string key, bool legacy)
+        {
+            if (inputFrame != Time.frameCount)
+            {
+                primaryInput.Clear();
+                legacyInput.Clear();
+                inputFrame = Time.frameCount;
+            }
+            // IMGUI may deliver the same key before or after the Input System,
+            // including after a Layout/Repaint has already drained pending.
+            Dictionary<string, int> other = legacy ? primaryInput : legacyInput;
+            int count;
+            if (other.TryGetValue(key, out count) && count > 0)
+            {
+                other[key] = count - 1;
+                return;
+            }
+            Dictionary<string, int> own = legacy ? legacyInput : primaryInput;
+            own.TryGetValue(key, out count);
+            own[key] = count + 1;
+            pending.Enqueue(key);
+        }
+        void LegacyKey(Event e)
+        {
+            if (e.control || e.command)
+            {
+                if (e.keyCode == KeyCode.A) QueueInput("all", true);
+                else if (e.keyCode == KeyCode.V) QueueInput("paste", true);
+                else if (e.keyCode == KeyCode.C) QueueInput("copy", true);
+                else if (e.keyCode == KeyCode.X) QueueInput("cut", true);
+                return;
+            }
+            if (e.alt) return;
+            if (e.keyCode == KeyCode.Backspace) QueueInput("backspace", true);
+            else if (e.keyCode == KeyCode.Delete) QueueInput("delete", true);
+            else if (e.keyCode == KeyCode.LeftArrow) QueueInput(e.shift ? "selectLeft" : "left", true);
+            else if (e.keyCode == KeyCode.RightArrow) QueueInput(e.shift ? "selectRight" : "right", true);
+            else if (e.keyCode == KeyCode.Home) QueueInput("home", true);
+            else if (e.keyCode == KeyCode.End) QueueInput("end", true);
+            else if (e.character != '\0' && (numeric ? Allowed(e.character) : !char.IsControl(e.character)))
+                QueueInput("text:" + e.character, true);
         }
         static bool Allowed(char c)
         {
@@ -47,27 +95,33 @@ namespace PrefabEditorMod
             if (!focused || keyboard == null) return;
             if (keyboard.ctrlKey.isPressed)
             {
-                if (keyboard.aKey.wasPressedThisFrame) pending.Enqueue("all");
-                if (keyboard.vKey.wasPressedThisFrame) pending.Enqueue("paste");
-                if (keyboard.cKey.wasPressedThisFrame) pending.Enqueue("copy");
-                if (keyboard.xKey.wasPressedThisFrame) pending.Enqueue("cut");
+                if (keyboard.aKey.wasPressedThisFrame) QueueInput("all", false);
+                if (keyboard.vKey.wasPressedThisFrame) QueueInput("paste", false);
+                if (keyboard.cKey.wasPressedThisFrame) QueueInput("copy", false);
+                if (keyboard.xKey.wasPressedThisFrame) QueueInput("cut", false);
             }
-            if (keyboard.backspaceKey.wasPressedThisFrame) pending.Enqueue("backspace");
-            if (keyboard.deleteKey.wasPressedThisFrame) pending.Enqueue("delete");
-            if (keyboard.leftArrowKey.wasPressedThisFrame) pending.Enqueue(keyboard.shiftKey.isPressed ? "selectLeft" : "left");
-            if (keyboard.rightArrowKey.wasPressedThisFrame) pending.Enqueue(keyboard.shiftKey.isPressed ? "selectRight" : "right");
-            if (keyboard.homeKey.wasPressedThisFrame) pending.Enqueue("home");
-            if (keyboard.endKey.wasPressedThisFrame) pending.Enqueue("end");
+            if (keyboard.backspaceKey.wasPressedThisFrame) QueueInput("backspace", false);
+            if (keyboard.deleteKey.wasPressedThisFrame) QueueInput("delete", false);
+            if (keyboard.leftArrowKey.wasPressedThisFrame) QueueInput(keyboard.shiftKey.isPressed ? "selectLeft" : "left", false);
+            if (keyboard.rightArrowKey.wasPressedThisFrame) QueueInput(keyboard.shiftKey.isPressed ? "selectRight" : "right", false);
+            if (keyboard.homeKey.wasPressedThisFrame) QueueInput("home", false);
+            if (keyboard.endKey.wasPressedThisFrame) QueueInput("end", false);
         }
         public string Draw(string value)
         {
             string name = controlName;
-            // Do not also apply Unity's legacy key event when it happens to exist.
-            if (GUI.GetNameOfFocusedControl() == name &&
-                (Event.current.type == EventType.KeyDown || Event.current.type == EventType.KeyUp)) Event.current.Use();
+            // Some desktop setups supply IMGUI text but no onTextInput callback.
+            // Accept either stream, then stop TextField applying a key twice.
+            Event e = Event.current;
+            if (GUI.enabled && GUI.GetNameOfFocusedControl() == name && e != null &&
+                (e.type == EventType.KeyDown || e.type == EventType.KeyUp))
+            {
+                if (e.type == EventType.KeyDown) LegacyKey(e);
+                e.Use();
+            }
             GUI.SetNextControlName(name);
             value = GUILayout.TextField(value ?? "");
-            focused = GUI.GetNameOfFocusedControl() == name;
+            focused = GUI.enabled && GUI.GetNameOfFocusedControl() == name;
             if (!focused) { pending.Clear(); return value; }
             TextEditor editor = (TextEditor)GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl);
             editor.text = value;

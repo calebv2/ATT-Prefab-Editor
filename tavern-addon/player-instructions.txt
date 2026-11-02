@@ -85,7 +85,7 @@ required parts of the same editor. Do not reinstall the older 1.0.7 ZIP.
 UPDATING
 Close the game and launcher, replace the add-on files, then open Prefabulator
 and use Install / update player mod before playing. This ZIP includes player
-mod 2.3.5 with detailed import errors. Keep your connection settings.
+mod 2.3.6 with detailed import errors. Keep your connection settings.
 The server needs core 1.6.5 for the standalone-fixture deletion fix.
 Existing teleporter links remain saved; no relinking is needed.
 
@@ -98,15 +98,14 @@ joining and use access for that server. Saved tokens stay tied to their server.
 CONNECTED now shows the local connection-file path and editor address.
 Retry editor connection repairs a missing file while its helper is running.
 After connecting, relaunch the player game if it was already open.
-For update 1.0.17, close the player launcher and replace addons/prefab_editor;
-the game DLLs are unchanged. Keep payload, runtime and all included folders.
+Keep payload, runtime and all included folders when replacing the add-on.
 
 MISSING PREFABULATOR BUTTON
 Version 1.0.16 fixes an add-on load failure in the packaged Tavern launcher.
 Close the CLIENT launcher, replace addons/prefab_editor beside its EXE, then
 reopen it. Under Addons, enable Prefabulator and Save, then restart the client
-launcher. The Prefabulator button appears beside TavernKeeper. No DLL update,
-server restart or Python installation is needed for this fix.
+launcher. The Prefabulator button appears beside TavernKeeper. No Python installation
+is needed.
 
 LOCAL SERVER ON YOUR PLAYING COMPUTER
 If you join using a public/LAN IP but the console only connects on localhost:
@@ -118,6 +117,11 @@ If you join using a public/LAN IP but the console only connects on localhost:
 Only tick this if the game server runs on the computer you are using to play.
 Changing game servers clears the pairing and token. Use Change server / reconnect
 if a different server was selected while already connected.
-Update 1.0.18: close the player game and Client launcher, replace only the complete
-addons/prefab_editor folder, reopen and connect before launching the player game.
-The server can stay running; no DLL replacement is needed for this update.
+
+UPDATE 1.0.19 - BROADCAST TYPING
+This update includes player DLL 2.3.6. Replacing only the launcher add-on is not
+enough: use Install / update player mod with the player game closed. For a shared
+Mods folder, stop BOTH server and player, then copy this ZIP's Mods folder into
+the shared game folder.
+The server core is unchanged. In Admin, click the broadcast box to type, or click
+Paste message to use text copied to your clipboard, then click Send broadcast.
