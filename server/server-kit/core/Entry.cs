@@ -6,7 +6,7 @@ using System.Runtime.CompilerServices;
 using Alta.Console;
 using MelonLoader;
 
-[assembly: MelonInfo(typeof(PrefabEditor.Entry), "PrefabEditorCore", "1.6.5", "ATT Prefab Editor")]
+[assembly: MelonInfo(typeof(PrefabEditor.Entry), "PrefabEditorCore", "1.6.6", "ATT Prefab Editor")]
 [assembly: MelonGame(null, null)]
 [assembly: RuntimeCompatibility(WrapNonExceptionThrows = true)]
 
@@ -109,7 +109,7 @@ namespace PrefabEditor
                 RegisterCommandModules(log);
 
                 _up = true;
-                log.Msg("PrefabEditorCore 1.6.5 up: " + string.Join(", ", status.ToArray()));
+                log.Msg("PrefabEditorCore 1.6.6 up: " + string.Join(", ", status.ToArray()));
             }
             catch (Exception e)
             {

@@ -73,10 +73,19 @@ Only tick this if the game server runs on the computer you are using to play.
 Changing game servers clears the pairing and token. Use Change server / reconnect
 if a different server was selected while already connected.
 
-UPDATE 1.0.19 - BROADCAST TYPING
-This update includes player DLL 2.3.6. Replacing only the launcher add-on is not
-enough: use Install / update player mod with the player game closed. For a shared
-Mods folder, stop BOTH server and player, then copy this ZIP's Mods folder into
-the shared game folder.
-The server core is unchanged. In Admin, click the broadcast box to type, or click
-Paste message to use text copied to your clipboard, then click Send broadcast.
+UPDATE 1.0.20
+Stop BOTH server and player and close the Client launcher. From this ZIP, copy Mods
+into the shared game folder and addons beside the Client launcher EXE. Replace the
+old files, restart the server, reconnect Prefabulator, then launch the player game.
+
+CONSOLE TAB - REQUIRES PLAYER 2.3.7 AND SERVER CORE 1.6.6
+Update BOTH mods before using Console; restart the game server after its update.
+In game, press F1, open Console, enter one command, and click Run command. The
+reply appears below. Use Paste command, Previous/Next command, Copy output and
+Clear output as needed. Commands are sent once; check the result before retrying
+if the connection fails. History is kept only until the game closes.
+Owner: Manage Admin Access > select the moderator > tick Console > Save permissions.
+Existing moderator codes stay valid, but Console is OFF until you enable it.
+Console allows unrestricted server commands. All tabs includes Console. Only the
+owner can manage access profiles. Give Console only to admins you trust with full
+server command access.

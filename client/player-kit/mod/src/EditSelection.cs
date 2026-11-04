@@ -423,6 +423,7 @@ namespace PrefabEditorMod
             get
             {
                 return (_panelTab == 10 && ServerSettingsFocused())
+                    || (_panelTab == 7 && _consoleInput.IsFocused)
                     || (_panelTab == 4 && (_broadcastInput.IsFocused || _spawnLocationInput.IsFocused))
                     || (_panelTab == 9 && (_tradeSearchInput.IsFocused || _tradePriceInput.IsFocused || _tradeQuantityInput.IsFocused || _tradeStockInput.IsFocused || _tradeAddStockInput.IsFocused))
                     || (_spawnOpen && _searchFocused) || _spawnCountFocused
@@ -447,6 +448,7 @@ namespace PrefabEditorMod
         {
             _teleporterInput.Stop();
             _broadcastInput.Stop();
+            _consoleInput.Stop();
             _spawnLocationInput.Stop();
             foreach (ServerSettingField field in _serverSettings) field.Input.Stop();
             ResetTradeForm();
@@ -664,6 +666,7 @@ namespace PrefabEditorMod
             if(Time.unscaledTime>=_nextAccessAt && !_accessPending) RefreshAccess();
             _teleporterInput.Tick(_panelTab == 8);
             _broadcastInput.Tick(_panelTab == 4);
+            _consoleInput.Tick(_panelTab == 7 && CanOpenTab(7));
             _spawnLocationInput.Tick(_panelTab == 4);
             foreach (ServerSettingField field in _serverSettings) field.Input.Tick(_panelTab == 10);
             bool tradeActive = _panelTab == 9 && IsTradeDeckSelected();
@@ -3484,12 +3487,14 @@ namespace PrefabEditorMod
             GUILayout.BeginHorizontal();
             DrawPanelTab(6, "Object Loader");
             DrawPanelTab(10, "Server Settings");
+            DrawPanelTab(7, "Console");
             GUILayout.EndHorizontal();
             GUILayout.BeginHorizontal();
             DrawPanelTab(8, "Teleporter");
             DrawPanelTab(9, "Trading");
             GUILayout.EndHorizontal();
             if (_panelTab != 8) _teleporterInput.Stop();
+            if (_panelTab != 7) _consoleInput.Stop();
             if (_panelTab != _lastPanelTab)
             {
                 _panelScroll = Vector2.zero;
@@ -3526,6 +3531,7 @@ namespace PrefabEditorMod
             else if (_panelTab == 8) DrawTeleporterControls();
             else if (_panelTab == 9) DrawTradeDeckControls();
             else if (_panelTab == 10) DrawServerSettingsTab();
+            else if (_panelTab == 7) DrawConsoleTab();
             GUILayout.EndScrollView();
 
             GUILayout.BeginVertical(GUILayout.Height(footerHeight));
@@ -3564,7 +3570,7 @@ namespace PrefabEditorMod
             switch(index)
             {
                 case 0:return "select"; case 1:return "arrange"; case 2:return "build"; case 3:return "world";
-                case 4:return "admin"; case 5:return "boards"; case 6:return "objectLoader";
+                case 4:return "admin"; case 5:return "boards"; case 6:return "objectLoader"; case 7:return "console";
                 case 8:return "teleporter"; case 9:return "trading"; case 10:return "settings";
             }
             return "";
@@ -3588,7 +3594,7 @@ namespace PrefabEditorMod
                 if(!CanOpenTab(_panelTab))
                 {
                     _panelTab=-1;
-                    foreach(int index in new[]{0,1,2,3,4,5,6,8,9,10}) if(CanOpenTab(index)) { _panelTab=index; break; }
+                    foreach(int index in new[]{0,1,2,3,4,5,6,7,8,9,10}) if(CanOpenTab(index)) { _panelTab=index; break; }
                 }
             });
         }
@@ -4388,6 +4394,11 @@ namespace PrefabEditorMod
             new ServerSettingField("HungerTick", "Hunger tick rate", false),
             new ServerSettingField("CommunityStorageMultiplier", "Community storage multiplier", false),
         };
+        readonly CoordinateTextField _consoleInput = new CoordinateTextField("ConsoleCommand", false);
+        readonly ConsoleSession _consoleSession = new ConsoleSession();
+        string _consoleDraft = "";
+        Vector2 _consoleScroll;
+        GUIStyle _consoleOutputStyle;
         readonly CoordinateTextField _broadcastInput = new CoordinateTextField("AdminBroadcast", false);
         readonly CoordinateTextField _spawnLocationInput = new CoordinateTextField("AdminSpawnLocation");
         string _broadcastMessage = "", _serverSpawnLocation = "", _settingsStatus = "";
@@ -4396,6 +4407,51 @@ namespace PrefabEditorMod
         {
             foreach (ServerSettingField field in _serverSettings) if (field.Input.IsFocused) return true;
             return false;
+        }
+
+        void DrawConsoleTab()
+        {
+            GUILayout.Label("Server console", _titleStyle);
+            GUILayout.Label("Run one command on this server. Replies appear below; commands are never retried automatically.", _mutedStyle);
+            _consoleDraft = _consoleInput.Draw(_consoleDraft);
+            GUI.enabled = !_consoleSession.Busy && !string.IsNullOrEmpty(_consoleDraft.Trim());
+            if (GUILayout.Button("Run command") && CanOpenTab(7))
+            {
+                _consoleSession.Submit(_consoleDraft, delegate(string command, Action<bool, string> done)
+                {
+                    _api.ConsoleCommand(command, delegate(EditResult result)
+                    {
+                        string exception = Json.Str(result.Raw, "exception");
+                        bool ok = result.Ok && string.IsNullOrEmpty(exception);
+                        done(ok, ConsoleSession.Reply(ok, Json.Str(result.Raw, "text"),
+                            Json.Value(result.Raw, "structured"), exception, result.Err));
+                        _consoleScroll.y = float.MaxValue;
+                    });
+                });
+            }
+            GUI.enabled = !_consoleSession.Busy;
+            if (GUILayout.Button("Paste command"))
+                _consoleDraft = (GUIUtility.systemCopyBuffer ?? "").Trim();
+            GUILayout.BeginHorizontal();
+            GUI.enabled = !_consoleSession.Busy && _consoleSession.HasPrevious;
+            if (GUILayout.Button("Previous command")) _consoleDraft = _consoleSession.Previous(_consoleDraft);
+            GUI.enabled = !_consoleSession.Busy && _consoleSession.HasNext;
+            if (GUILayout.Button("Next command")) _consoleDraft = _consoleSession.Next(_consoleDraft);
+            GUILayout.EndHorizontal();
+            GUI.enabled = true;
+            GUILayout.Label(_consoleSession.Status, _mutedStyle);
+            if (_consoleOutputStyle == null)
+                _consoleOutputStyle = new GUIStyle(GUI.skin.label) { richText = false, wordWrap = true };
+            _consoleScroll = GUILayout.BeginScrollView(_consoleScroll, GUILayout.Height(200f));
+            GUILayout.Label(string.IsNullOrEmpty(_consoleSession.Output) ? "No commands run yet." : _consoleSession.Output, _consoleOutputStyle);
+            GUILayout.EndScrollView();
+            GUILayout.BeginHorizontal();
+            GUI.enabled = !string.IsNullOrEmpty(_consoleSession.Output);
+            if (GUILayout.Button("Copy output")) GUIUtility.systemCopyBuffer = _consoleSession.Output;
+            if (GUILayout.Button("Clear output")) _consoleSession.ClearOutput();
+            GUI.enabled = true;
+            GUILayout.EndHorizontal();
+            GUILayout.Label("History is kept only until you close the game. The owner must enable Console access for a moderator.", _mutedStyle);
         }
 
         void DrawAdminTab()

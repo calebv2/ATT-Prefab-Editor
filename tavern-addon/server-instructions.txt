@@ -61,3 +61,15 @@ UPDATING
 This ZIP includes server core 1.6.5 with the standalone-fixture deletion fix.
 Replace the server DLL and restart. Players can update to player mod 2.3.5
 for detailed import errors. Keep existing mod data and teleporter-links.json.
+
+CONSOLE TAB - REQUIRES PLAYER 2.3.7 AND SERVER CORE 1.6.6
+Update BOTH mods before using Console; restart the game server after its update.
+In game, press F1, open Console, enter one command, and click Run command. The
+reply appears below. Use Paste command, Previous/Next command, Copy output and
+Clear output as needed. Commands are sent once; check the result before retrying
+if the connection fails. History is kept only until the game closes.
+Owner: Manage Admin Access > select the moderator > tick Console > Save permissions.
+Existing moderator codes stay valid, but Console is OFF until you enable it.
+Console allows unrestricted server commands. All tabs includes Console. Only the
+owner can manage access profiles. Give Console only to admins you trust with full
+server command access.

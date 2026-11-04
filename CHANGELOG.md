@@ -1,3 +1,10 @@
+## 1.0.20 - In-game Console tab
+
+- Add an in-game Console tab for single server commands and replies, with clipboard paste/copy, previous/next command history and clear output. History/output are bounded and kept in memory only.
+- Show text, structured replies and native errors without rich-text interpretation. Send commands once, block overlapping submissions, and wait up to 35 seconds for a console reply without automatic retries.
+- Add a separate Console moderator permission. Existing profiles do not gain it automatically. Console allows broad native commands, while owner-only access management and current permission/revocation checks remain enforced.
+- Update BOTH mods: player 2.3.7 and server core 1.6.6. Restart the server after updating its DLL. Existing links, access codes and world data are preserved.
+
 ## 1.0.19 - Restore broadcast typing
 
 - Accept Unity IMGUI keyboard events as well as Input System text callbacks in the editor input bridge. Previously the bridge discarded IMGUI keys even when the separate text callback never arrived.

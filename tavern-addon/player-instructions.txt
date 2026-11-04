@@ -85,8 +85,8 @@ required parts of the same editor. Do not reinstall the older 1.0.7 ZIP.
 UPDATING
 Close the game and launcher, replace the add-on files, then open Prefabulator
 and use Install / update player mod before playing. This ZIP includes player
-mod 2.3.6 with detailed import errors. Keep your connection settings.
-The server needs core 1.6.5 for the standalone-fixture deletion fix.
+mod 2.3.7 with the Console tab. Keep your connection settings.
+The Console tab also needs server core 1.6.6. Update the server mod and restart it.
 Existing teleporter links remain saved; no relinking is needed.
 
 CONNECTION TROUBLE
@@ -118,10 +118,19 @@ Only tick this if the game server runs on the computer you are using to play.
 Changing game servers clears the pairing and token. Use Change server / reconnect
 if a different server was selected while already connected.
 
-UPDATE 1.0.19 - BROADCAST TYPING
-This update includes player DLL 2.3.6. Replacing only the launcher add-on is not
-enough: use Install / update player mod with the player game closed. For a shared
-Mods folder, stop BOTH server and player, then copy this ZIP's Mods folder into
-the shared game folder.
-The server core is unchanged. In Admin, click the broadcast box to type, or click
-Paste message to use text copied to your clipboard, then click Send broadcast.
+UPDATE 1.0.20
+Close the player game and Client launcher. Replace the complete addons/prefab_editor
+folder, reopen the launcher, connect Prefabulator, and use Install / update player
+mod before playing. The server owner must update core 1.6.6 and restart the server.
+
+CONSOLE TAB - REQUIRES PLAYER 2.3.7 AND SERVER CORE 1.6.6
+Update BOTH mods before using Console; restart the game server after its update.
+In game, press F1, open Console, enter one command, and click Run command. The
+reply appears below. Use Paste command, Previous/Next command, Copy output and
+Clear output as needed. Commands are sent once; check the result before retrying
+if the connection fails. History is kept only until the game closes.
+Owner: Manage Admin Access > select the moderator > tick Console > Save permissions.
+Existing moderator codes stay valid, but Console is OFF until you enable it.
+Console allows unrestricted server commands. All tabs includes Console. Only the
+owner can manage access profiles. Give Console only to admins you trust with full
+server command access.

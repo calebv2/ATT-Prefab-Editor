@@ -436,6 +436,12 @@ namespace PrefabEditorMod
             Post("/api/command", "{\"command\":\"" + EscapeJson(command) + "\"}", cb);
         }
 
+        public void ConsoleCommand(string command, Action<EditResult> cb)
+        {
+            SendUrl(_base + "/api/command", "{\"command\":\"" + EscapeJson(command) + "\"}",
+                "console", cb, "POST", 35);
+        }
+
         static string EscapeJson(string value)
         {
             if (value == null) return "";
@@ -496,9 +502,9 @@ namespace PrefabEditorMod
         }
 
         void SendUrl(string url, string body, string service, Action<EditResult> cb,
-            string method = "POST")
+            string method = "POST", int timeout = 6)
         {
-            try { MelonCoroutines.Start(RunUrl(url, method, body, service, cb)); }
+            try { MelonCoroutines.Start(RunUrl(url, method, body, service, cb, timeout)); }
             catch (Exception e)
             {
                 if (_log != null) _log("edit request failed to start: " + e.Message);
@@ -506,7 +512,7 @@ namespace PrefabEditorMod
             }
         }
 
-        IEnumerator RunUrl(string url, string method, string body, string service, Action<EditResult> cb)
+        IEnumerator RunUrl(string url, string method, string body, string service, Action<EditResult> cb, int timeout)
         {
             UnityWebRequest req = new UnityWebRequest(url, method);
             if (body != null)
@@ -516,7 +522,7 @@ namespace PrefabEditorMod
                 req.SetRequestHeader("Content-Type", "application/json");
             }
             req.downloadHandler = new DownloadHandlerBuffer();
-            req.timeout = 6; // fail fast if the tunnel/panel is down
+            req.timeout = timeout;
 
             yield return req.SendWebRequest();
 
@@ -530,6 +536,8 @@ namespace PrefabEditorMod
                 EditResult serverError = string.IsNullOrEmpty(errorBody) ? null : EditResult.Parse(errorBody);
                 if (serverError != null && !string.IsNullOrEmpty(serverError.Err))
                     r = EditResult.Fail(serverError.Err);
+                else if (service == "console")
+                    r = EditResult.Fail("The command reply was not received (" + why + "). It may have run; check the server before retrying.");
                 else
                     r = service == "workbench"
                         ? EditResult.Fail("local String Workbench is unavailable at 127.0.0.1:1767; run player-kit/workbench/start-workbench.bat (" + why + ")")

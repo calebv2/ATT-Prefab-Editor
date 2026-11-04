@@ -19,7 +19,7 @@ namespace PrefabEditor.Modules
     }
     internal sealed class AdminAccessStore
     {
-        internal static readonly string[] TabNames = { "select", "arrange", "build", "world", "admin", "boards", "objectLoader", "teleporter", "trading", "settings" };
+        internal static readonly string[] TabNames = { "select", "arrange", "build", "world", "admin", "boards", "objectLoader", "teleporter", "trading", "settings", "console" };
         internal readonly object Gate = new object();
         readonly string file;
         List<AdminAccessRecord> records = new List<AdminAccessRecord>();
@@ -117,8 +117,14 @@ namespace PrefabEditor.Modules
         internal static bool Allowed(string command, string[] tabs)
         {
             if(string.IsNullOrWhiteSpace(command) || command.Length>512000 || command.IndexOfAny(new[]{'\r','\n','\0',';','|','&','`'})>=0) return false;
-            string[] words=command.Trim().Split(new[]{' ','\t'},StringSplitOptions.RemoveEmptyEntries);
+            string[] words=Regex.Split(command.Trim(),@"\s+");
             string key=string.Join(" ",words.Take(2).ToArray()).ToLowerInvariant();
+            // Access management stays on the owner-only RPC path, including
+            // casing/spacing variants the native parser might otherwise accept.
+            if(key=="edit access") return false;
+            // Console is an explicit broad native-command permission. It does
+            // not grant owner authentication or access-management privileges.
+            if(tabs.Contains("console")) return true;
             if(command == "help" || command == "edit capabilities" || command == "edit players" || command == "spawn list") return true;
             if(key=="edit scan" || key=="edit scanat" || key=="edit info" || key=="blueprint string") return tabs.Length>0;
             string tab=null;
