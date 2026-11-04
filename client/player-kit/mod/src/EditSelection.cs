@@ -330,6 +330,14 @@ namespace PrefabEditorMod
         // Import a blueprint JSON array (name/string/position/rotation records).
         string _importPath = "";
         bool _importPathFocused;
+        readonly CoordinateTextField _prefabPathInput = new CoordinateTextField("PrefabImportPath", false);
+        readonly CoordinateTextField _stringFilterInput = new CoordinateTextField("StringLibraryFilter", false);
+        bool _buildStrings;
+        string _stringFilter = "", _stringLibraryStatus = "Choose a string file or folder to get started.";
+        List<StringLibraryEntry> _stringLibrary = new List<StringLibraryEntry>();
+        int _selectedString = -1;
+        Vector2 _stringLibraryScroll;
+        GUIStyle _stringRowStyle, _stringNotesStyle;
         List<ImportedPrefab> _importEntries = new List<ImportedPrefab>();
         Queue<ImportedPrefab> _importQueue = new Queue<ImportedPrefab>();
         bool _importing;
@@ -423,6 +431,7 @@ namespace PrefabEditorMod
             get
             {
                 return (_panelTab == 10 && ServerSettingsFocused())
+                    || (_panelTab == 2 && (_prefabPathInput.IsFocused || _stringFilterInput.IsFocused))
                     || (_panelTab == 7 && _consoleInput.IsFocused)
                     || (_panelTab == 4 && (_broadcastInput.IsFocused || _spawnLocationInput.IsFocused))
                     || (_panelTab == 9 && (_tradeSearchInput.IsFocused || _tradePriceInput.IsFocused || _tradeQuantityInput.IsFocused || _tradeStockInput.IsFocused || _tradeAddStockInput.IsFocused))
@@ -449,6 +458,8 @@ namespace PrefabEditorMod
             _teleporterInput.Stop();
             _broadcastInput.Stop();
             _consoleInput.Stop();
+            _prefabPathInput.Stop();
+            _stringFilterInput.Stop();
             _spawnLocationInput.Stop();
             foreach (ServerSettingField field in _serverSettings) field.Input.Stop();
             ResetTradeForm();
@@ -667,6 +678,8 @@ namespace PrefabEditorMod
             _teleporterInput.Tick(_panelTab == 8);
             _broadcastInput.Tick(_panelTab == 4);
             _consoleInput.Tick(_panelTab == 7 && CanOpenTab(7));
+            _prefabPathInput.Tick(_panelTab == 2 && !_buildStrings);
+            _stringFilterInput.Tick(_panelTab == 2 && _buildStrings);
             _spawnLocationInput.Tick(_panelTab == 4);
             foreach (ServerSettingField field in _serverSettings) field.Input.Tick(_panelTab == 10);
             bool tradeActive = _panelTab == 9 && IsTradeDeckSelected();
@@ -2212,19 +2225,7 @@ namespace PrefabEditorMod
 
         static bool IsSaveString(string s)
         {
-            // Older Tavern prefabs store the serialized object as a comma-only
-            // numeric record; newer captures can append pipe-delimited data.
-            // Both forms are accepted by SerializedSavedDynamicObject, so only
-            // require a separator instead of insisting on the newer pipe form.
-            if (s == null || s.Length < 8 || s.Length > 200000 ||
-                (s.IndexOf(',') < 0 && s.IndexOf('|') < 0)) return false;
-            for (int i = 0; i < s.Length; i++)
-            {
-                char c = s[i];
-                if ((c < '0' || c > '9') && c != ',' && c != '|' && c != '.' && c != '-' && c != '+')
-                    return false;
-            }
-            return true;
+            return StringLibrary.IsSaveString(s);
         }
 
         // ---- local named layouts: save a selection as the same JSON the importer reads ----
@@ -2372,21 +2373,26 @@ namespace PrefabEditorMod
         {
             _importEntries.Clear();
             string path = (_importPath ?? "").Trim();
-            if (path.Length == 0) { SetStatus("enter the full path to a prefab JSON file", ToneErr); return; }
+            if (path.Length == 0) { SetStatus("choose a prefab or string file first", ToneErr); return; }
             if ((path.Length >= 2 && path[0] == '"' && path[path.Length - 1] == '"') ||
                 (path.Length >= 2 && path[0] == '\'' && path[path.Length - 1] == '\''))
                 path = path.Substring(1, path.Length - 2).Trim();
             if (path.StartsWith("[") || path.StartsWith("{"))
-            { SetStatus("that looks like JSON text, not a file path - save it as .json, then click Browse JSON", ToneErr); return; }
+            { SetStatus("that is prefab data, not a file path - choose the saved file with Browse prefabs", ToneErr); return; }
             try
             {
                 FileInfo fi = new FileInfo(path);
                 if (!fi.Exists) { SetStatus("file not found: " + path, ToneErr); return; }
                 if (fi.Length <= 0 || fi.Length > 10 * 1024 * 1024)
-                { SetStatus("JSON file must be between 1 byte and 10 MB", ToneErr); return; }
+                { SetStatus("prefab and string files must be between 1 byte and 10 MB", ToneErr); return; }
 
                 string contents = File.ReadAllText(path);
                 string entriesJson = contents.Trim();
+                if (!entriesJson.StartsWith("{") && !entriesJson.StartsWith("["))
+                {
+                    LoadStringEntries(StringLibrary.Parse(contents, Path.GetFileNameWithoutExtension(path), path), Path.GetFileName(path));
+                    return;
+                }
                 if (entriesJson.StartsWith("{"))
                 {
                     string wrapped = Json.Value(entriesJson, "prefabs");
@@ -2394,7 +2400,7 @@ namespace PrefabEditorMod
                 }
                 List<string> objects = Json.Objects(entriesJson);
                 if (objects.Count == 0 || objects.Count > MaxImportPrefabs)
-                { SetStatus("expected a JSON blueprint with 1 to " + MaxImportPrefabs + " prefab entries", ToneErr); return; }
+                { SetStatus("expected a prefab file with 1 to " + MaxImportPrefabs + " items", ToneErr); return; }
 
                 List<ImportedPrefab> parsed = new List<ImportedPrefab>();
                 for (int i = 0; i < objects.Count; i++)
@@ -2429,10 +2435,10 @@ namespace PrefabEditorMod
                     parsed.Add(entry);
                 }
                 _importEntries = parsed;
-                SetStatus("read " + parsed.Count + " prefabs; click Import to place at saved positions", ToneOk);
+                SetStatus("read " + parsed.Count + " prefabs; click Spawn prefabs to place them", ToneOk);
             }
-            catch (ArgumentException) { SetStatus("invalid file path - use Browse JSON or paste a file path", ToneErr); }
-            catch (Exception e) { SetStatus("could not read JSON file: " + e.Message, ToneErr); }
+            catch (ArgumentException) { SetStatus("invalid file path - use Browse prefabs or paste a file path", ToneErr); }
+            catch (Exception e) { SetStatus("could not read prefab file: " + e.Message, ToneErr); }
         }
 
         void BrowseImportFile()
@@ -2441,8 +2447,8 @@ namespace PrefabEditorMod
             {
                 using (WinForms.OpenFileDialog dialog = new WinForms.OpenFileDialog())
                 {
-                    dialog.Title = "Choose a prefab JSON file";
-                    dialog.Filter = "JSON or text files (*.json;*.txt)|*.json;*.txt|All files (*.*)|*.*";
+                    dialog.Title = "Choose a prefab or string file";
+                    dialog.Filter = "Prefab and string files (*.json;*.txt)|*.json;*.txt|All files (*.*)|*.*";
                     dialog.CheckFileExists = true;
                     dialog.Multiselect = false;
                     if (dialog.ShowDialog() == WinForms.DialogResult.OK)
@@ -3875,6 +3881,13 @@ namespace PrefabEditorMod
 
         void DrawBuildTab()
         {
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button(!_buildStrings ? "PREFABS" : "Prefabs"))
+            { _buildStrings = false; _stringFilterInput.Stop(); }
+            if (GUILayout.Button(_buildStrings ? "STRINGS" : "Strings"))
+            { _buildStrings = true; _prefabPathInput.Stop(); if (_spawnOpen) CloseSpawn(); }
+            GUILayout.EndHorizontal();
+            if (_buildStrings) { DrawStringLibraryControls(); return; }
             GUILayout.Label("Spawn & prefab", _titleStyle);
             GUILayout.BeginHorizontal();
             if (GUILayout.Button(_spawnOpen ? "Close spawn" : "Spawn prefab")) ToggleSpawn();
@@ -3895,9 +3908,9 @@ namespace PrefabEditorMod
             if (!_has) GUILayout.Label("Select an item to copy its save string or replace it.", _mutedStyle);
             else if (_group.Count > 1) GUILayout.Label("Select one item to replace it with a save string.", _mutedStyle);
             GUILayout.Space(8f);
-            GUILayout.Label("Saved layouts", _titleStyle);
+            GUILayout.Label("Saved prefabs", _titleStyle);
             GUI.enabled = _has && !_busy;
-            if (GUILayout.Button("Save selected items as layout...")) SaveSelectedLayout();
+            if (GUILayout.Button("Save selected prefabs...")) SaveSelectedLayout();
             GUI.enabled = true;
             if (!_has) GUILayout.Label("Select items to enable layout saving.", _mutedStyle);
             GUILayout.Label("A layout stores each prefab's save string, position, and rotation.", _mutedStyle);
@@ -5869,6 +5882,125 @@ namespace PrefabEditorMod
             return ok;
         }
 
+        void LoadStringEntries(List<StringLibraryEntry> entries, string source)
+        {
+            _stringLibrary = entries ?? new List<StringLibraryEntry>();
+            _selectedString = _stringLibrary.Count > 0 ? 0 : -1;
+            _stringFilter = "";
+            _stringLibraryScroll = Vector2.zero;
+            _stringFilterInput.Stop();
+            _buildStrings = true;
+            _stringLibraryStatus = _stringLibrary.Count > 0
+                ? "Loaded " + _stringLibrary.Count + " string variants from " + source + ". Choose one, then click Spawn selected string."
+                : "No spawnable strings found in " + source + ". Choose an item string file or folder.";
+            SetStatus(_stringLibraryStatus, _stringLibrary.Count > 0 ? ToneOk : ToneErr);
+        }
+
+        void BrowseStringFile()
+        {
+            try
+            {
+                using (WinForms.OpenFileDialog dialog = new WinForms.OpenFileDialog())
+                {
+                    dialog.Title = "Choose a string file";
+                    dialog.Filter = "String files (*.txt)|*.txt|All files (*.*)|*.*";
+                    dialog.CheckFileExists = true;
+                    if (dialog.ShowDialog() == WinForms.DialogResult.OK)
+                        LoadStringEntries(StringLibrary.ReadFile(dialog.FileName), Path.GetFileName(dialog.FileName));
+                }
+            }
+            catch (Exception e) { _stringLibraryStatus = "Could not load strings: " + e.Message; }
+        }
+
+        void BrowseStringFolder()
+        {
+            try
+            {
+                using (WinForms.FolderBrowserDialog dialog = new WinForms.FolderBrowserDialog())
+                {
+                    dialog.Description = "Choose the folder containing your string text files";
+                    dialog.ShowNewFolderButton = false;
+                    if (dialog.ShowDialog() != WinForms.DialogResult.OK) return;
+                    int skipped;
+                    List<StringLibraryEntry> entries = StringLibrary.ReadFolder(dialog.SelectedPath, out skipped);
+                    LoadStringEntries(entries, dialog.SelectedPath);
+                    if (skipped > 0) _stringLibraryStatus += " Skipped " + skipped + " files with no usable strings or files that could not be read.";
+                }
+            }
+            catch (Exception e) { _stringLibraryStatus = "Could not load string folder: " + e.Message; }
+        }
+
+        void SpawnSelectedString()
+        {
+            if (_busy || _importing || Camera == null || !CanOpenTab(2) ||
+                _selectedString < 0 || _selectedString >= _stringLibrary.Count) return;
+            StringLibraryEntry entry = _stringLibrary[_selectedString];
+            if (!IsSaveString(entry.SaveString)) { SetStatus("Select a valid item string first.", ToneErr); return; }
+            Vector3 at = Camera.transform.position + Camera.transform.forward * 3f;
+            _busy = true;
+            SetStatus("spawning " + entry.Name + "...");
+            _api.Paste(at.x, at.y, at.z, entry.SaveString, delegate(EditResult result)
+            {
+                _busy = false;
+                if (!result.Ok) { SetStatus("string spawn: " + Reason(result) + ". Check the world before trying again.", ToneErr); return; }
+                RefreshHistory(false);
+                if (result.Ent != null && result.Ent.Id != 0)
+                {
+                    SetStatus("spawned " + entry.Name + " #" + result.Ent.Id, ToneOk);
+                    AdoptSoon(result.Ent.Id);
+                }
+                else SetStatus("The server returned no item id. Check the world before trying again.", ToneErr);
+            });
+        }
+
+        void DrawStringLibraryControls()
+        {
+            GUILayout.Label("Spawn strings", _titleStyle);
+            GUILayout.Label("Choose a file or folder, select one variant, then spawn it 3 m in front of the editor camera.", _mutedStyle);
+            GUI.enabled = !_busy && !_importing;
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Browse string file...")) BrowseStringFile();
+            if (GUILayout.Button("Browse string folder...")) BrowseStringFolder();
+            GUILayout.EndHorizontal();
+            if (GUILayout.Button("Read strings from clipboard"))
+            {
+                try { LoadStringEntries(StringLibrary.Parse(GUIUtility.systemCopyBuffer ?? "", "Clipboard", ""), "clipboard"); }
+                catch (Exception e) { _stringLibraryStatus = "Could not read clipboard: " + e.Message; }
+            }
+            GUI.enabled = true;
+            if (_stringNotesStyle == null)
+            {
+                _stringNotesStyle = new GUIStyle(GUI.skin.label) { richText = false, wordWrap = true };
+                _stringRowStyle = new GUIStyle(GUI.skin.button) { richText = false, wordWrap = true, alignment = TextAnchor.MiddleLeft };
+            }
+            GUILayout.Label(_stringLibraryStatus, _stringNotesStyle);
+            if (_stringLibrary.Count == 0) return;
+            GUILayout.Label("Find a string by name", _mutedStyle);
+            _stringFilter = _stringFilterInput.Draw(_stringFilter);
+            string query = _stringFilter.Trim();
+            int shown = 0;
+            _stringLibraryScroll = GUILayout.BeginScrollView(_stringLibraryScroll, GUILayout.Height(180f));
+            for (int i = 0; i < _stringLibrary.Count; i++)
+            {
+                StringLibraryEntry entry = _stringLibrary[i];
+                if (query.Length > 0 && entry.Name.IndexOf(query, StringComparison.OrdinalIgnoreCase) < 0) continue;
+                shown++;
+                if (GUILayout.Button((_selectedString == i ? "> " : "") + entry.Name, _stringRowStyle)) _selectedString = i;
+            }
+            GUILayout.EndScrollView();
+            if (shown == 0) { GUILayout.Label("No strings match that name. Clear or change the search.", _mutedStyle); return; }
+            if (_selectedString < 0 || _selectedString >= _stringLibrary.Count) return;
+            StringLibraryEntry selected = _stringLibrary[_selectedString];
+            if (query.Length > 0 && selected.Name.IndexOf(query, StringComparison.OrdinalIgnoreCase) < 0)
+            { GUILayout.Label("Select a matching string from the list.", _mutedStyle); return; }
+            GUILayout.Label("Selected: " + selected.Name, _stringNotesStyle);
+            if (!string.IsNullOrEmpty(selected.Warning)) GUILayout.Label("File note: " + selected.Warning, _stringNotesStyle);
+            GUI.enabled = !_busy && !_importing && Camera != null && CanOpenTab(2);
+            if (GUILayout.Button(_busy ? "Spawning..." : "Spawn selected string")) SpawnSelectedString();
+            GUI.enabled = true;
+            GUILayout.Label("Each click spawns one selected variant. Items can be selected, moved and undone after spawning.", _mutedStyle);
+        }
+
         void DrawResizeControls()
         {
             bool enabled = _has && _group.Count > 0 && !_busy;
@@ -5912,30 +6044,29 @@ namespace PrefabEditorMod
         void DrawImportControls()
         {
             GUILayout.Space(4f);
-            GUILayout.Label("Import JSON: " + (_importAtCamera ? "3 m ahead; keep layout" : "original positions"));
+            GUILayout.Label("Load prefabs: " + (_importAtCamera ? "3 m ahead; keep layout" : "original positions"));
             GUILayout.BeginHorizontal();
             if (GUILayout.Button((_importAtCamera ? "> " : "") + "At camera")) _importAtCamera = true;
             if (GUILayout.Button((!_importAtCamera ? "> " : "") + "Original positions")) _importAtCamera = false;
             GUILayout.EndHorizontal();
-            GUI.SetNextControlName("PrefabImportPath");
-            string path = GUILayout.TextField(_importPath);
+            string path = _prefabPathInput.Draw(_importPath);
             if (path != _importPath)
             {
                 _importPath = path;
                 _importEntries.Clear();
             }
-            _importPathFocused = GUI.GetNameOfFocusedControl() == "PrefabImportPath";
+            _importPathFocused = _prefabPathInput.IsFocused;
             GUILayout.BeginHorizontal();
-            GUI.enabled = !_importing;
-            if (GUILayout.Button("Browse JSON...")) BrowseImportFile();
+            GUI.enabled = !_importing && !_busy;
+            if (GUILayout.Button("Browse prefabs...")) BrowseImportFile();
             if (GUILayout.Button("Read file")) ReadImportFile();
             if (_importEntries != null && _importEntries.Count > 0 &&
-                GUILayout.Button(_importing ? "Importing..." : "Import " + _importEntries.Count + " prefabs"))
+                GUILayout.Button(_importing ? "Spawning..." : "Spawn " + _importEntries.Count + " prefabs"))
                 StartImport();
             GUI.enabled = true;
             GUILayout.EndHorizontal();
             if (_importEntries == null || _importEntries.Count == 0)
-                GUILayout.Label("Choose a JSON file and click Read file to enable import.", _mutedStyle);
+                GUILayout.Label("Choose a saved prefab file to load its items. String files open in Strings so you can choose one variant.", _mutedStyle);
         }
 
         void DrawStatusLine(string text)

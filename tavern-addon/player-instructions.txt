@@ -85,7 +85,7 @@ required parts of the same editor. Do not reinstall the older 1.0.7 ZIP.
 UPDATING
 Close the game and launcher, replace the add-on files, then open Prefabulator
 and use Install / update player mod before playing. This ZIP includes player
-mod 2.3.7 with the Console tab. Keep your connection settings.
+mod 2.3.8 with Prefabs and Strings. Keep your connection settings.
 The Console tab also needs server core 1.6.6. Update the server mod and restart it.
 Existing teleporter links remain saved; no relinking is needed.
 
@@ -118,10 +118,11 @@ Only tick this if the game server runs on the computer you are using to play.
 Changing game servers clears the pairing and token. Use Change server / reconnect
 if a different server was selected while already connected.
 
-UPDATE 1.0.20
+UPDATE 1.0.21
 Close the player game and Client launcher. Replace the complete addons/prefab_editor
 folder, reopen the launcher, connect Prefabulator, and use Install / update player
-mod before playing. The server owner must update core 1.6.6 and restart the server.
+mod before playing. This installs player 2.3.8. Server core stays 1.6.6; a separate
+server does not need an update for this release.
 
 CONSOLE TAB - REQUIRES PLAYER 2.3.7 AND SERVER CORE 1.6.6
 Update BOTH mods before using Console; restart the game server after its update.
@@ -134,3 +135,14 @@ Existing moderator codes stay valid, but Console is OFF until you enable it.
 Console allows unrestricted server commands. All tabs includes Console. Only the
 owner can manage access profiles. Give Console only to admins you trust with full
 server command access.
+
+PREFABS AND STRINGS
+Build now has Prefabs and Strings sections. The old JSON import is called Prefabs;
+your existing saved prefab files still work.
+To spawn a local item string: press F1 > Build > Strings > Browse string file or
+Browse string folder. Choose the folder containing your .txt files. Search by
+name, select a variant, then click Spawn selected string. It appears 3 m in front
+of the editor camera. You can also use Read strings from clipboard.
+Files with several labeled strings show separate choices. Instruction-only files
+are skipped. Generator code is ignored and file warnings are shown before spawning.
+Each click spawns ONE selected variant. String spawning uses the Build permission.

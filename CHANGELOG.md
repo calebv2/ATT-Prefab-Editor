@@ -1,3 +1,12 @@
+## 1.0.21 - Prefabs wording and string library spawning
+
+- Rename the in-game prefab import headings, picker and actions to Prefabs. Existing prefab layout files stay compatible.
+- Add Build > Strings for local text files, folders and clipboard data. Show each labeled variant separately, search by name and spawn only the selected variant 3 m ahead of the editor camera.
+- Extract complete numeric save-string lines from mixed documents; skip prose, generators and source code. Keep authored warning notes visible beside the selected item. Library scans and payload sizes stay bounded.
+- Use the existing server-authoritative paste/undo path and Build permission. Block overlapping clicks, select the spawned entity, and never retry an uncertain result automatically.
+- Allow paste/replace HTTP bodies to carry strings up to the existing 200,000-character limit and give native paste requests longer to return.
+- Player DLL is now 2.3.8; server core remains 1.6.6. Existing users must update the player mod after replacing the add-on. A separate server update is not needed for this release.
+
 ## 1.0.20 - In-game Console tab
 
 - Add an in-game Console tab for single server commands and replies, with clipboard paste/copy, previous/next command history and clear output. History/output are bounded and kept in memory only.

@@ -228,8 +228,8 @@ namespace PrefabEditorMod
         // the save-string charset (digits/commas/pipe/./+/-), so it's JSON-safe raw.
         public void Paste(float x, float y, float z, string data, Action<EditResult> cb)
         {
-            Post("/api/edit/paste", "{\"x\":" + F(x) + ",\"y\":" + F(y) + ",\"z\":" + F(z)
-                + ",\"string\":\"" + data + "\"}", cb);
+            SendUrl(_base + "/api/edit/paste", "{\"x\":" + F(x) + ",\"y\":" + F(y) + ",\"z\":" + F(z)
+                + ",\"string\":\"" + data + "\"}", "panel", cb, "POST", 35);
         }
 
         // In-place swap (edit replace): the selected entity dies, the string

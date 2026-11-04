@@ -699,9 +699,9 @@ function createServer(opts) {
                         : { ok: false, error: out.error });
                 }
                 case 'POST /api/edit/paste':
-                    return runEdit(res, builders.editPaste(await readBody(req)));
+                    return runEdit(res, builders.editPaste(await readBody(req, 256 * 1024)));
                 case 'POST /api/edit/replace':
-                    return runEdit(res, builders.editReplace(await readBody(req)));
+                    return runEdit(res, builders.editReplace(await readBody(req, 256 * 1024)));
                 case 'POST /api/edit/spawnat':
                     return runEdit(res, builders.editSpawnAt(await readBody(req)));
 
