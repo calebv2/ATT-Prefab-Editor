@@ -86,8 +86,8 @@ Clear output as needed. Commands are sent once; check the result before retrying
 if the connection fails. History is kept only until the game closes.
 Owner: Manage Admin Access > select the moderator > tick Console > Save permissions.
 Existing moderator codes stay valid, but Console is OFF until you enable it.
-Console allows unrestricted server commands. All tabs includes Console. Only the
-owner can manage access profiles. Give Console only to admins you trust with full
+Console allows unrestricted server commands. Enable it separately from Select all
+tools. Only the owner can manage access profiles. Give Console only to admins you trust with full
 server command access.
 
 PREFABS AND STRINGS
@@ -100,3 +100,12 @@ of the editor camera. You can also use Read strings from clipboard.
 Files with several labeled strings show separate choices. Instruction-only files
 are skipped. Generator code is ignored and file warnings are shown before spawning.
 Each click spawns ONE selected variant. String spawning uses the Build permission.
+
+CONNECTION DIAGNOSTICS AND MODERATOR ACCESS
+Open Connection diagnostics in Prefabulator to check the selected game's DLLs,
+its connection file, running helpers and local ports. Copy report if you need
+help. A shared Mods folder normally contains one player DLL and one server DLL.
+Owners can create and edit moderator profiles in Manage Admin Access. Use the
+permission checkboxes to choose the tools each moderator can use.
+For 1.0.22, close the Client launcher and replace its complete addons/prefab_editor
+folder. Users already on 1.0.21 can keep their installed DLLs.

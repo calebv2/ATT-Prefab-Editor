@@ -10,7 +10,7 @@ This is a game mod, not a Tavern Launcher add-on.
    Use the game folder containing A Township Tale_Data.
 3. Start the game server again.
 4. Connect your own Prefabulator with your owner console token. Open Manage
-   Admin Access, enter a moderator name, choose tabs, and click Create code.
+   Admin Access, enter a moderator name, choose permissions, and click Create access code.
    Give that moderator the Player-Addon-and-Mod ZIP and their private code.
    Keep your owner console token private.
 
@@ -34,8 +34,8 @@ server-spawn.json. Use Admin > Restore default server spawn to remove an overrid
 PERSONAL ADMIN ACCESS (requires player and server package 1.0.6 or newer)
 Owner: connect Prefabulator with your existing owner console token. Click
 Manage Admin Access, then New admin. Enter their name, tick the tabs they
-may use (or All tabs), and click Create code. Copy the code shown once
-and send it privately to that admin. Keep your owner console token private.
+may use, then click Create access code. Click Copy access code
+and send it privately to that moderator. Keep your owner console token private.
 
 Moderator: paste your code into the access field and click Connect.
 The code supplies the server address and your personal token automatically. Optional: tick Save my access token to reconnect
@@ -44,7 +44,7 @@ when launching that server. Press F1 in game; only your allowed tabs appear.
 Owner: select an admin to change permissions or Revoke selected admin.
 Revoking disconnects their active sessions and blocks future connections.
 Replace selected code invalidates the old credential and issues a new code.
-All tabs does not allow managing admin access. Undo/redo requires Select,
+Only the owner can manage admin access. Undo/redo requires Select,
 Arrange and Build because those tools share history. Object Loader imports
 local models; server edits still require the appropriate editing tabs.
 
@@ -70,6 +70,6 @@ Clear output as needed. Commands are sent once; check the result before retrying
 if the connection fails. History is kept only until the game closes.
 Owner: Manage Admin Access > select the moderator > tick Console > Save permissions.
 Existing moderator codes stay valid, but Console is OFF until you enable it.
-Console allows unrestricted server commands. All tabs includes Console. Only the
-owner can manage access profiles. Give Console only to admins you trust with full
+Console allows unrestricted server commands. Enable it separately from Select all
+tools. Only the owner can manage access profiles. Give Console only to admins you trust with full
 server command access.

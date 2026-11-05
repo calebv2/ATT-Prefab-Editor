@@ -1,3 +1,9 @@
+## 1.0.22 - Connection diagnostics and moderator access
+
+- Add Connection diagnostics before and after connecting. Check the selected game folder for matching DLLs, identify the current helper and additional matching processes, and report local listener ownership and stale game connection files.
+- Improve the owner workflow for creating and editing moderator profiles and copying access codes.
+- This update replaces the launcher add-on. Player DLL 2.3.8 and server core 1.6.6 are included.
+
 ## 1.0.21 - Prefabs wording and string library spawning
 
 - Rename the in-game prefab import headings, picker and actions to Prefabs. Existing prefab layout files stay compatible.
