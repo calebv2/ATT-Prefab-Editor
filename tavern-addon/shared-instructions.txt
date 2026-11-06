@@ -109,3 +109,10 @@ Owners can create and edit moderator profiles in Manage Admin Access. Use the
 permission checkboxes to choose the tools each moderator can use.
 For 1.0.22, close the Client launcher and replace its complete addons/prefab_editor
 folder. Users already on 1.0.21 can keep their installed DLLs.
+
+SERVER UPDATE 1.0.23
+Install PrefabEditorCore.dll 1.6.7 on the server to fix duplicate owner WebSocket
+commands. Stop the server, replace its Mods/PrefabEditorCore.dll, and start it.
+Confirm the server log says PrefabEditorCore 1.6.7 up. Reconnect console sessions.
+Use Server-Mod-Only for an existing separate server. For a shared Mods folder,
+stop both server and player before replacing the server DLL.

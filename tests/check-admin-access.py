@@ -1,12 +1,21 @@
-"""Compile and exercise actual server bridge commands against real JSON/files."""
+"""Exercise the server bridge with a native-style callback transition and real JSON/files.
+
+Pass --newtonsoft with MelonLoader/net472/Newtonsoft.Json.dll to run offline.
+"""
+import argparse
 from pathlib import Path
 import io
+import shutil
 import subprocess
 import tempfile
 import urllib.request
 import zipfile
 
-source = Path(__file__).resolve().parents[1]/'server/server-kit/core/Modules/AdminAccess.cs'
+modules = Path(__file__).resolve().parents[1] / 'server/server-kit/core/Modules'
+parser = argparse.ArgumentParser()
+parser.add_argument('--newtonsoft', type=Path, help='Use a local .NET Framework build of Newtonsoft.Json.dll')
+parser.add_argument('--source', type=Path, default=modules / 'AdminAccess.cs', help='Override source for a before/after regression check')
+args = parser.parse_args()
 harness = r'''
 using System;
 using System.Collections.Generic;
@@ -31,8 +40,45 @@ namespace Alta.Console {
  public class CommandResult {public string ResultString="done";}
  public static class CommandService {public static List<string> Calls=new List<string>();public static Task<CommandResult> Handle(string command,CommandContext context){Calls.Add(command);return Task.FromResult(new CommandResult());}}
  public class WebSocketCommandHandler {
-  public Fleck.IWebSocketConnection connection;public bool IsAuthorized;public WebSocketCommandHandler(Fleck.IWebSocketConnection s){connection=s;}
-  public void OnOpen(){} public void OnClose(){} public void HandleRequest(string wire){}
+  public const string TestOwnerToken="owner-test-token";
+  public Fleck.IWebSocketConnection connection;
+  public bool IsAuthorized, DelayAuthorization;
+  public int NativeAuthCalls, NativeRejections;
+  public WebSocketCommandHandler(Fleck.IWebSocketConnection socket){
+   connection=socket;
+   connection.OnMessage+=OnAuthorize;
+  }
+  public void OnOpen(){} public void OnClose(){}
+  void OnAuthorize(string message){
+   NativeAuthCalls++;
+   if(IsAuthorized){
+    // Native ProcessPreAuthorizedRequest resets subscriptions and dispatches this frame itself.
+    connection.OnMessage-=OnAuthorize;
+    connection.OnMessage-=HandleRequest;
+    connection.OnMessage+=HandleRequest;
+    HandleRequest(message);
+    return;
+   }
+   if(message!=TestOwnerToken){
+    NativeRejections++;
+    connection.Close();
+    return;
+   }
+   Action finish=delegate{
+    IsAuthorized=true;
+    connection.OnMessage-=OnAuthorize;
+    connection.OnMessage+=HandleRequest;
+   };
+   if(DelayAuthorization) Alta.Core.Threading.MainThreadDispatcher.Run(finish);
+   else finish();
+  }
+  public void HandleRequest(string wire){
+   var request=JObject.Parse(wire);
+   Alta.Core.Threading.MainThreadDispatcher.Run(delegate{
+    var result=CommandService.Handle((string)request["content"],null).GetAwaiter().GetResult();
+    Send(ResponseType.CommandResult,result,null,(uint)request["id"]);
+   });
+  }
   public enum ResponseType{A,B,CommandResult}
   public void Send(ResponseType type,object result,string text,uint? id){connection.Send(JsonConvert.SerializeObject(new{type="CommandResult",commandId=id,data=result}));}
  }
@@ -48,13 +94,48 @@ class Test {
  static void Check(bool value,string message){if(!value)throw new Exception(message);}
  static object Call(string name,params object[] args){return typeof(AdminAccess).GetMethod(name,BindingFlags.Static|BindingFlags.NonPublic).Invoke(null,args);}
  static string Access(object value){return "edit access "+Convert.ToBase64String(Encoding.UTF8.GetBytes(JsonConvert.SerializeObject(value)));}
- static string Wire(string command){return JsonConvert.SerializeObject(new{id=3,content=command});}
+ static string Wire(string command,uint id=3){return JsonConvert.SerializeObject(new{id=id,content=command});}
  static JObject Last(Fleck.Socket socket){return JObject.Parse(socket.Sent.Last());}
  static JObject Result(Fleck.Socket socket){return JObject.Parse((string)Last(socket)["data"]["ResultString"]);}
  static JObject Owner(Alta.Console.WebSocketCommandHandler owner,Fleck.Socket socket,object action){Check(!(bool)Call("OwnerRequest",owner,Wire(Access(action))),"owner RPC intercepted");Alta.Core.Threading.MainThreadDispatcher.Drain();return Result(socket);}
+ static Alta.Console.WebSocketCommandHandler CheckNativeOwner(Fleck.Socket socket){
+  int existingObserver=0, laterObserver=0;
+  socket.OnMessage=message=>existingObserver++;
+  var owner=new Alta.Console.WebSocketCommandHandler(socket){DelayAuthorization=true};
+  Call("Opened",owner);
+  Action<string> retired=socket.OnMessage;
+  socket.OnMessage+=message=>laterObserver++;
+  socket.OnMessage(Alta.Console.WebSocketCommandHandler.TestOwnerToken);
+  Check(!owner.IsAuthorized && owner.NativeAuthCalls==1,"owner auth begins on native path before async completion");
+  Alta.Core.Threading.MainThreadDispatcher.Drain();
+  Check(owner.IsAuthorized && !socket.Closed,"native owner authentication succeeds");
+  // Two distinct request IDs carry the same command, proving deliberate repeats still work.
+  const string command="time set 12";
+  foreach(uint id in new uint[]{101,102}){
+   int previous=Alta.Console.CommandService.Calls.Count, replies=socket.Sent.Count;
+   socket.OnMessage(Wire(command,id));
+   Alta.Core.Threading.MainThreadDispatcher.Drain();
+   Check(Alta.Console.CommandService.Calls.Count==previous+1 && Alta.Console.CommandService.Calls.Last()==command,
+         "each ordinary owner command runs exactly once");
+   Check(socket.Sent.Count==replies+1 && (uint)Last(socket)["commandId"]==id,"one native reply for the matching request ID");
+  }
+  var callbacks=socket.OnMessage.GetInvocationList();
+  Check(callbacks.Length==3 && callbacks.Count(d=>d.Target==owner && d.Method.Name=="HandleRequest")==1,
+        "native request handler installed once, with both observers and no retired wrapper");
+  retired(Wire(command,103));
+  Alta.Core.Threading.MainThreadDispatcher.Drain();
+  Check(owner.NativeAuthCalls==1 && Alta.Console.CommandService.Calls.Count==2,"stale first-message callback cannot redispatch");
+  Check(existingObserver==3 && laterObserver==3,"callbacks added before and after Opened each survive once per frame");
+  Alta.Console.CommandService.Calls.Clear();
+  return owner;
+ }
  static void Main(string[] args){
   Directory.CreateDirectory(args[0]);AdminAccess.Initialize(args[0],s=>{throw new Exception(s);});
-  var ownerSocket=new Fleck.Socket();var owner=new Alta.Console.WebSocketCommandHandler(ownerSocket){IsAuthorized=true};
+  var ownerSocket=new Fleck.Socket();var owner=CheckNativeOwner(ownerSocket);
+  var badOwnerSocket=new Fleck.Socket();var badOwner=new Alta.Console.WebSocketCommandHandler(badOwnerSocket);
+  Call("Opened",badOwner);badOwnerSocket.OnMessage("invalid-owner-token");
+  Check(badOwnerSocket.Closed && !badOwner.IsAuthorized && badOwner.NativeAuthCalls==1 && badOwner.NativeRejections==1,
+        "invalid ordinary token follows native rejection");
   var created=Owner(owner,ownerSocket,new{action="create",name="Alice",tabs=new[]{"build"}});
   string token=(string)created["token"],id=(string)created["id"];
   Check(token.StartsWith("pfa1."),"personal token issued");
@@ -62,9 +143,12 @@ class Test {
   var reload=new AdminAccessStore(file);Check(reload.Authenticate(token)!=null,"token survives reload");
   Check(reload.Authenticate(token+"x")==null,"modified token refused");
   var socket=new Fleck.Socket();int nativeCalls=0;socket.OnMessage=s=>nativeCalls++;
-  var handler=new Alta.Console.WebSocketCommandHandler(socket);Call("Opened",handler);socket.OnMessage(token);
+  var handler=new Alta.Console.WebSocketCommandHandler(socket);Call("Opened",handler);
+  Action<string> retiredPersonal=socket.OnMessage;
+  socket.OnMessage(token);
   Check(((string)Last(socket)["data"]).Contains("Connection Succeeded"),"personal handshake");
-  Check(!handler.IsAuthorized && nativeCalls==0,"personal token never grants native owner auth");
+  retiredPersonal(Alta.Console.WebSocketCommandHandler.TestOwnerToken);
+  Check(!handler.IsAuthorized && nativeCalls==0 && handler.NativeAuthCalls==0,"personal token and stale interceptor never reach native owner auth");
   socket.OnMessage(Wire("edit spawnat 0 1 2 123"));Alta.Core.Threading.MainThreadDispatcher.Drain();
   Check(Alta.Console.CommandService.Calls.Count==1,"permitted build executes");
   foreach(string denied in new[]{"edit kill Alice","settings changesetting server XPX 2","save full-wipe","repeat 1 1 true","edit spawnat 0 1 2 123; save full-wipe",Access(new{action="create",name="Mallory",tabs=AdminAccessStore.TabNames})}){
@@ -122,15 +206,19 @@ class Test {
   Check(consoleRetrySocket.Closed,"revoked console credential cannot reconnect");
   foreach(string command in new[]{"exec","edit access anything","settings changesetting server IsSaving false","edit undo","spawn exact 0,0,0 0,0,0 1 | quit"})Check(!AdminAccessStore.Allowed(command,new[]{"build","settings"}),"allowlist default denial");
   File.WriteAllText(file,"broken");Check(new AdminAccessStore(file).Authenticate((string)rotated["token"])==null,"corrupt file fails closed");
-  AdminAccess.Shutdown();System.Console.WriteLine("PASS: personal admission, hashed storage/reload, owner-only management, tab restrictions, active changes, rotation, revocation/disconnect, reconnect denial, corruption, console grants/removal, queued revocation and raw-command bypass rejection");
+  AdminAccess.Shutdown();System.Console.WriteLine("PASS: native owner auth and single dispatch, invalid owner rejection, callback preservation, stale callback isolation, personal permissions and revocation");
  }
 }
 '''
 with tempfile.TemporaryDirectory(prefix='tavern-server-test-') as folder:
     root=Path(folder)
-    package=urllib.request.urlopen('https://api.nuget.org/v3-flatcontainer/newtonsoft.json/13.0.3/newtonsoft.json.13.0.3.nupkg', timeout=30).read()
-    with zipfile.ZipFile(io.BytesIO(package)) as archive:
-        (root/'Newtonsoft.Json.dll').write_bytes(archive.read('lib/net45/Newtonsoft.Json.dll'))
+    json_dll = root / 'Newtonsoft.Json.dll'
+    if args.newtonsoft:
+        shutil.copyfile(args.newtonsoft, json_dll)
+    else:
+        package=urllib.request.urlopen('https://api.nuget.org/v3-flatcontainer/newtonsoft.json/13.0.3/newtonsoft.json.13.0.3.nupkg', timeout=30).read()
+        with zipfile.ZipFile(io.BytesIO(package)) as archive:
+            json_dll.write_bytes(archive.read('lib/net45/Newtonsoft.Json.dll'))
     (root/'Test.cs').write_text(harness)
-    subprocess.run([r'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe','/nologo','/out:'+str(root/'test.exe'),'/r:'+str(root/'Newtonsoft.Json.dll'),str(source),str(source.with_name('AdminAccessStore.cs')),str(root/'Test.cs')],check=True)
+    subprocess.run([r'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe','/nologo','/out:'+str(root/'test.exe'),'/r:'+str(json_dll),str(args.source),str(modules/'AdminAccessStore.cs'),str(root/'Test.cs')],check=True)
     subprocess.run([str(root/'test.exe'),str(root/'data')],check=True)

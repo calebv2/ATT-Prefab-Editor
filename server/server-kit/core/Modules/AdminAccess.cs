@@ -58,8 +58,11 @@ namespace PrefabEditor.Modules
         {
             var socket=(IWebSocketConnection)socketField.GetValue(__instance);
             Action<string> native=socket.OnMessage;
-            socket.OnMessage=delegate(string message)
+            int firstMessageClaimed = 0;
+            Action<string> firstMessage = null;
+            firstMessage = delegate(string message)
             {
+                if (Interlocked.Exchange(ref firstMessageClaimed, 1) != 0) return;
                 if(message!=null && message.StartsWith("pfa1.",StringComparison.Ordinal))
                 {
                     var record=ready?store.Authenticate(message):null;
@@ -74,8 +77,14 @@ namespace PrefabEditor.Modules
                     SystemMessage(socket,"Connection Succeeded (personal Prefabulator access)");
                     return;
                 }
-                if(native!=null) native(message);
+                // Native auth removes its exact OnAuthorize delegate and adds
+                // HandleRequest. Restore the delegate before forwarding so the
+                // game can remove it, including when authorization is async.
+                // Keep any callbacks registered after this one-shot interceptor.
+                socket.OnMessage = native + (socket.OnMessage - firstMessage);
+                if (native != null) native(message);
             };
+            socket.OnMessage = firstMessage;
         }
         static void Closed(WebSocketCommandHandler __instance) { lock(gate) sessions.Remove(__instance); }
         static bool OwnerRequest(WebSocketCommandHandler __instance, string __0)

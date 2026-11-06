@@ -1,3 +1,9 @@
+## 1.0.23 - Fix duplicate owner console commands
+
+- Make the personal-token interceptor a one-shot callback. Ordinary owner authentication restores the native WebSocket authorization callback before forwarding the first message, so native authorization can replace it with a single request handler.
+- Keep personal admission, permissions and revocation in the existing server-side path. Both separately submitted commands and intentional repeats still execute.
+- Update PrefabEditorCore to 1.6.7 and restart the server to apply the fix. The player DLL remains 2.3.8.
+
 ## 1.0.22 - Connection diagnostics and moderator access
 
 - Add Connection diagnostics before and after connecting. Check the selected game folder for matching DLLs, identify the current helper and additional matching processes, and report local listener ownership and stale game connection files.

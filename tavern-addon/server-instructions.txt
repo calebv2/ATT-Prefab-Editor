@@ -73,3 +73,10 @@ Existing moderator codes stay valid, but Console is OFF until you enable it.
 Console allows unrestricted server commands. Enable it separately from Select all
 tools. Only the owner can manage access profiles. Give Console only to admins you trust with full
 server command access.
+
+SERVER UPDATE 1.0.23
+Install PrefabEditorCore.dll 1.6.7 on the server to fix duplicate owner WebSocket
+commands. Stop the server, replace its Mods/PrefabEditorCore.dll, and start it.
+Confirm the server log says PrefabEditorCore 1.6.7 up. Reconnect console sessions.
+Use Server-Mod-Only for an existing separate server. For a shared Mods folder,
+stop both server and player before replacing the server DLL.
