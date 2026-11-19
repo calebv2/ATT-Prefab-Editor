@@ -27,7 +27,7 @@ using UnityEngine;
 using UnityEngine.XR;
 using UnityEngine.InputSystem;
 
-[assembly: MelonInfo(typeof(PrefabEditorMod.EditorMod), "ATT Prefab Editor", "2.3.8", "ATT Prefab Editor")]
+[assembly: MelonInfo(typeof(PrefabEditorMod.EditorMod), "ATT Prefab Editor", "2.3.10", "ATT Prefab Editor")]
 [assembly: MelonGame("Alta", "A Township Tale")]
 
 namespace PrefabEditorMod
@@ -189,7 +189,11 @@ namespace PrefabEditorMod
             EnsureCamera();
             if (_camGO == null) return; // creation failed; stay off
 
-            SeedFromMainCamera();
+            if (!SeedFromLocalPlayer())
+            {
+                MelonLogger.Warning("Editor: join the world and wait for your player to load, then try again.");
+                return;
+            }
             _speed = _moveSpeed.Value;
 
             _displayNow = _targetDisplay.Value;
@@ -309,41 +313,50 @@ namespace PrefabEditorMod
             _cam.fieldOfView = 70f;
         }
 
-        // spawn the desktop camera where the player ACTUALLY is when they toggle, so it
-        // doesn't jump to town/world-origin and make you fly back to yourself.
-        private void SeedFromMainCamera()
+        private bool SeedFromLocalPlayer()
         {
-            Camera src = FindHeadsetCamera();       // the live HMD position - where we are
-            if (src == null) src = Camera.main;     // fallbacks if no stereo cam is found
-            if (src == null)
-            {
-                Camera[] all = Camera.allCameras;
-                if (all != null && all.Length > 0) src = all[0];
-            }
+            PlayerController player = PlayerController.Current;
+            if (player == null || !player.IsLocalPlayer) return false;
+            // Fly's Head accessor derives its transform from the player camera.
+            if (player is FlyCamPlayer && player.Camera == null) return false;
+            Transform head = player.Head;
+            if (head == null) return false;
 
-            if (src != null)
-            {
-                _camGO.transform.position = src.transform.position;
-                Vector3 e = src.transform.rotation.eulerAngles;
-                _pitch = NormalizePitch(e.x);
-                _yaw = e.y;
-            }
+            Vector3 headPosition = head.position;
+            float distanceSquared = headPosition.sqrMagnitude;
+            if (float.IsNaN(distanceSquared) || float.IsInfinity(distanceSquared)) return false;
+
+            // Scene cameras can remain in town while the flat-screen avatar moves.
+            Camera headset = XRSettings.isDeviceActive ? FindHeadsetCamera(player.Camera, headPosition) : null;
+            _camGO.transform.position = headset != null ? headset.transform.position : headPosition + Vector3.up * 0.5f;
+            Vector3 e = (headset != null ? headset.transform : head).rotation.eulerAngles;
+            _pitch = NormalizePitch(e.x);
+            _yaw = e.y;
             _camGO.transform.rotation = Quaternion.Euler(_pitch, _yaw, 0f);
+            return true;
         }
 
-        // the headset renders in stereo; Camera.main isn't tagged to it in ATT (it was
-        // seeding us at town center), so pick the live stereo camera explicitly.
-        private Camera FindHeadsetCamera()
+        private Camera FindHeadsetCamera(Camera playerCamera, Vector3 headPosition)
         {
-            Camera[] all = Camera.allCameras; // enabled cameras only
-            if (all == null) return null;
-            for (int i = 0; i < all.Length; i++)
+            if (playerCamera != _cam && IsNearbyHeadsetCamera(playerCamera, headPosition)) return playerCamera;
+
+            Camera closest = null;
+            float closestDistance = float.PositiveInfinity;
+            foreach (Camera camera in Camera.allCameras)
             {
-                Camera c = all[i];
-                if (c == null || c == _cam) continue;
-                if (c.stereoEnabled) return c;
+                if (camera == _cam || !IsNearbyHeadsetCamera(camera, headPosition)) continue;
+                float distance = (camera.transform.position - headPosition).sqrMagnitude;
+                if (distance >= closestDistance) continue;
+                closest = camera;
+                closestDistance = distance;
             }
-            return null;
+            return closest;
+        }
+
+        private static bool IsNearbyHeadsetCamera(Camera camera, Vector3 headPosition)
+        {
+            return camera != null && camera.isActiveAndEnabled && camera.stereoEnabled && camera.targetTexture == null
+                && (camera.transform.position - headPosition).sqrMagnitude <= 9f;
         }
 
         private static float NormalizePitch(float x)
@@ -359,7 +372,7 @@ namespace PrefabEditorMod
         private void Fly()
         {
             if (_camGO == null || _cam == null) return;
-            // WASD in the spawn search field is someone typing a prefab name
+            // A focused editor text field owns the keyboard.
             if (_sel != null && _sel.WantsKeyboard) return;
             Transform t = _camGO.transform;
             float dt = Time.unscaledDeltaTime;

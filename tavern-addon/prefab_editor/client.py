@@ -4,12 +4,13 @@ import atexit
 import socket
 from pathlib import Path
 import tkinter as tk
-from tkinter import filedialog, messagebox
+from tkinter import filedialog
 from client.core.config import load_cfg
 from client.core.tavernkeeper.window import TavernKeeperWindow
 from client.core.launcher_window import ClientLauncher
 from tavern_shared.paths import _tavern_data_dir
-from tavern_shared.theme import BG, PARCH, MUTED, _btn
+from tavern_shared.theme import AMBER, BG, BORDER, GREEN, MUTED, PARCH, SURF, SURF2, _btn, _mk_scrollbar
+from tavern_shared.window_chrome import _finish_dark_window, _start_hidden
 from .runtime import Bridge, connection_diagnostics, install, shared_install, SessionTransport
 from .invite import PREFIX, read_code
 from .settings import Settings
@@ -19,78 +20,243 @@ from tavern_shared.ws_console_client import WsConsoleClient
 _active = None
 _session_lock = threading.RLock()
 _preferences = Settings(Path(_tavern_data_dir()) / "prefab_editor")
+_SUBTLE = '#c0ad90'
+
+
+def _label(parent, text='', fg=_SUBTLE, font=('Segoe UI', 10), **options):
+    label = tk.Label(parent, text=text, bg=parent.cget('bg'), fg=fg, font=font,
+                     anchor='w', justify='left', wraplength=540, **options)
+    parent.bind('<Configure>', lambda event: label.configure(wraplength=max(100, event.width - 8))
+                if event.widget is parent else None, add='+')
+    return label
+
+
+def _action(parent, label, command, style='normal'):
+    return _btn(parent, label, command, style, padx=13, pady=8,
+                font=('Segoe UI', 10, 'bold' if style == 'primary' else 'normal'),
+                disabledforeground=MUTED, highlightbackground=parent.cget('bg'),
+                highlightcolor=AMBER, highlightthickness=1)
+
+
+def _card(parent, title):
+    outline = tk.Frame(parent, bg=SURF, highlightbackground=BORDER, highlightthickness=1)
+    outline.pack(fill='x', pady=(0, 12))
+    card = tk.Frame(outline, bg=SURF)
+    card.pack(fill='x', padx=16, pady=14)
+    _label(card, title, PARCH, ('Segoe UI', 11, 'bold')).pack(fill='x', pady=(0, 6))
+    return card
+
+
+def _entry(parent, variable, readonly=False, secret=False):
+    return tk.Entry(parent, textvariable=variable, bg=BG, fg=PARCH, insertbackground=PARCH,
+                    readonlybackground=BG, selectbackground=SURF2, selectforeground=PARCH,
+                    highlightbackground=BORDER, highlightcolor=AMBER, highlightthickness=1,
+                    relief='flat', bd=8, font=('Consolas', 10),
+                    state='readonly' if readonly else 'normal', show='●' if secret else '')
+
+
+def _check(parent, text, variable, command):
+    return tk.Checkbutton(parent, text=text, variable=variable, command=command, bg=SURF, fg=PARCH,
+                          activebackground=SURF, activeforeground=PARCH, selectcolor=BG,
+                          highlightbackground=SURF, highlightcolor=AMBER, highlightthickness=1,
+                          anchor='w', justify='left', font=('Segoe UI', 10))
+
+
+def _header(parent, title, subtitle):
+    header = tk.Frame(parent, bg=BG)
+    header.pack(fill='x', padx=24, pady=(18, 14))
+    _label(header, title, PARCH, ('Georgia', 24, 'bold')).pack(fill='x')
+    _label(header, subtitle).pack(fill='x', pady=(5, 0))
+
+
+def _layout(window, subtitle):
+    _header(window, 'Prefabulator', subtitle)
+    border = tk.Frame(window, bg=BG)
+    border.pack(side='bottom', fill='x')
+    tk.Frame(border, bg=BORDER, height=1).pack(fill='x')
+    footer = tk.Frame(border, bg=BG)
+    footer.pack(fill='x', padx=24, pady=12)
+    viewport = tk.Frame(window, bg=BG)
+    viewport.pack(fill='both', expand=True, padx=(24, 10))
+    canvas = tk.Canvas(viewport, bg=BG, highlightthickness=0, bd=0, takefocus=False)
+    scrollbar = _mk_scrollbar(viewport, canvas.yview)
+    scrollbar.pack(side='right', fill='y', padx=(4, 0))
+    canvas.pack(fill='both', expand=True)
+    canvas.configure(yscrollcommand=scrollbar.set)
+    body = tk.Frame(canvas, bg=BG)
+    slot = canvas.create_window(0, 0, anchor='nw', window=body)
+    body.bind('<Configure>', lambda event: canvas.configure(scrollregion=canvas.bbox(slot)))
+    canvas.bind('<Configure>', lambda event: canvas.itemconfigure(slot, width=event.width))
+
+    def wheel(event):
+        if body.winfo_ismapped() and str(event.widget).startswith(str(viewport) + '.'):
+            canvas.yview_scroll(int(-event.delta / 120), 'units')
+            return 'break'
+
+    def reveal(event):
+        if not str(event.widget).startswith(str(body) + '.'):
+            return
+        widget = event.widget
+        top = widget.winfo_rooty() - body.winfo_rooty()
+        height = canvas.winfo_height()
+        offset = canvas.canvasy(0)
+        if top < offset:
+            canvas.yview_moveto(top / max(1, body.winfo_height()))
+        elif top + widget.winfo_height() > offset + height:
+            canvas.yview_moveto((top + widget.winfo_height() - height) / max(1, body.winfo_height()))
+
+    window.bind('<MouseWheel>', wheel)
+    window.bind('<FocusIn>', reveal)
+    return body, footer
+
+
+def _window_size(window, width, height):
+    screen_width, screen_height = window.winfo_screenwidth(), window.winfo_screenheight()
+    width = min(width, screen_width - 48)
+    height = min(height, screen_height - 96)
+    window.minsize(min(width, 530), min(height, 390))
+    window.geometry(f'{width}x{height}+{(screen_width - width) // 2}+{(screen_height - height) // 2}')
+
+
+def _background(schedule, action, done):
+    completed = []
+
+    def work():
+        try:
+            completed.append((action(), None))
+        except Exception as error:
+            completed.append((None, str(error)))
+
+    def poll():
+        if completed:
+            done(*completed[0])
+        else:
+            schedule(60, poll)
+
+    threading.Thread(target=work, daemon=True).start()
+    schedule(60, poll)
 
 
 def build(parent, window):
-    global _active
-    cfg = load_cfg()
+    """Dashboard shown after the server console has accepted the credential."""
+    body, footer = _layout(parent, 'Install the player mod and keep the editor connected while you play.')
+    game = tk.StringVar(window, value=window._game_folder())
+    status = tk.StringVar(window)
+    summary = tk.StringVar(window)
+    details = tk.StringVar(window)
+    access_status = tk.StringVar(window)
     shared = shared_install()
-    game = tk.StringVar(value=str(Path(cfg['game_exe']).parent) if cfg.get('game_exe') else '')
-    status = tk.StringVar(value='Console connected. Starting the in-game editor connection...')
-    tk.Label(parent, text='Prefabulator', bg=BG, fg=PARCH, font=('Segoe UI', 14, 'bold')).pack(anchor='w', padx=12, pady=12)
-    install_hint = ('Shared Mods setup: stop BOTH the server and game before updating both included mods.\n'
-                    if shared else 'First time: close the game and install the included player mod below.\n')
-    tk.Label(parent, text='Prefabulator connects your in-game editor. All editing happens in the game.\n' + install_hint + 'Then launch/join this server normally and press F1.\nKeep Prefabulator open; minimizing it is fine.',
-             bg=BG, fg=MUTED, justify='left', wraplength=680).pack(anchor='w', padx=12)
-    tk.Label(parent, textvariable=window._server_status, bg=BG, fg=PARCH, justify='left', wraplength=680).pack(anchor='w', padx=12, pady=8)
-    tk.Entry(parent, textvariable=game, width=80).pack(fill='x', padx=12, pady=8)
-    _btn(parent, 'Choose game folder', lambda: choose(), 'primary').pack(anchor='w', padx=12)
-    tk.Label(parent, textvariable=status, bg=BG, fg=PARCH, justify='left', wraplength=680).pack(anchor='w', padx=12, pady=12)
-    busy = [False]
-    tracked_bridge = [None]
-    details = tk.StringVar(value='')
-    tk.Label(parent, textvariable=details, bg=BG, fg=MUTED, justify='left', wraplength=680).pack(anchor='w', padx=12, pady=4)
+    busy = False
+    tracked_bridge = None
+    jobs = set()
+
+    def schedule(delay, callback):
+        def run():
+            jobs.discard(job)
+            callback()
+        job = body.after(delay, run)
+        jobs.add(job)
+
+    def cancel_jobs(event):
+        if event.widget is body:
+            for job in jobs:
+                body.after_cancel(job)
+            jobs.clear()
+    body.bind('<Destroy>', cancel_jobs, add='+')
+
+    connection = _card(body, 'Editor connection')
+    state_label = _label(connection, textvariable=summary, fg=AMBER, font=('Segoe UI', 11, 'bold'))
+    state_label.pack(fill='x')
+    _label(connection, textvariable=window._server_status, font=('Segoe UI', 9)).pack(fill='x', pady=(3, 0))
+    _label(connection, textvariable=status, fg=PARCH).pack(fill='x', pady=(6, 0))
+    detail_label = _label(connection, textvariable=details, font=('Segoe UI', 9))
+
+    installation = _card(body, 'Shared Mods folder' if shared else 'Player mod')
+    folder_row = tk.Frame(installation, bg=SURF)
+    folder_row.pack(fill='x', pady=(0, 7))
+    folder_entry = _entry(folder_row, game)
+    folder_entry.pack(side='left', fill='x', expand=True)
+
+    access = _card(body, 'Access')
+    access_actions = tk.Frame(access, bg=SURF)
+    access_actions.pack(fill='x')
+    access_note = _label(access, textvariable=access_status, font=('Segoe UI', 9))
+
+    def set_state(label, message, color=AMBER, detail=''):
+        summary.set(label)
+        state_label.configure(fg=color)
+        status.set(message)
+        details.set(detail)
+        if detail:
+            detail_label.pack(fill='x', pady=(6, 0))
+        else:
+            detail_label.pack_forget()
+
+    def sync_buttons():
+        retry_button.configure(state='disabled' if busy else 'normal')
+        disconnect_button.configure(state='normal' if not busy and tracked_bridge and not tracked_bridge.closed else 'disabled')
+        if change_button is not None:
+            change_button.configure(state='disabled' if busy else 'normal')
+        install_button.configure(state='disabled' if busy else 'normal')
+        browse_button.configure(state='disabled' if busy else 'normal')
+        folder_entry.configure(state='readonly' if busy else 'normal')
+
+    def background(action, done, message):
+        nonlocal busy
+        if busy:
+            return
+        busy = True
+        set_state('Working…', message)
+        sync_buttons()
+
+        def finish(result, error):
+            nonlocal busy
+            busy = False
+            if error is None:
+                done(result)
+            else:
+                set_state('Action failed', error, '#f2a3a0')
+            sync_buttons()
+
+        _background(schedule, action, finish)
 
     def choose():
-        path = filedialog.askdirectory(parent=window, title='Choose the game folder containing A Township Tale_Data')
+        path = filedialog.askdirectory(parent=window, title='Choose the folder containing A Township Tale_Data')
         if path:
             game.set(path)
 
-    def background(action, done):
-        if busy[0]:
-            return
-        busy[0] = True
-        status.set('Please wait...')
-        def work():
-            try:
-                result = action()
-                window.after(0, lambda: finish(None, result))
-            except Exception as error:
-                window.after(0, lambda e=str(error): finish(e, None))
-        def finish(error, result):
-            busy[0] = False
-            status.set(error if error else done(result))
-        threading.Thread(target=work, daemon=True).start()
-
     def install_player():
+        if not game.get().strip():
+            choose()
         path = game.get().strip()
         if not path:
-            choose()
-            path = game.get().strip()
-        if path:
-            def installed(_):
-                if not shared:
-                    window.after(0, start_editor)
-                return ('Server and player mods installed in the shared Mods folder. Start the server, reconnect Prefabulator, then launch the game.'
-                        if shared else 'Player mod installed. Connecting the editor...')
-            background(lambda: install(path, 'client'), installed)
+            return
+
+        def installed(_):
+            if shared:
+                set_state('Mods installed', 'Start the server, reconnect Prefabulator, then launch the player game.', GREEN)
+            else:
+                start_editor()
+
+        background(lambda: install(path, 'client'), installed, 'Installing the included mod files…')
 
     def connection_ready(bridge, path):
         target = Path(path).resolve() / 'UserData' / 'PrefabEditorConnection.json'
-        details.set('Local connection file: ' + str(target) + '\nLocal editor: ' + bridge.url)
-        return 'CONNECTED. If the game is already open, close and relaunch the player game. Keep Prefabulator open.'
+        set_state('Editor connected', 'Join the connected server and press F1. If the game is already open, relaunch it. Keep Prefabulator open.',
+                  GREEN, f'Local editor   {bridge.url}\nConnection file   {target}')
 
     def start_editor():
         path = game.get().strip()
-        if not (Path(path) / 'Mods' / 'PrefabEditor.dll').is_file():
-            status.set('Install the player mod first using the button above.')
+        if not path or not (Path(path) / 'Mods' / 'PrefabEditor.dll').is_file():
+            set_state('Player mod needed', 'Choose your game folder, then install the included player mod.')
             return
         if not window._connected:
-            status.set('Close Prefabulator and reopen it to reconnect to your server.')
+            set_state('Console disconnected', 'Use Change server to reconnect to the console.')
             return
         connection_host = window.v_host.get().strip() or '127.0.0.1'
         connection_token = window.v_token.get().strip()
         game_host = window._game_host or connection_host
+
         def connect_editor():
             global _active
             with _session_lock:
@@ -98,7 +264,6 @@ def build(parent, window):
                     if not _same_server(getattr(_active, 'host', ''), connection_host) or not _same_server(getattr(_active, 'game_host', _active.host), game_host):
                         raise RuntimeError('Disconnect the existing editor before changing servers.')
                     _active.ensure_connection(path)
-                    tracked_bridge[0] = _active
                     return _active
                 bridge = Bridge(window._ws_client, path, Path(_tavern_data_dir()) / 'prefab_editor',
                                 host=connection_host, token=connection_token,
@@ -106,7 +271,6 @@ def build(parent, window):
                 bridge.host = connection_host
                 bridge.game_host = game_host
                 _active = bridge
-                tracked_bridge[0] = bridge
                 try:
                     bridge.start()
                 except Exception as error:
@@ -114,88 +278,115 @@ def build(parent, window):
                     bridge.close()
                     raise
                 return bridge
-        background(connect_editor, lambda bridge: connection_ready(bridge, path))
+
+        def started(bridge):
+            nonlocal tracked_bridge
+            tracked_bridge = bridge
+            connection_ready(bridge, path)
+
+        background(connect_editor, started, 'Connecting the in-game editor…')
+
+    def retry():
+        if not window._connected and window._launcher is not None:
+            window._reopen_connection()
+        else:
+            start_editor()
 
     def stop_editor():
-        if _active and not _active.closed:
-            background(_active.close, lambda _: 'Stopped. Restart the game after starting a different editor connection.')
+        if tracked_bridge and not tracked_bridge.closed:
+            background(tracked_bridge.close, lambda _: set_state(
+                'Editor disconnected', 'Click Retry connection before relaunching the game.'),
+                'Disconnecting the editor…')
 
-    install_label = ('1. Update BOTH mods (server and game stopped)' if shared else '1. Install / update player mod (game closed)')
-    _btn(parent, install_label, install_player, 'primary').pack(anchor='w', padx=12, pady=6)
-    if window._launcher is not None:
-        _btn(parent, 'Change server / reconnect', window._reopen_connection, 'primary').pack(anchor='w', padx=12, pady=6)
-    connection_actions = tk.Frame(parent, bg=BG)
-    connection_actions.pack(anchor='w', padx=12, pady=6)
-    _btn(connection_actions, 'Retry editor connection', start_editor, 'primary').pack(side='left')
-    _btn(connection_actions, 'Disconnect editor', stop_editor).pack(side='left', padx=6)
-    _btn(connection_actions, 'Connection diagnostics', lambda: window._show_connection_diagnostics(game.get().strip())).pack(side='left')
     def forget_token():
         try:
-            _preferences.save(_preferences.read().get('host', ''), game_host=_preferences.read().get('gameHost'))
-            status.set('Saved token removed. Enter it in Prefabulator next session. Your address is still saved.')
+            saved = _preferences.read()
+            _preferences.save(saved.get('host', ''), game_host=saved.get('gameHost'))
+            access_status.set('Saved access removed. Enter your token or code next time.')
         except OSError:
-            status.set('Could not remove saved token. Check your user settings folder permissions.')
-    _btn(parent, 'Forget saved access token', forget_token).pack(anchor='w', padx=12, pady=6)
-    # Access management is intercepted on WebSocket, not the native HTTP console.
-    # Personal sessions already have a transport owned by their editor bridge.
+            access_status.set('Could not remove saved access. Check your user settings folder permissions.')
+        access_note.pack(fill='x', pady=(6, 0))
+
+    # The owner check and access management use the authenticated WebSocket session.
     management_transport = (None if window.v_token.get().strip().startswith('pfa1.')
                             else SessionTransport(window._ws_client))
-    access_window = [None]
+    access_window = None
 
     def show_access():
-        existing = access_window[0]
-        if existing is not None and existing.winfo_exists():
-            existing.lift()
-            return
-        access_window[0] = AccessWindow(window, management_transport,
-                                       window._game_host or window.v_host.get().strip() or '127.0.0.1')
+        nonlocal access_window
+        if access_window is not None and access_window.winfo_exists():
+            access_window.lift()
+        else:
+            access_window = AccessWindow(window, management_transport,
+                                         window._game_host or window.v_host.get().strip() or '127.0.0.1')
 
-    owner_button = _btn(parent, 'Manage Admin Access (owner)', show_access)
-    def check_owner():
-        if management_transport is None:
-            return
-        def check():
-            try:
-                result = access_request(management_transport, 'self')
-                window.after(0, lambda: access_ready(result))
-            except Exception as error:
-                window.after(0, lambda e=str(error): status.set(e))
-        threading.Thread(target=check, daemon=True).start()
-    def access_ready(result):
-        if result.get('owner') is True:
-            owner_button.pack(anchor='w', padx=12, pady=6)
-    window.after(0, start_editor)
-    window.after(500, check_owner)
-    window.bind('<Destroy>', lambda event: management_transport.close() if event.widget is window and management_transport else None, add='+')
+    def access_ready(result, error):
+        if error is None and result.get('owner') is True:
+            owner_button.pack(side='left', padx=(0, 8), before=forget_button)
 
-    # Toplevel destruction also happens on disconnect/closing the launcher.
+    browse_button = _action(folder_row, 'Browse…', choose)
+    browse_button.pack(side='left', padx=(8, 0))
+    install_button = _action(installation, 'Install or update both mods' if shared else 'Install or update player mod',
+                             install_player)
+    install_button.pack(anchor='w')
+    _label(installation, 'Close the server and player game before installing.' if shared
+           else 'Close the player game before installing.', font=('Segoe UI', 9)).pack(fill='x', pady=(6, 0))
+    owner_button = _action(access_actions, 'Manage moderator access', show_access)
+    forget_button = _action(access_actions, 'Forget saved access', forget_token)
+    forget_button.pack(side='left')
+
+    _action(footer, 'Diagnostics', lambda: window._show_connection_diagnostics(game.get().strip())).pack(side='left')
+    retry_button = _action(footer, 'Retry connection', retry, 'primary')
+    retry_button.pack(side='right')
+    disconnect_button = _action(footer, 'Disconnect', stop_editor)
+    disconnect_button.pack(side='right', padx=(0, 8))
+    change_button = None
+    if window._launcher is not None:
+        change_button = _action(footer, 'Change server', window._reopen_connection)
+        change_button.pack(side='right', padx=(0, 8))
+
+    if management_transport is not None:
+        schedule(500, lambda: _background(schedule, lambda: access_request(management_transport, 'self'), access_ready))
+
     def destroyed(event):
-        if event.widget is window and _active and _active.transport.client is window._ws_client:
-            threading.Thread(target=_active.close, daemon=True).start()
+        if event.widget is window:
+            if management_transport is not None:
+                management_transport.close()
+            if _active and _active.transport.client is window._ws_client:
+                threading.Thread(target=_active.close, daemon=True).start()
     window.bind('<Destroy>', destroyed, add='+')
 
     def monitor():
-        bridge = tracked_bridge[0]
-        if bridge is not None and not busy[0]:
+        nonlocal tracked_bridge
+        bridge = tracked_bridge
+        if bridge is not None and not busy:
             if bridge.closed:
-                details.set('')
-                status.set(bridge.close_reason or 'Connection stopped. Click Retry editor connection, then relaunch the player game.')
-                tracked_bridge[0] = None
+                if bridge.close_reason:
+                    set_state('Editor disconnected', bridge.close_reason)
+                tracked_bridge = None
+                sync_buttons()
             elif not bridge.transport.client._connected or (bridge.process and bridge.process.poll() is not None):
-                bridge.close_reason = 'Connection stopped. Reconnect Prefabulator, then relaunch the player game.'
-                background(bridge.close, lambda _: bridge.close_reason)
+                bridge.close_reason = 'Reconnect Prefabulator, then relaunch the player game.'
+                background(bridge.close, lambda _: set_state('Editor disconnected', bridge.close_reason),
+                           'Closing the stopped editor connection…')
             else:
                 try:
                     bridge.ensure_connection()
                 except (OSError, RuntimeError) as error:
-                    status.set('Connection file unavailable: ' + str(error))
-        if window.winfo_exists():
-            window.after(1500, monitor)
-    window.after(1500, monitor)
+                    set_state('Connection file unavailable', str(error), '#f2a3a0')
+                else:
+                    if summary.get() == 'Connection file unavailable':
+                        connection_ready(bridge, bridge.game)
+        schedule(1500, monitor)
+
+    sync_buttons()
+    set_state('Starting editor', 'The server console accepted your access.')
+    schedule(0, start_editor)
+    schedule(1500, monitor)
 
 
 class PrefabulatorWindow(TavernKeeperWindow):
-    """Reuse only Tavern's connection form/auth; never build its editing tabs."""
+    """Use Tavern's console login with Prefabulator's own launcher screens."""
     def __init__(self, parent):
         self._launcher = parent if hasattr(parent, 'v_ip') else None
         self._launcher_trace = None
@@ -212,37 +403,41 @@ class PrefabulatorWindow(TavernKeeperWindow):
             return self._launcher.v_ip.get().strip() or '127.0.0.1'
         return None
 
+    def _game_folder(self):
+        path_field = getattr(self._launcher, 'v_exe', None)
+        game_exe = path_field.get().strip() if path_field is not None else ''
+        game_exe = game_exe or load_cfg().get('game_exe')
+        return str(Path(game_exe).parent) if game_exe else ''
+
     def _show_connection_diagnostics(self, game_folder=None):
         existing = getattr(self, '_diagnostics_window', None)
         if existing is not None and existing.winfo_exists():
+            existing.deiconify()
             existing.lift()
             return
         if game_folder is None:
-            game_exe = load_cfg().get('game_exe')
-            game_folder = str(Path(game_exe).parent) if game_exe else ''
+            game_folder = self._game_folder()
         process = getattr(_active, 'process', None)
         helper_pid = process.pid if process and process.poll() is None else None
 
         dialog = tk.Toplevel(self)
+        _start_hidden(dialog)
         self._diagnostics_window = dialog
         dialog.title('Prefabulator connection diagnostics')
         dialog.configure(bg=BG)
-        dialog.geometry('700x465')
-        dialog.minsize(460, 320)
-        tk.Label(dialog, text='Connection diagnostics', bg=BG, fg=PARCH,
-                 font=('Segoe UI', 14, 'bold')).pack(anchor='w', padx=14, pady=12)
-        frame = tk.Frame(dialog, bg=BG)
-        frame.pack(fill='both', expand=True, padx=14)
-        scrollbar = tk.Scrollbar(frame)
+        _window_size(dialog, 680, 490)
+        _header(dialog, 'Connection diagnostics', 'Check the game installation, local helper, and editor ports.')
+        frame = tk.Frame(dialog, bg=SURF, highlightbackground=BORDER, highlightthickness=1)
+        frame.pack(fill='both', expand=True, padx=24)
+        scrollbar = _mk_scrollbar(frame, lambda *args: body.yview(*args))
         scrollbar.pack(side='right', fill='y')
-        body = tk.Text(frame, wrap='word', bg='#20252d', fg=PARCH, padx=10, pady=8,
-                       font=('Segoe UI', 10), yscrollcommand=scrollbar.set)
+        body = tk.Text(frame, wrap='word', bg=SURF, fg=PARCH, padx=12, pady=10, bd=0,
+                       highlightthickness=0, font=('Segoe UI', 10), yscrollcommand=scrollbar.set)
         body.pack(side='left', fill='both', expand=True)
-        scrollbar.configure(command=body.yview)
         body.insert('1.0', 'Checking the selected game folder, editor helpers and local ports...')
         body.configure(state='disabled')
         actions = tk.Frame(dialog, bg=BG)
-        actions.pack(fill='x', padx=14, pady=10)
+        actions.pack(fill='x', padx=24, pady=12)
         report = []
         job = [None]
 
@@ -250,10 +445,10 @@ class PrefabulatorWindow(TavernKeeperWindow):
             dialog.clipboard_clear()
             dialog.clipboard_append(report[0])
 
-        copy_button = _btn(actions, 'Copy report', copy_report)
+        copy_button = _action(actions, 'Copy report', copy_report, 'primary')
         copy_button.configure(state='disabled')
-        copy_button.pack(side='left')
-        _btn(actions, 'Close', dialog.destroy).pack(side='right')
+        copy_button.pack(side='right')
+        _action(actions, 'Close', dialog.destroy).pack(side='left')
 
         def scan():
             try:
@@ -277,8 +472,10 @@ class PrefabulatorWindow(TavernKeeperWindow):
                 dialog.after_cancel(job[0])
 
         dialog.bind('<Destroy>', stop_polling, add='+')
+        dialog.bind('<Escape>', lambda event: dialog.destroy())
         threading.Thread(target=scan, daemon=True).start()
         job[0] = dialog.after(100, show_report)
+        _finish_dark_window(dialog)
 
     def _update_server_status(self):
         host = self.v_host.get().strip() or '127.0.0.1'
@@ -286,11 +483,12 @@ class PrefabulatorWindow(TavernKeeperWindow):
         game_host = self._game_host or host
         if self._connected and selected and not _same_server(game_host, selected):
             self._server_status.set('Connected game server: ' + game_host + '\nLauncher selected: ' + selected +
-                                    '\nServer changed. Click Change server / reconnect before joining.')
+                                    '\nServer changed. Click Change server before joining.')
         elif self._connected:
-            self._server_status.set('Game server: ' + game_host + '\nConsole connection: ' + host + '\nReady to join this server from Tavern Launcher.')
+            self._server_status.set('Game server: ' + game_host +
+                                    ('   ·   Console: ' + host if host != game_host else ''))
         elif selected:
-            self._server_status.set('Game server selected in Tavern Launcher: ' + selected + '\nConsole connection: ' + host)
+            self._server_status.set('Game server in Tavern Launcher: ' + selected)
         else:
             self._server_status.set('Select your game server, then connect to its console.')
 
@@ -331,51 +529,59 @@ class PrefabulatorWindow(TavernKeeperWindow):
         threading.Thread(target=stop, daemon=True).start()
 
     def _build_connect_form(self):
-        super()._build_connect_form()
         self.title('Prefabulator')
-        def relabel(widget):
-            if isinstance(widget, tk.Label) and 'TavernKeeper' in str(widget.cget('text')):
-                widget.configure(text='Prefabulator')
-            if isinstance(widget, tk.Label) and str(widget.cget('text')) == 'SERVER IP' and self._launcher is not None:
-                widget.configure(text='CONSOLE ADDRESS (set by the option below)')
-            if isinstance(widget, tk.Label) and str(widget.cget('text')).startswith("Connects to a server's console"):
-                widget.configure(text='Choose your game server in the main launcher. If you also host it on this computer, tick the local console option below before entering your token.')
-            if isinstance(widget, tk.Entry) and str(widget.cget('textvariable')) == str(self.v_host) and self._launcher is not None:
-                widget.configure(state='readonly', readonlybackground=BG, fg=PARCH)
-            if isinstance(widget, tk.Label) and str(widget.cget('text')) == 'CONSOLE TOKEN':
-                widget.configure(text='MODERATOR CODE or owner console token')
-            for child in widget.winfo_children():
-                relabel(child)
-        relabel(self)
+        _window_size(self, 680, 585)
+        body, footer = _layout(self, 'Connect the in-game editor to a Township Tale server.')
         saved = _preferences.read()
         selected = self._launcher_host() or saved.get('gameHost') or saved.get('host', '')
         self._game_host = selected or '127.0.0.1'
         same_saved_game = _same_server(saved.get('gameHost', saved.get('host', '')), self._game_host)
         use_local = same_saved_game and saved.get('gameHost') and saved.get('host') == '127.0.0.1'
-        self.v_local_console = tk.BooleanVar(value=bool(use_local))
         host = '127.0.0.1' if use_local else selected
-        self.v_host.set(host)
         same_saved_server = same_saved_game and _same_server(saved.get('host', ''), host)
-        if self._launcher is not None:
-            tk.Checkbutton(self, text='I run this server on THIS computer - connect its console through localhost',
-                           variable=self.v_local_console, command=self._local_console_changed,
-                           bg=BG, fg=PARCH, selectcolor=BG, wraplength=420).pack(fill='x', padx=20, pady=8)
-        self.v_remember = tk.BooleanVar(value=bool(saved.get('protectedToken')))
+        self.v_host = tk.StringVar(self, value=host)
+        self.v_token = tk.StringVar(self)
+        self.v_local_console = tk.BooleanVar(self, value=bool(use_local))
+        self.v_remember = tk.BooleanVar(self, value=bool(saved.get('protectedToken')))
+        self._connect_status = tk.StringVar(self)
         try:
             self.v_token.set(_preferences.token(saved) if same_saved_server else '')
         except Exception:
             self._connect_status.set('Saved token unavailable. Enter it again.')
-        tk.Label(self, textvariable=self._server_status, bg=BG, fg=PARCH, wraplength=420, justify='left').pack(fill='x', padx=20, pady=8)
-        self._update_server_status()
-        tk.Checkbutton(self, text='Save my access token and auto-connect when I launch this server',
-                       variable=self.v_remember, command=self._remember_changed,
-                       bg=BG, fg=PARCH, selectcolor=BG, wraplength=390).pack(fill='x', padx=20)
-        tk.Label(self, text='Moderator: paste your code and click Connect. Its server will also be selected in the main launcher.\nSaved tokens are encrypted for this Windows account.',
-                 bg=BG, fg=MUTED, wraplength=390, justify='left').pack(padx=20, pady=8)
-        _btn(self, 'Connection diagnostics', self._show_connection_diagnostics).pack(anchor='w', padx=20, pady=(0, 8))
+
+        server = _card(body, 'Server')
+        if self._launcher is not None:
+            _label(server, textvariable=self._server_status, fg=PARCH).pack(fill='x')
+        _label(server, 'Console address', fg=PARCH, font=('Segoe UI', 9, 'bold')).pack(fill='x', pady=(7, 3))
+        host_entry = _entry(server, self.v_host, readonly=self._launcher is not None)
+        host_entry.pack(fill='x')
+        if self._launcher is not None:
+            _check(server, 'I host this server on this PC', self.v_local_console,
+                   self._local_console_changed).pack(fill='x', pady=(7, 0))
+            _label(server, 'Uses localhost for the console and keeps the Join Server address from Tavern Launcher.',
+                   font=('Segoe UI', 9)).pack(fill='x', padx=3, pady=(1, 0))
+
+        access = _card(body, 'Moderator code or owner console token')
+        token_entry = _entry(access, self.v_token, secret=True)
+        token_entry.pack(fill='x')
+        _label(access, 'A moderator code selects its server automatically.', font=('Segoe UI', 9)).pack(fill='x', pady=(6, 0))
+        _check(access, 'Save access and connect automatically on this server', self.v_remember,
+               self._remember_changed).pack(fill='x', pady=(6, 0))
+        _label(access, 'Saved access is encrypted for this Windows account.', font=('Segoe UI', 9)).pack(fill='x', padx=3)
+
+        _label(footer, textvariable=self._connect_status, fg='#f2a3a0',
+               font=('Segoe UI', 9)).pack(fill='x', pady=(0, 6))
+        actions = tk.Frame(footer, bg=BG)
+        actions.pack(fill='x')
+        _action(actions, 'Connection diagnostics', self._show_connection_diagnostics).pack(side='left')
+        self._connect_btn = _action(actions, 'Connect', self._attempt_connect, 'primary')
+        self._connect_btn.pack(side='right')
+        host_entry.bind('<Return>', lambda event: token_entry.focus_set())
+        token_entry.bind('<Return>', lambda event: self._attempt_connect()
+                         if str(self._connect_btn.cget('state')) == 'normal' else None)
         self.v_host.trace_add('write', self._host_changed)
-        self.update_idletasks()
-        self.geometry('460x' + str(self.winfo_reqheight()))
+        self._update_server_status()
+        (token_entry if self._launcher is not None else host_entry).focus_set()
 
     def _host_changed(self, *_):
         # Never carry a saved credential over to a different address.
@@ -431,8 +637,6 @@ class PrefabulatorWindow(TavernKeeperWindow):
             self._remember_changed()
         for child in list(self.winfo_children()):
             child.destroy()
-        self.geometry('720x620')
-        self.minsize(600, 500)
         self._update_server_status()
         build(self, self)
 

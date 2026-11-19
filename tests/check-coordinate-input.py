@@ -1,94 +1,226 @@
-"""Exercise actual coordinate input bridge with simulated keyboard/GUI events."""
+"""Test the shared native field and its Input System fallback without launching Unity."""
 from pathlib import Path
-import tempfile, subprocess, sys
-source=Path(sys.argv[1]) if len(sys.argv)>1 else Path(__file__).resolve().parents[1]/'client/player-kit/mod/src/CoordinateTextField.cs'
-harness=r'''
+import subprocess
+import tempfile
+
+repo = Path(__file__).resolve().parents[1]
+source = repo / 'client/player-kit/mod/src/EditorTextInput.cs'
+harness = r'''
 using System;
+using System.Collections.Generic;
 using PrefabEditorMod;
+using UnityEngine;
+using UnityEngine.InputSystem;
+
 namespace UnityEngine.InputSystem {
- public class Button {public bool isPressed,wasPressedThisFrame;}
- public class Keyboard {
-  public static Keyboard current=new Keyboard(); public event Action<char> onTextInput;
-  public void Type(char c){if(onTextInput!=null)onTextInput(c);}
-  public Button ctrlKey=new Button(),altKey=new Button(),shiftKey=new Button(),aKey=new Button(),vKey=new Button(),cKey=new Button(),xKey=new Button(),backspaceKey=new Button(),deleteKey=new Button(),leftArrowKey=new Button(),rightArrowKey=new Button(),homeKey=new Button(),endKey=new Button();
- }
+    public class Button { public bool isPressed, wasPressedThisFrame; }
+    public class Keyboard {
+        public static Keyboard current = new Keyboard();
+        public event Action<char> onTextInput;
+        public void Type(char c) { if (onTextInput != null) onTextInput(c); }
+        public Button ctrlKey = new Button(), shiftKey = new Button(), aKey = new Button(),
+            vKey = new Button(), cKey = new Button(), xKey = new Button(), backspaceKey = new Button(),
+            deleteKey = new Button(), leftArrowKey = new Button(), rightArrowKey = new Button(),
+            homeKey = new Button(), endKey = new Button(), enterKey = new Button(), numpadEnterKey = new Button();
+    }
 }
+
 namespace UnityEngine {
- public enum EventType {KeyDown,KeyUp,Layout,Repaint,Used}
- public enum KeyCode {None,A,V,C,X,Backspace,Delete,LeftArrow,RightArrow,Home,End}
- public static class Time {public static int frameCount;}
- public class Event {public static Event current=new Event(); public EventType type; public char character; public KeyCode keyCode; public bool control,command,alt,shift; public void Use(){type=EventType.Used;}}
- public static class GUI {public static bool enabled=true;public static string focus="TeleporterDestination";public static string GetNameOfFocusedControl(){return focus;} public static void SetNextControlName(string n){} }
- public static class GUILayout {public static string TextField(string s){return s;} }
- public static class GUIUtility {public static int keyboardControl;public static string systemCopyBuffer; public static TextEditor editor=new TextEditor();public static object GetStateObject(Type t,int id){return editor;} }
- public class TextEditor {
-  public string text=""; bool all;
-  public void Insert(char c){ReplaceSelection(c.ToString());} public void ReplaceSelection(string s){text=all?s:text+s;all=false;} public void SelectAll(){all=true;}
-  public void Backspace(){if(all){text="";all=false;}else if(text.Length>0)text=text.Substring(0,text.Length-1);} public void Delete(){Backspace();}
-  public void Copy(){GUIUtility.systemCopyBuffer=text;} public void Cut(){Copy();SelectAll();Backspace();}
-  public void MoveLeft(){} public void MoveRight(){} public void SelectLeft(){} public void SelectRight(){} public void MoveTextStart(){} public void MoveTextEnd(){}
- }
+    public enum EventType { KeyDown, ExecuteCommand, Layout, Repaint, Used }
+    public enum KeyCode { None, A, V, C, X, Backspace, Delete, LeftArrow, RightArrow, Home, End, Return, KeypadEnter }
+    public static class Time { public static int frameCount; }
+    public class Event {
+        public static Event current = new Event();
+        public EventType type;
+        public char character;
+        public KeyCode keyCode;
+        public bool control, command, shift;
+        public string commandName;
+        public void Use() { type = EventType.Used; }
+    }
+
+    public static class GUI {
+        public static bool enabled = true;
+        public static string focus, next;
+        public static string GetNameOfFocusedControl() { return focus; }
+        public static void SetNextControlName(string name) { next = name; }
+        public static void FocusControl(string name) { focus = name; GUIUtility.keyboardControl++; }
+    }
+
+    public class GUILayoutOption {}
+    public static class GUILayout {
+        public static string TextField(string value, params GUILayoutOption[] options) { return Native(value, false); }
+        public static string TextArea(string value, params GUILayoutOption[] options) { return Native(value, true); }
+        static string Native(string value, bool multiline) {
+            if (!GUI.enabled || GUI.next != GUI.focus) return value;
+            var editor = (TextEditor)GUIUtility.GetStateObject(typeof(TextEditor), GUIUtility.keyboardControl);
+            editor.text = value;
+            var e = Event.current;
+            if (e.type == EventType.ExecuteCommand && e.commandName == "Paste") editor.Paste();
+            else if (e.type != EventType.KeyDown) return value;
+            else if ((e.control || e.command) && e.keyCode == KeyCode.A) editor.SelectAll();
+            else if ((e.control || e.command) && e.keyCode == KeyCode.V) editor.Paste();
+            else if (e.keyCode == KeyCode.Backspace) editor.Backspace();
+            else if (e.keyCode == KeyCode.Return && multiline) editor.Insert('\n');
+            else if (!char.IsControl(e.character)) editor.Insert(e.character);
+            else return value;
+            e.Use();
+            return editor.text;
+        }
+    }
+
+    public static class GUIUtility {
+        public static int keyboardControl;
+        public static string systemCopyBuffer;
+        static Dictionary<int, TextEditor> editors = new Dictionary<int, TextEditor>();
+        public static object GetStateObject(Type type, int id) {
+            if (!editors.ContainsKey(id)) editors.Add(id, new TextEditor());
+            return editors[id];
+        }
+    }
+
+    public class TextEditor {
+        public string text = "";
+        bool all;
+        public void Insert(char c) { ReplaceSelection(c.ToString()); }
+        public void ReplaceSelection(string value) { text = all ? value : text + value; all = false; }
+        public void SelectAll() { all = true; }
+        public bool Paste() { ReplaceSelection(GUIUtility.systemCopyBuffer); return true; }
+        public void Backspace() {
+            if (all) { text = ""; all = false; }
+            else if (text.Length > 0) text = text.Substring(0, text.Length - 1);
+        }
+        public void Delete() { Backspace(); }
+        public void Copy() { GUIUtility.systemCopyBuffer = text; }
+        public void Cut() { Copy(); SelectAll(); Backspace(); }
+        public void MoveLeft() {}
+        public void MoveRight() {}
+        public void SelectLeft() {}
+        public void SelectRight() {}
+        public void MoveTextStart() {}
+        public void MoveTextEnd() {}
+    }
 }
+
 class Test {
- static void Check(bool b,string m){if(!b)throw new Exception(m);}
- static void Frame(){UnityEngine.Time.frameCount++;UnityEngine.Event.current=new UnityEngine.Event{type=UnityEngine.EventType.Repaint};}
- static string Native(CoordinateTextField field,string value,char character=default(char),UnityEngine.KeyCode code=UnityEngine.KeyCode.None,bool control=false,bool command=false){
-  UnityEngine.Event.current=new UnityEngine.Event{type=UnityEngine.EventType.KeyDown,character=character,keyCode=code,control=control,command=command};
-  value=field.Draw(value);Check(UnityEngine.Event.current.type==UnityEngine.EventType.Used,"focused native key is consumed after handling");
-  UnityEngine.Event.current=new UnityEngine.Event{type=UnityEngine.EventType.Repaint};return value;
- }
- static string Passes(CoordinateTextField field,string value){
-  UnityEngine.Event.current.type=UnityEngine.EventType.Layout;value=field.Draw(value);
-  UnityEngine.Event.current.type=UnityEngine.EventType.Repaint;return field.Draw(value);
- }
- static void Main(){
-  var field=new CoordinateTextField();var kb=UnityEngine.InputSystem.Keyboard.current;
-  field.Tick(true);string value=field.Draw("-596.447,275.657,240.869");
-  kb.ctrlKey.isPressed=true;kb.aKey.wasPressedThisFrame=true;field.Tick(true);value=field.Draw(value);kb.ctrlKey.isPressed=false;kb.aKey.wasPressedThisFrame=false;
-  foreach(char c in "10.5,-20,30")kb.Type(c); value=field.Draw(value);Check(value=="10.5,-20,30","manual replacement");
-  UnityEngine.Event.current.type=UnityEngine.EventType.KeyDown;value=field.Draw(value);Check(value=="10.5,-20,30" && UnityEngine.Event.current.type==UnityEngine.EventType.Used,"no native duplicate");
-  kb.backspaceKey.wasPressedThisFrame=true;field.Tick(true);value=field.Draw(value);kb.backspaceKey.wasPressedThisFrame=false;Check(value=="10.5,-20,3","backspace");
-  kb.ctrlKey.isPressed=true;kb.aKey.wasPressedThisFrame=true;kb.vKey.wasPressedThisFrame=true;UnityEngine.GUIUtility.systemCopyBuffer=" 1,2,3\r\n";field.Tick(true);value=field.Draw(value);Check(value=="1,2,3","select all and clipboard paste");kb.ctrlKey.isPressed=false;kb.aKey.wasPressedThisFrame=false;kb.vKey.wasPressedThisFrame=false;
-  UnityEngine.GUI.focus="";field.Draw(value);kb.Type('9');UnityEngine.GUI.focus="TeleporterDestination";Check(field.Draw(value)==value,"unfocused input ignored");
-  kb.Type('8');field.Tick(false);Check(field.Draw(value)==value,"closing discards pending input");kb.Type('7');Check(field.Draw(value)==value,"closing unsubscribes keyboard");
-  var search=new CoordinateTextField("TradeItemSearch",false);var priceField=new CoordinateTextField("TradePrice");
-  search.Tick(true);priceField.Tick(true);UnityEngine.GUI.focus="TradeItemSearch";search.Draw("");priceField.Draw("1");
-  foreach(char c in "Iron Ingot")kb.Type(c);Check(search.Draw("")=="Iron Ingot","trade search accepts item names");Check(priceField.Draw("1")=="1","other field cannot steal input");
-  search.Stop();priceField.Stop();
-  // Broadcast accepts ordinary text when IMGUI is the only character source.
-  var broadcast=new CoordinateTextField("AdminBroadcast",false);Frame();broadcast.Tick(true);UnityEngine.GUI.focus="AdminBroadcast";value=broadcast.Draw("");
-  foreach(char c in "Hello, town! 500 gold.")value=Native(broadcast,value,c);
-  Check(value=="Hello, town! 500 gold.","broadcast legacy-only typing with spaces/punctuation");
-  // Repeat letters are distinct inputs; delivery through both streams is not.
-  Frame();value=broadcast.Draw("");foreach(char c in "Welcome all!")kb.Type(c);value=broadcast.Draw(value);
-  Check(value=="Welcome all!","broadcast InputSystem-only text");
-  Frame();value=broadcast.Draw("");kb.Type('l');kb.Type('l');value=Passes(broadcast,value);
-  value=Native(broadcast,value,'l');value=Native(broadcast,value,'l');
-  Check(value=="ll","dual stream after primary Draw does not duplicate repeated letters");
-  Frame();value=broadcast.Draw("");value=Native(broadcast,value,'o');value=Native(broadcast,value,'o');value=Passes(broadcast,value);
-  kb.Type('o');kb.Type('o');value=broadcast.Draw(value);
-  Check(value=="oo","dual stream reverse order does not duplicate repeated letters");
-  Frame();kb.Type('o');value=broadcast.Draw(value);value=Native(broadcast,value,'o');
-  Check(value=="ooo","same character in a later frame remains a new input");
-  // Keyboard shortcuts can also arrive through both event paths.
-  Frame();UnityEngine.GUIUtility.systemCopyBuffer="Announcement";kb.ctrlKey.isPressed=true;kb.aKey.wasPressedThisFrame=true;kb.vKey.wasPressedThisFrame=true;
-  broadcast.Tick(true);value=broadcast.Draw(value);kb.ctrlKey.isPressed=false;kb.aKey.wasPressedThisFrame=false;kb.vKey.wasPressedThisFrame=false;
-  value=Native(broadcast,value,default(char),UnityEngine.KeyCode.A,true);value=Native(broadcast,value,default(char),UnityEngine.KeyCode.V,true);
-  Check(value=="Announcement","dual select-all/paste is applied once");
-  Frame();value=Native(broadcast,value,default(char),UnityEngine.KeyCode.Backspace);kb.backspaceKey.wasPressedThisFrame=true;broadcast.Tick(true);value=broadcast.Draw(value);kb.backspaceKey.wasPressedThisFrame=false;
-  Check(value=="Announcemen","reverse-order backspace is applied once");
-  Frame();value=Native(broadcast,value,default(char),UnityEngine.KeyCode.A,false,true);UnityEngine.GUIUtility.systemCopyBuffer="From clipboard\n";
-  value=Native(broadcast,value,default(char),UnityEngine.KeyCode.V,false,true);Check(value=="From clipboard","legacy command shortcuts work");
-  // Focus, disabled controls, and shutdown must not leak broadcast input.
-  Frame();UnityEngine.GUI.focus="AnotherField";broadcast.Draw(value);kb.Type('x');UnityEngine.GUI.focus="AdminBroadcast";Check(broadcast.Draw(value)==value,"broadcast ignores another field's characters");
-  Frame();UnityEngine.GUI.enabled=false;broadcast.Draw(value);kb.Type('x');UnityEngine.GUI.enabled=true;Check(broadcast.Draw(value)==value,"disabled field does not receive text");
-  Frame();kb.Type('x');broadcast.Tick(false);Check(broadcast.Draw(value)==value,"inactive broadcast discards pending characters");
-  kb.Type('y');Check(broadcast.Draw(value)==value,"inactive broadcast unsubscribes");broadcast.Stop();
-  Console.WriteLine("PASS: coordinate editing, broadcast legacy/new/dual input, repeat letters, shortcuts, focus, disabled controls and shutdown.");
- }
+    static EditorTextInput input = new EditorTextInput();
+    static Keyboard kb = Keyboard.current;
+    static string name, value;
+    static bool multiline;
+
+    static void Check(bool condition, string message) {
+        if (!condition) throw new Exception(message);
+    }
+    static void Pass(Event e) {
+        Event.current = e;
+        input.BeginGUI();
+        value = input.Draw(name, value, multiline);
+        input.EndGUI();
+    }
+    static void Frame() {
+        Time.frameCount++;
+        Pass(new Event { type = EventType.Layout });
+        Pass(new Event { type = EventType.Repaint });
+    }
+    static void Focus(string field, string initial = "", bool area = false) {
+        name = field;
+        value = initial;
+        multiline = area;
+        GUI.FocusControl(name);
+        Frame();
+    }
+    static void Native(char c = '\0', KeyCode key = KeyCode.None, bool control = false) {
+        Pass(new Event { type = EventType.KeyDown, character = c, keyCode = key, control = control });
+        Check(Event.current.type == EventType.Used, "the native field processed the key");
+    }
+    static void Main() {
+        input.Tick();
+        Focus("VelSpawnQ");
+        foreach (char c in "Iron Ingot") Native(c);
+        Check(value == "Iron Ingot", "existing item search still types natively");
+
+        Focus("TeleporterDestination", "1,2,3");
+        Native(key: KeyCode.A, control: true);
+        foreach (char c in "-596.447,275.657,240.869") Native(c);
+        Check(value == "-596.447,275.657,240.869", "native coordinates, including minus and commas");
+
+        Focus("TradeItemSearch");
+        foreach (char c in "Iron Ingot") kb.Type(c);
+        Pass(new Event { type = EventType.Repaint });
+        Check(value == "", "wait for the native events in this frame");
+        Frame();
+        Check(value == "Iron Ingot", "fallback types the item name inside a normal layout pass");
+
+        foreach (string field in new[] { "TradePrice", "TradeQuantity", "TradeStock", "TradeAddStock" }) {
+            Focus(field);
+            kb.Type('1'); Native('1');
+            Native('1'); kb.Type('1');
+            Frame();
+            Check(value == "11", field + " gets one digit per press in either event order");
+        }
+
+        Focus("AdminBroadcast");
+        foreach (char c in "Hello, town!") kb.Type(c);
+        Frame();
+        Check(value == "Hello, town!", "fallback supports ordinary sentences");
+        kb.backspaceKey.wasPressedThisFrame = true;
+        input.Tick();
+        Native(key: KeyCode.Backspace);
+        kb.backspaceKey.wasPressedThisFrame = false;
+        Frame();
+        Check(value == "Hello, town", "backspace also deduplicates");
+        kb.ctrlKey.isPressed = kb.aKey.wasPressedThisFrame = kb.vKey.wasPressedThisFrame = true;
+        GUIUtility.systemCopyBuffer = "  From clipboard\r\n";
+        input.Tick();
+        kb.ctrlKey.isPressed = kb.aKey.wasPressedThisFrame = kb.vKey.wasPressedThisFrame = false;
+        Frame();
+        Check(value == "From clipboard", "select-all and paste work on the fallback path");
+
+        Focus("BoardMessage0", "First", area: true);
+        kb.enterKey.wasPressedThisFrame = true;
+        input.Tick();
+        kb.enterKey.wasPressedThisFrame = false;
+        foreach (char c in "Second") kb.Type(c);
+        Frame();
+        Check(value == "First\nSecond", "text areas preserve line breaks");
+        Native(key: KeyCode.Return);
+        kb.enterKey.wasPressedThisFrame = true;
+        input.Tick();
+        kb.enterKey.wasPressedThisFrame = false;
+        Frame();
+        Check(value == "First\nSecond\n", "Return is not applied twice");
+
+        Focus("TradePrice");
+        kb.Type('9');
+        Focus("TradeStock", "1");
+        Check(value == "1", "queued typing cannot cross to the next field");
+        kb.Type('9');
+        GUI.enabled = false;
+        Frame();
+        GUI.enabled = true;
+        Check(!input.IsFocused && value == "1", "disabled fields neither edit nor keep focus");
+
+        Focus("TradePrice");
+        kb.Type('9');
+        input.BeginGUI();
+        input.EndGUI();
+        Frame();
+        Check(!input.IsFocused && value == "", "hidden field drops focus and pending keys");
+        Focus("ConsoleCommand");
+        kb.Type('9');
+        input.Stop();
+        kb.Type('9');
+        Frame();
+        Check(value == "", "stopped editor discards input");
+        Console.WriteLine("PASS: native typing, Input System fallback, dual event order, paste, multiline and focus.");
+    }
 }
 '''
+
 with tempfile.TemporaryDirectory(prefix='coordinate-input-test-') as folder:
- p=Path(folder);(p/'Test.cs').write_text(harness);exe=p/'Test.exe'
- subprocess.run([r'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe','/nologo','/out:'+str(exe),str(source),str(p/'Test.cs')],check=True)
- subprocess.run([str(exe)],check=True)
+    folder = Path(folder)
+    (folder / 'Test.cs').write_text(harness)
+    exe = folder / 'Test.exe'
+    subprocess.run([r'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe', '/nologo',
+                    '/out:' + str(exe), str(source), str(folder / 'Test.cs')], check=True)
+    subprocess.run([str(exe)], check=True)

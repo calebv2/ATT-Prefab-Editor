@@ -197,8 +197,7 @@ namespace PrefabEditorMod
         string _rotationX = "0", _rotationY = "0", _rotationZ = "0";
         string _groupRotationX = "0", _groupRotationY = "0", _groupRotationZ = "0";
         string _rotationStep = "15";
-        bool _positionFocused, _rotationFocused, _stepFocused;
-        bool _adminTimeFocused, _boardTextFocused, _boardIntervalFocused, _boardMessageFocused;
+        readonly EditorTextInput _textInput = new EditorTextInput();
         bool _resetPositionArmed;
         float _resetPositionUntil;
         bool _hasTransformClipboard;
@@ -206,7 +205,6 @@ namespace PrefabEditorMod
         Vector3 _transformClipboardEuler;
         string _arrangeSpacingText = "1";
         string _duplicateOffsetX = "1", _duplicateOffsetY = "0", _duplicateOffsetZ = "0";
-        bool _arrangeSpacingFocused, _duplicateOffsetFocused;
 
         // copy/paste: the last exported save string (mirrored to the OS clipboard,
         // so the web panel / workbench can share it both ways)
@@ -254,12 +252,11 @@ namespace PrefabEditorMod
         Vector2 _spawnScroll;
         readonly Dictionary<uint, Texture2D> _prefabImages = new Dictionary<uint, Texture2D>();
         readonly HashSet<uint> _missingPrefabImages = new HashSet<uint>();
-        bool _searchFocused;
 
         // Named camera work areas; saved home recovery for temporary teleport destinations.
         readonly List<WorkArea> _workAreas = new List<WorkArea>();
         readonly List<OnlinePlayer> _onlinePlayers = new List<OnlinePlayer>();
-        bool _playersLoading, _workBusy, _workAreaNameFocused;
+        bool _playersLoading, _workBusy;
         string _workAreaName = "Work area";
         string _selectedPlayer = "";
         string _workMessage = "";
@@ -278,13 +275,6 @@ namespace PrefabEditorMod
         int _tradeGeneration;
         bool _tradeBusy, _tradeLoaded;
         string _tradeQuery = "", _tradeItemName = "", _tradePrice = "1", _tradeQuantity = "1", _tradeStock = "1", _tradeAddStock = "1", _tradeStatus = "";
-        readonly CoordinateTextField _tradeSearchInput = new CoordinateTextField("TradeItemSearch", false);
-        readonly CoordinateTextField _tradePriceInput = new CoordinateTextField("TradePrice");
-        readonly CoordinateTextField _tradeQuantityInput = new CoordinateTextField("TradeQuantity");
-        readonly CoordinateTextField _tradeStockInput = new CoordinateTextField("TradeStock");
-        readonly CoordinateTextField _tradeAddStockInput = new CoordinateTextField("TradeAddStock");
-        bool _teleporterDestinationFocused;
-        readonly CoordinateTextField _teleporterInput = new CoordinateTextField();
 
         // Server-authoritative admin controls.
         string _adminTime = "12";
@@ -329,9 +319,6 @@ namespace PrefabEditorMod
 
         // Import a blueprint JSON array (name/string/position/rotation records).
         string _importPath = "";
-        bool _importPathFocused;
-        readonly CoordinateTextField _prefabPathInput = new CoordinateTextField("PrefabImportPath", false);
-        readonly CoordinateTextField _stringFilterInput = new CoordinateTextField("StringLibraryFilter", false);
         bool _buildStrings;
         string _stringFilter = "", _stringLibraryStatus = "Choose a string file or folder to get started.";
         List<StringLibraryEntry> _stringLibrary = new List<StringLibraryEntry>();
@@ -381,14 +368,11 @@ namespace PrefabEditorMod
         Rect _panelRect;
         Vector2 _panelScroll;
         bool _mouseOverPanel;
-        bool _resizePercentFocused;
-        bool _spawnCountFocused;
         string _objectLoaderPath = "";
         string _objectLoaderLoadedPath = "";
         string _objectLoaderStatus = "Enter an OBJ or GLB path, or browse for a model.";
         string _objectLoaderLoadedName = "";
         int _objectLoaderVertexCount;
-        bool _objectLoaderPathFocused;
         Mesh _objectLoaderMesh;
         Texture2D _objectLoaderTexture;
         bool _objectLoaderSkybox;
@@ -424,28 +408,8 @@ namespace PrefabEditorMod
         public bool HasSelection { get { return _has; } }
         public bool Watching { get { return _watchActive; } }
 
-        // true while the spawn search field has focus - the freecam must not fly
-        // off WASD keystrokes that are actually someone typing a prefab name
-        public bool WantsKeyboard
-        {
-            get
-            {
-                return (_panelTab == 10 && ServerSettingsFocused())
-                    || (_panelTab == 2 && (_prefabPathInput.IsFocused || _stringFilterInput.IsFocused))
-                    || (_panelTab == 7 && _consoleInput.IsFocused)
-                    || (_panelTab == 4 && (_broadcastInput.IsFocused || _spawnLocationInput.IsFocused))
-                    || (_panelTab == 9 && (_tradeSearchInput.IsFocused || _tradePriceInput.IsFocused || _tradeQuantityInput.IsFocused || _tradeStockInput.IsFocused || _tradeAddStockInput.IsFocused))
-                    || (_spawnOpen && _searchFocused) || _spawnCountFocused
-                    || (_panelTab == 3 && _workAreaNameFocused)
-                    || (_panelTab == 8 && _teleporterDestinationFocused)
-                    || (_panelTab == 4 && _adminTimeFocused)
-                    || (_panelTab == 5 && (_boardTextFocused || _boardIntervalFocused || _boardMessageFocused))
-                    || (_panelTab == 6 && _objectLoaderPathFocused)
-                    || _importPathFocused || _resizePercentFocused
-                    || _positionFocused || _rotationFocused || _stepFocused
-                    || _arrangeSpacingFocused || _duplicateOffsetFocused;
-            }
-        }
+        // Keep camera controls and edit shortcuts out of the focused text field.
+        public bool WantsKeyboard { get { return _textInput.IsFocused; } }
 
         public void ConfigureGizmo(float gridSize, bool ghostPreview)
         {
@@ -455,15 +419,8 @@ namespace PrefabEditorMod
 
         public void Clear()
         {
-            _teleporterInput.Stop();
-            _broadcastInput.Stop();
-            _consoleInput.Stop();
-            _prefabPathInput.Stop();
-            _stringFilterInput.Stop();
-            _spawnLocationInput.Stop();
-            foreach (ServerSettingField field in _serverSettings) field.Input.Stop();
+            _textInput.Stop();
             ResetTradeForm();
-            _teleporterDestinationFocused = false;
             StopWatching();
             RestoreResizePreview();
             RestoreGroupPreview();
@@ -485,12 +442,6 @@ namespace PrefabEditorMod
             _cands.Clear();
             _candAt = 0;
             _marqueeTracking = _marqueeActive = false;
-            _resizePercentFocused = false;
-            _positionFocused = _rotationFocused = _stepFocused = false;
-            _arrangeSpacingFocused = _duplicateOffsetFocused = false;
-            _adminTimeFocused = false;
-            _spawnCountFocused = false;
-            _boardTextFocused = _boardIntervalFocused = _boardMessageFocused = false;
         }
 
         bool TryResizePercent(out float percent)
@@ -675,19 +626,7 @@ namespace PrefabEditorMod
         public void Update()
         {
             if(Time.unscaledTime>=_nextAccessAt && !_accessPending) RefreshAccess();
-            _teleporterInput.Tick(_panelTab == 8);
-            _broadcastInput.Tick(_panelTab == 4);
-            _consoleInput.Tick(_panelTab == 7 && CanOpenTab(7));
-            _prefabPathInput.Tick(_panelTab == 2 && !_buildStrings);
-            _stringFilterInput.Tick(_panelTab == 2 && _buildStrings);
-            _spawnLocationInput.Tick(_panelTab == 4);
-            foreach (ServerSettingField field in _serverSettings) field.Input.Tick(_panelTab == 10);
-            bool tradeActive = _panelTab == 9 && IsTradeDeckSelected();
-            _tradeSearchInput.Tick(tradeActive);
-            _tradePriceInput.Tick(tradeActive);
-            _tradeQuantityInput.Tick(tradeActive);
-            _tradeStockInput.Tick(tradeActive);
-            _tradeAddStockInput.Tick(tradeActive);
+            _textInput.Tick();
             if (_tradeId != 0 && (!IsTradeDeckSelected() || _tradeId != _id)) ResetTradeForm();
             if (_resizeSliderDragging)
             {
@@ -2576,7 +2515,6 @@ namespace PrefabEditorMod
         {
             _spawnOpen = false;
             _placing = false;
-            _searchFocused = false;
         }
 
         // Load the server's live list once per window open, then search locally.
@@ -3129,6 +3067,12 @@ namespace PrefabEditorMod
             EnsureEditorSkin();
             GUI.skin = _editorSkin;
             EnsurePixel();
+            if (_textInput.IsFocused && Event.current.type == EventType.MouseDown &&
+                !_panelRect.Contains(Event.current.mousePosition) &&
+                !_spawnRect.Contains(Event.current.mousePosition) &&
+                !_previewRect.Contains(Event.current.mousePosition))
+                _textInput.Blur();
+            _textInput.BeginGUI();
             try
             {
                 DrawHighlight();
@@ -3138,7 +3082,11 @@ namespace PrefabEditorMod
                 DrawPlacement();
                 DrawMarquee();
             }
-            finally { GUI.skin = previousSkin; }
+            finally
+            {
+                _textInput.EndGUI();
+                GUI.skin = previousSkin;
+            }
         }
 
         void EnsureEditorSkin()
@@ -3270,7 +3218,6 @@ namespace PrefabEditorMod
             {
                 _spawnRect = new Rect(0f, 0f, 0f, 0f);
                 _previewRect = new Rect(0f, 0f, 0f, 0f);
-                _searchFocused = false;
                 return;
             }
             float windowY = 136f;
@@ -3281,14 +3228,12 @@ namespace PrefabEditorMod
             GUILayout.BeginArea(_spawnRect, GUI.skin.box);
             GUILayout.Label("Spawn a prefab" + (_placing ? "  -  aiming " + _placeName : ""));
 
-            GUI.SetNextControlName("VelSpawnQ");
-            string q = GUILayout.TextField(_spawnQuery);
+            string q = _textInput.Draw("VelSpawnQ", _spawnQuery);
             if (q != _spawnQuery)
             {
                 _spawnQuery = q;
                 _spawnSendAt = Time.unscaledTime + 0.35f; // debounce while typing
             }
-            _searchFocused = GUI.GetNameOfFocusedControl() == "VelSpawnQ";
 
             GUILayout.BeginHorizontal();
             GUILayout.Label("Copies", GUILayout.Width(54f));
@@ -3450,16 +3395,6 @@ namespace PrefabEditorMod
             float footerHeight = 116f;
             float bodyHeight = Mathf.Max(0f, contentHeight - headerHeight - footerHeight - 8f);
 
-            _positionFocused = _rotationFocused = _stepFocused = false;
-            _arrangeSpacingFocused = _duplicateOffsetFocused = false;
-            _resizePercentFocused = false;
-            _importPathFocused = false;
-            _objectLoaderPathFocused = false;
-            _workAreaNameFocused = false;
-            _teleporterDestinationFocused = false;
-            _adminTimeFocused = _boardTextFocused = _boardIntervalFocused = _boardMessageFocused = false;
-            _spawnCountFocused = false;
-
             GUILayout.BeginVertical();
             GUILayout.BeginVertical(GUILayout.Height(headerHeight));
 
@@ -3499,8 +3434,6 @@ namespace PrefabEditorMod
             DrawPanelTab(8, "Teleporter");
             DrawPanelTab(9, "Trading");
             GUILayout.EndHorizontal();
-            if (_panelTab != 8) _teleporterInput.Stop();
-            if (_panelTab != 7) _consoleInput.Stop();
             if (_panelTab != _lastPanelTab)
             {
                 _panelScroll = Vector2.zero;
@@ -3609,8 +3542,11 @@ namespace PrefabEditorMod
         {
             if(!CanOpenTab(index)) return;
             if (GUILayout.Button(_panelTab == index ? label.ToUpperInvariant() : label,
-                _panelTab == index ? _selectedTabStyle : _tabStyle, GUILayout.Height(27f)))
+                _panelTab == index ? _selectedTabStyle : _tabStyle, GUILayout.Height(27f)) && _panelTab != index)
+            {
+                _textInput.Blur();
                 _panelTab = index;
+            }
         }
 
         void DrawSelectionTab()
@@ -3726,7 +3662,6 @@ namespace PrefabEditorMod
                 {
                     GUI.enabled = !_busy;
                     DrawVectorRow("Position", "Pos", ref _positionX, ref _positionY, ref _positionZ);
-                    _positionFocused = GUI.GetNameOfFocusedControl().StartsWith("Pos", StringComparison.Ordinal);
                     GUILayout.BeginHorizontal();
                     if (GUILayout.Button("Apply position")) ApplyPositionFields();
                     if (GUILayout.Button("Align to ground")) Ground();
@@ -3752,7 +3687,6 @@ namespace PrefabEditorMod
                     GUILayout.Label("Rotate all items around the primary item. One undo step; up to 100 items.", _mutedStyle);
                     GUI.enabled = !_busy && _group.Count <= MaxGroupMove;
                     DrawVectorRow("Add degrees", "GroupRot", ref _groupRotationX, ref _groupRotationY, ref _groupRotationZ);
-                    _rotationFocused = GUI.GetNameOfFocusedControl().StartsWith("GroupRot", StringComparison.Ordinal);
                     GUILayout.BeginHorizontal();
                     if (GUILayout.Button("Rotate group")) ApplyGroupRotationFields();
                     if (GUILayout.Button("Clear angles"))
@@ -3760,9 +3694,7 @@ namespace PrefabEditorMod
                     GUILayout.EndHorizontal();
                     GUILayout.BeginHorizontal();
                     GUILayout.Label("Yaw step", _mutedStyle, GUILayout.Width(70f));
-                    GUI.SetNextControlName("RotationStepField");
-                    _rotationStep = GUILayout.TextField(_rotationStep, GUILayout.Width(68f));
-                    _stepFocused = GUI.GetNameOfFocusedControl() == "RotationStepField";
+                    _rotationStep = _textInput.Draw("GroupRotationStep", _rotationStep, GUILayout.Width(68f));
                     if (GUILayout.Button("- step")) StepGroupYaw(-1f);
                     if (GUILayout.Button("+ step")) StepGroupYaw(1f);
                     GUILayout.EndHorizontal();
@@ -3772,16 +3704,13 @@ namespace PrefabEditorMod
                 {
                     GUI.enabled = !_busy;
                     DrawVectorRow("Rotation", "Rot", ref _rotationX, ref _rotationY, ref _rotationZ);
-                    _rotationFocused = GUI.GetNameOfFocusedControl().StartsWith("Rot", StringComparison.Ordinal);
                     GUILayout.BeginHorizontal();
                     if (GUILayout.Button("Apply rotation")) ApplyRotationFields();
                     if (GUILayout.Button("Reset rotation")) ResetRotation();
                     GUILayout.EndHorizontal();
                     GUILayout.Label("Snap increment", _mutedStyle);
                     GUILayout.BeginHorizontal();
-                    GUI.SetNextControlName("RotationStepField");
-                    _rotationStep = GUILayout.TextField(_rotationStep, GUILayout.Width(68f));
-                    _stepFocused = GUI.GetNameOfFocusedControl() == "RotationStepField";
+                    _rotationStep = _textInput.Draw("RotationStepField", _rotationStep, GUILayout.Width(68f));
                     GUILayout.Label("degrees", _mutedStyle, GUILayout.Width(58f));
                     if (GUILayout.Button("- step")) StepYaw(-1f);
                     if (GUILayout.Button("+ step")) StepYaw(1f);
@@ -3814,9 +3743,7 @@ namespace PrefabEditorMod
                     GUILayout.BeginHorizontal();
                     GUI.enabled = !_busy;
                     GUILayout.Label("Step m", GUILayout.Width(48f));
-                    GUI.SetNextControlName("ArrangeSpacingField");
-                    _arrangeSpacingText = GUILayout.TextField(_arrangeSpacingText, GUILayout.Width(70f));
-                    _arrangeSpacingFocused = GUI.GetNameOfFocusedControl() == "ArrangeSpacingField";
+                    _arrangeSpacingText = _textInput.Draw("ArrangeSpacingField", _arrangeSpacingText, GUILayout.Width(70f));
                     float spacing;
                     bool validSpacing = TryArrangeSpacing(out spacing);
                     GUI.enabled = !_busy && validSpacing;
@@ -3851,7 +3778,6 @@ namespace PrefabEditorMod
             GUILayout.Label("Offset moves every copy by the same X / Y / Z amount.", _mutedStyle);
             GUI.enabled = !_busy;
             DrawVectorRow("Offset", "Dup", ref _duplicateOffsetX, ref _duplicateOffsetY, ref _duplicateOffsetZ);
-            _duplicateOffsetFocused = GUI.GetNameOfFocusedControl().StartsWith("Dup", StringComparison.Ordinal);
             Vector3 offset;
             bool validOffset = TryDuplicateOffset(out offset);
             GUILayout.BeginHorizontal();
@@ -3868,24 +3794,21 @@ namespace PrefabEditorMod
             GUILayout.BeginHorizontal();
             GUILayout.Label(label, GUILayout.Width(64f));
             GUILayout.Label("X", _mutedStyle, GUILayout.Width(14f));
-            GUI.SetNextControlName(prefix + "XField");
-            x = GUILayout.TextField(x, GUILayout.Width(70f));
+            x = _textInput.Draw(prefix + "XField", x, GUILayout.Width(70f));
             GUILayout.Label("Y", _mutedStyle, GUILayout.Width(14f));
-            GUI.SetNextControlName(prefix + "YField");
-            y = GUILayout.TextField(y, GUILayout.Width(70f));
+            y = _textInput.Draw(prefix + "YField", y, GUILayout.Width(70f));
             GUILayout.Label("Z", _mutedStyle, GUILayout.Width(14f));
-            GUI.SetNextControlName(prefix + "ZField");
-            z = GUILayout.TextField(z, GUILayout.Width(70f));
+            z = _textInput.Draw(prefix + "ZField", z, GUILayout.Width(70f));
             GUILayout.EndHorizontal();
         }
 
         void DrawBuildTab()
         {
             GUILayout.BeginHorizontal();
-            if (GUILayout.Button(!_buildStrings ? "PREFABS" : "Prefabs"))
-            { _buildStrings = false; _stringFilterInput.Stop(); }
-            if (GUILayout.Button(_buildStrings ? "STRINGS" : "Strings"))
-            { _buildStrings = true; _prefabPathInput.Stop(); if (_spawnOpen) CloseSpawn(); }
+            if (GUILayout.Button(!_buildStrings ? "PREFABS" : "Prefabs") && _buildStrings)
+            { _textInput.Blur(); _buildStrings = false; }
+            if (GUILayout.Button(_buildStrings ? "STRINGS" : "Strings") && !_buildStrings)
+            { _textInput.Blur(); _buildStrings = true; if (_spawnOpen) CloseSpawn(); }
             GUILayout.EndHorizontal();
             if (_buildStrings) { DrawStringLibraryControls(); return; }
             GUILayout.Label("Spawn & prefab", _titleStyle);
@@ -3922,9 +3845,7 @@ namespace PrefabEditorMod
         {
             bool wasEnabled = GUI.enabled;
             GUI.enabled = !_busy;
-            GUI.SetNextControlName(controlName);
-            _spawnCountText = GUILayout.TextField(_spawnCountText, GUILayout.Width(width));
-            _spawnCountFocused = _spawnCountFocused || GUI.GetNameOfFocusedControl() == controlName;
+            _spawnCountText = _textInput.Draw(controlName, _spawnCountText, GUILayout.Width(width));
             GUI.enabled = wasEnabled;
         }
 
@@ -3935,8 +3856,7 @@ namespace PrefabEditorMod
             GUILayout.Space(4f);
             GUILayout.Label(_objectLoaderStatus, _mutedStyle);
             GUILayout.Label("Model file (.obj or binary .glb)", _mutedStyle);
-            GUI.SetNextControlName("ObjectLoaderPath");
-            string path = GUILayout.TextField(_objectLoaderPath);
+            string path = _textInput.Draw("ObjectLoaderPath", _objectLoaderPath);
             if (path != _objectLoaderPath)
             {
                 _objectLoaderPath = path;
@@ -3948,7 +3868,6 @@ namespace PrefabEditorMod
                 _objectLoaderTexture = null;
                 _objectLoaderSkybox = false;
             }
-            _objectLoaderPathFocused = GUI.GetNameOfFocusedControl() == "ObjectLoaderPath";
             GUILayout.BeginHorizontal();
             if (GUILayout.Button("Browse model...")) BrowseObjectLoaderFile();
             GUI.enabled = !_busy && !string.IsNullOrWhiteSpace(_objectLoaderPath);
@@ -4390,9 +4309,8 @@ namespace PrefabEditorMod
         {
             internal string Name, Label, Value = "";
             internal bool Toggle;
-            internal CoordinateTextField Input;
             internal ServerSettingField(string name, string label, bool toggle)
-            { Name=name; Label=label; Toggle=toggle; Input=new CoordinateTextField("Setting" + name); }
+            { Name = name; Label = label; Toggle = toggle; }
         }
         readonly ServerSettingField[] _serverSettings = new ServerSettingField[] {
             new ServerSettingField("DropAllOnDeath", "Drop all on death", true),
@@ -4407,26 +4325,18 @@ namespace PrefabEditorMod
             new ServerSettingField("HungerTick", "Hunger tick rate", false),
             new ServerSettingField("CommunityStorageMultiplier", "Community storage multiplier", false),
         };
-        readonly CoordinateTextField _consoleInput = new CoordinateTextField("ConsoleCommand", false);
         readonly ConsoleSession _consoleSession = new ConsoleSession();
         string _consoleDraft = "";
         Vector2 _consoleScroll;
         GUIStyle _consoleOutputStyle;
-        readonly CoordinateTextField _broadcastInput = new CoordinateTextField("AdminBroadcast", false);
-        readonly CoordinateTextField _spawnLocationInput = new CoordinateTextField("AdminSpawnLocation");
         string _broadcastMessage = "", _serverSpawnLocation = "", _settingsStatus = "";
         bool _settingsBusy;
-        bool ServerSettingsFocused()
-        {
-            foreach (ServerSettingField field in _serverSettings) if (field.Input.IsFocused) return true;
-            return false;
-        }
 
         void DrawConsoleTab()
         {
             GUILayout.Label("Server console", _titleStyle);
             GUILayout.Label("Run one command on this server. Replies appear below; commands are never retried automatically.", _mutedStyle);
-            _consoleDraft = _consoleInput.Draw(_consoleDraft);
+            _consoleDraft = _textInput.Draw("ConsoleCommand", _consoleDraft);
             GUI.enabled = !_consoleSession.Busy && !string.IsNullOrEmpty(_consoleDraft.Trim());
             if (GUILayout.Button("Run command") && CanOpenTab(7))
             {
@@ -4471,9 +4381,7 @@ namespace PrefabEditorMod
         {
             GUILayout.Label("Time of day", _titleStyle);
             GUILayout.BeginHorizontal();
-            GUI.SetNextControlName("AdminTimeField");
-            _adminTime = GUILayout.TextField(_adminTime, GUILayout.MinWidth(90f));
-            _adminTimeFocused = GUI.GetNameOfFocusedControl() == "AdminTimeField";
+            _adminTime = _textInput.Draw("AdminTimeField", _adminTime, GUILayout.MinWidth(90f));
             GUI.enabled = !_adminBusy && !string.IsNullOrEmpty((_adminTime ?? "").Trim());
             if (GUILayout.Button("Set time", GUILayout.Width(72f))) SetAdminTime(_adminTime);
             if (GUILayout.Button("Noon", GUILayout.Width(62f))) SetAdminTime("12");
@@ -4495,9 +4403,9 @@ namespace PrefabEditorMod
             GUI.enabled = true;
             GUILayout.Space(10f);
             GUILayout.Label("Broadcast to all online players", _titleStyle);
-            _broadcastMessage = _broadcastInput.Draw(_broadcastMessage);
+            _broadcastMessage = _textInput.Draw("AdminBroadcast", _broadcastMessage);
             if (GUILayout.Button("Paste message"))
-                _broadcastMessage = CoordinateTextField.CleanPaste(GUIUtility.systemCopyBuffer);
+                _broadcastMessage = EditorTextInput.CleanPaste(GUIUtility.systemCopyBuffer);
             GUILayout.Label("Shown in game for 10 seconds. Maximum 500 characters.", _mutedStyle);
             GUI.enabled = !_adminBusy && !string.IsNullOrEmpty(_broadcastMessage.Trim()) && _broadcastMessage.Length <= 500;
             if (GUILayout.Button("Send broadcast"))
@@ -4510,14 +4418,14 @@ namespace PrefabEditorMod
             GUILayout.Label("Server spawn location", _titleStyle);
             GUILayout.Label("New arrivals and default respawns use this location. Personal homes are unchanged. Saved on the server across restarts.", _mutedStyle);
             GUILayout.Label("X,Y,Z - choose a safe spot on solid ground.", _mutedStyle);
-            _serverSpawnLocation = _spawnLocationInput.Draw(_serverSpawnLocation);
+            _serverSpawnLocation = _textInput.Draw("AdminSpawnLocation", _serverSpawnLocation);
             if (GUILayout.Button("Use my last refreshed player position"))
             {
                 OnlinePlayer me = FindOnlinePlayer(CurrentUsername());
                 if (me != null) _serverSpawnLocation = me.Position.x.ToString(CultureInfo.InvariantCulture) + "," + me.Position.y.ToString(CultureInfo.InvariantCulture) + "," + me.Position.z.ToString(CultureInfo.InvariantCulture);
                 else _adminStatus = "Refresh players while your player is connected, then try again.";
             }
-            if (GUILayout.Button("Paste coordinates")) _serverSpawnLocation = CoordinateTextField.CleanPaste(GUIUtility.systemCopyBuffer);
+            if (GUILayout.Button("Paste coordinates")) _serverSpawnLocation = EditorTextInput.CleanPaste(GUIUtility.systemCopyBuffer);
             GUI.enabled = !_adminBusy;
             if (GUILayout.Button("Set server spawn location"))
             {
@@ -4561,7 +4469,7 @@ namespace PrefabEditorMod
                 }
                 else
                 {
-                    field.Value = field.Input.Draw(field.Value);
+                    field.Value = _textInput.Draw("Setting" + field.Name, field.Value);
                     if (GUILayout.Button("Set", GUILayout.Width(60f))) ApplyServerSetting(field, field.Value);
                 }
                 GUILayout.EndHorizontal();
@@ -4651,7 +4559,6 @@ namespace PrefabEditorMod
                 GUILayout.Label("The rotation messages below are shown while rotation is on.", _mutedStyle);
             _infoBoardText = DrawInfoBoardTextArea("BoardTextField", _infoBoardText,
                 ref _infoBoardTextScroll, 82f, 190f, Mathf.Max(140f, _panelRect.width - 70f));
-            _boardTextFocused = GUI.GetNameOfFocusedControl() == "BoardTextField";
 
             bool rotate = ThemedToggle(_infoBoardRotationEnabled, "Rotate messages automatically");
             if (rotate != _infoBoardRotationEnabled)
@@ -4668,9 +4575,7 @@ namespace PrefabEditorMod
             {
                 GUILayout.BeginHorizontal();
                 GUILayout.Label("Every", GUILayout.Width(42f));
-                GUI.SetNextControlName("BoardIntervalField");
-                _infoBoardIntervalText = GUILayout.TextField(_infoBoardIntervalText, GUILayout.Width(64f));
-                _boardIntervalFocused = GUI.GetNameOfFocusedControl() == "BoardIntervalField";
+                _infoBoardIntervalText = _textInput.Draw("BoardIntervalField", _infoBoardIntervalText, GUILayout.Width(64f));
                 if (GUILayout.Button(_infoBoardUnit == "seconds" ? "SECONDS" : "Seconds", _infoBoardUnit == "seconds" ? _selectedTabStyle : _tabStyle))
                     _infoBoardUnit = "seconds";
                 if (GUILayout.Button(_infoBoardUnit == "minutes" ? "MINUTES" : "Minutes", _infoBoardUnit == "minutes" ? _selectedTabStyle : _tabStyle))
@@ -4685,10 +4590,10 @@ namespace PrefabEditorMod
                         _infoBoardMessages[i], ref messageScroll, 54f, 150f,
                         Mathf.Max(120f, _panelRect.width - 104f));
                     _infoBoardMessageScrolls[i] = messageScroll;
-                    if (GUI.GetNameOfFocusedControl() == "BoardMessage" + i) _boardMessageFocused = true;
                     GUI.enabled = !_infoBoardSaving;
                     if (GUILayout.Button("×", GUILayout.Width(30f)))
                     {
+                        _textInput.Blur();
                         _infoBoardMessages.RemoveAt(i);
                         _infoBoardMessageScrolls.RemoveAt(i);
                         GUILayout.EndHorizontal();
@@ -5199,8 +5104,7 @@ namespace PrefabEditorMod
             contentHeight = Mathf.Max(minimumHeight, contentHeight);
             float viewportHeight = Mathf.Min(maximumViewportHeight, contentHeight);
             scroll = GUILayout.BeginScrollView(scroll, GUILayout.ExpandWidth(true), GUILayout.Height(viewportHeight));
-            GUI.SetNextControlName(controlName);
-            value = GUILayout.TextArea(value, GUILayout.ExpandWidth(true), GUILayout.Height(contentHeight));
+            value = _textInput.Draw(controlName, value, true, GUILayout.ExpandWidth(true), GUILayout.Height(contentHeight));
             GUILayout.EndScrollView();
             return value;
         }
@@ -5283,9 +5187,7 @@ namespace PrefabEditorMod
         {
             GUILayout.Label("Save the camera here, or jump it to a saved area.", _mutedStyle);
             GUILayout.BeginHorizontal();
-            GUI.SetNextControlName("WorkAreaName");
-            _workAreaName = GUILayout.TextField(_workAreaName);
-            _workAreaNameFocused = GUI.GetNameOfFocusedControl() == "WorkAreaName";
+            _workAreaName = _textInput.Draw("WorkAreaName", _workAreaName);
             if (GUILayout.Button("Save camera", GUILayout.Width(90f))) SaveWorkArea();
             GUILayout.EndHorizontal();
             if (_workAreas.Count == 0) GUILayout.Label("No saved work areas yet.", _mutedStyle);
@@ -5394,7 +5296,6 @@ namespace PrefabEditorMod
             _tradeGeneration++;
             _tradeId = 0; _tradeHash = 0; _tradeBusy = false; _tradeLoaded = false;
             _tradeQuery = ""; _tradeItemName = ""; _tradePrice = "1"; _tradeQuantity = "1"; _tradeStock = "1"; _tradeAddStock = "1"; _tradeStatus = "";
-            _tradeSearchInput.Stop(); _tradePriceInput.Stop(); _tradeQuantityInput.Stop(); _tradeStockInput.Stop(); _tradeAddStockInput.Stop();
         }
 
         void LoadTradeDeck()
@@ -5464,7 +5365,7 @@ namespace PrefabEditorMod
             }
             GUILayout.Label("Item to sell - search by name or enter a prefab ID:", _mutedStyle);
             GUI.enabled = !_tradeBusy;
-            string query = _tradeSearchInput.Draw(_tradeQuery);
+            string query = _textInput.Draw("TradeItemSearch", _tradeQuery);
             if (query != _tradeQuery) {
                 _tradeQuery = query; _tradeItemName = "";
                 if (!uint.TryParse(query.Trim(), out _tradeHash)) _tradeHash = 0;
@@ -5477,18 +5378,18 @@ namespace PrefabEditorMod
                     if (GUILayout.Button(entry.Name + "  #" + entry.Hash)) {
                         _tradeHash = entry.Hash; _tradeItemName = entry.Name;
                         _tradeQuery = entry.Hash.ToString(CultureInfo.InvariantCulture);
-                        GUI.FocusControl(null); _tradeSearchInput.Stop();
+                        _textInput.Blur();
                     }
                     if (++shown >= 6) break;
                 }
             if (_tradeHash != 0) GUILayout.Label("Item: " + _tradeItemName + "  #" + _tradeHash, _mutedStyle);
             else if (shown == 0 && _tradeQuery.Length > 0) GUILayout.Label("No matches yet. You can enter the item's prefab ID directly.", _mutedStyle);
             GUILayout.Label("Price in coins per purchase:", _mutedStyle);
-            _tradePrice = _tradePriceInput.Draw(_tradePrice);
+            _tradePrice = _textInput.Draw("TradePrice", _tradePrice);
             GUILayout.Label("Items given per purchase:", _mutedStyle);
-            _tradeQuantity = _tradeQuantityInput.Draw(_tradeQuantity);
+            _tradeQuantity = _textInput.Draw("TradeQuantity", _tradeQuantity);
             GUILayout.Label("Total stock available (sets the total, not an amount to add):", _mutedStyle);
-            _tradeStock = _tradeStockInput.Draw(_tradeStock);
+            _tradeStock = _textInput.Draw("TradeStock", _tradeStock);
             int price, quantity, stock;
             bool valid = _tradeHash != 0 && int.TryParse(_tradePrice, out price) && price > 0 && price <= 1000000
                 && int.TryParse(_tradeQuantity, out quantity) && quantity > 0
@@ -5499,7 +5400,7 @@ namespace PrefabEditorMod
             if (GUILayout.Button("Apply item, price and stock to selected deck")) ApplyTradeDeck();
             GUI.enabled = !_tradeBusy && _tradeLoaded;
             GUILayout.Label("Add more stock (keeps the current price and purchase quantity):", _mutedStyle);
-            _tradeAddStock = _tradeAddStockInput.Draw(_tradeAddStock);
+            _tradeAddStock = _textInput.Draw("TradeAddStock", _tradeAddStock);
             int added;
             GUI.enabled = !_tradeBusy && _tradeLoaded && _tradeHash != 0
                 && int.TryParse(_tradeAddStock, out added) && added > 0;
@@ -5542,26 +5443,47 @@ namespace PrefabEditorMod
         void DrawTeleporterControls()
         {
             GUILayout.Label("Teleporter destination", _titleStyle);
-            GUILayout.Label("Spawn and place your teleporter, then click it in the world to select it. Enter its destination below and click Link.", _mutedStyle);
-            GUILayout.Label("Destination X,Y,Z (click to type):", _mutedStyle);
-            _teleporterDestination = _teleporterInput.Draw(_teleporterDestination);
-            _teleporterDestinationFocused = GUI.GetNameOfFocusedControl() == "TeleporterDestination";
+            GUILayout.Label("Stand where players should arrive and capture your position. Then select the placed teleporter and click Link.", _mutedStyle);
+            GUILayout.Label("Destination X,Y,Z", _mutedStyle);
+            GUI.enabled = !_teleporterBusy;
+            _teleporterDestination = _textInput.Draw("TeleporterDestination", _teleporterDestination);
+            GUILayout.BeginHorizontal();
+            if (GUILayout.Button("Capture my position")) CaptureTeleporterDestination();
             if (GUILayout.Button("Paste coordinates"))
             {
-                _teleporterInput.Stop();
-                _teleporterDestination = CoordinateTextField.CleanPaste(GUIUtility.systemCopyBuffer);
-                GUI.FocusControl(null);
-                _teleporterDestinationFocused = false;
+                _textInput.Blur();
+                _teleporterDestination = EditorTextInput.CleanPaste(GUIUtility.systemCopyBuffer);
+                _teleporterStatus = "";
             }
-            GUILayout.Label("Type or paste X,Y,Z, then click Link to apply. Ctrl+A selects all; Backspace deletes.", _mutedStyle);
+            GUILayout.EndHorizontal();
+            GUI.enabled = true;
             GUILayout.Label(_has && _id != 0 ? "Selected entity #" + _id : "No teleporter selected. Click your teleporter in the world first.", _mutedStyle);
             GUI.enabled = !_teleporterBusy && _has && _id != 0 && _group.Count == 1;
             if (GUILayout.Button(_teleporterBusy ? "Linking..." : "Link selected teleporter to destination")) ConfigureTeleporter();
             GUI.enabled = true;
             if (_group.Count > 1) GUILayout.Label("Select one teleporter at a time.", _mutedStyle);
             GUILayout.Label("If you move the teleporter afterward, link it again to keep these exact destination coordinates.", _mutedStyle);
-            GUILayout.Label("Use its normal in-game teleport interaction. The game streams destination chunks. Platform links are saved on the server; relink after moving the platform.", _mutedStyle);
+            GUILayout.Label("Use the normal in-game teleport interaction. The link is saved on the server.", _mutedStyle);
             if (!string.IsNullOrEmpty(_teleporterStatus)) GUILayout.Label(_teleporterStatus, _mutedStyle);
+        }
+
+        void CaptureTeleporterDestination()
+        {
+            _textInput.Blur();
+            Vector3 position;
+            if (!TryPlayerPosition(Player.Current, out position) || !IsFinitePosition(position))
+            {
+                _teleporterStatus = "Could not read your position. Join the world and try again.";
+                return;
+            }
+            _teleporterDestination = VecText(position);
+            _teleporterStatus = "Position captured. Select the teleporter and click Link to save it.";
+        }
+
+        static bool IsFinitePosition(Vector3 position)
+        {
+            return !float.IsNaN(position.x) && !float.IsNaN(position.y) && !float.IsNaN(position.z)
+                && !float.IsInfinity(position.x) && !float.IsInfinity(position.y) && !float.IsInfinity(position.z);
         }
 
         void ConfigureTeleporter()
@@ -5572,8 +5494,7 @@ namespace PrefabEditorMod
             if (values.Length != 3 || !float.TryParse(values[0], NumberStyles.Float, CultureInfo.InvariantCulture, out destination.x)
                 || !float.TryParse(values[1], NumberStyles.Float, CultureInfo.InvariantCulture, out destination.y)
                 || !float.TryParse(values[2], NumberStyles.Float, CultureInfo.InvariantCulture, out destination.z)
-                || float.IsNaN(destination.x) || float.IsNaN(destination.y) || float.IsNaN(destination.z)
-                || float.IsInfinity(destination.x) || float.IsInfinity(destination.y) || float.IsInfinity(destination.z))
+                || !IsFinitePosition(destination))
             { _teleporterStatus = "Enter three coordinates separated by commas, for example -596.447,275.657,240.869"; return; }
             _teleporterBusy = true;
             _teleporterStatus = "Linking selected teleporter...";
@@ -5888,7 +5809,6 @@ namespace PrefabEditorMod
             _selectedString = _stringLibrary.Count > 0 ? 0 : -1;
             _stringFilter = "";
             _stringLibraryScroll = Vector2.zero;
-            _stringFilterInput.Stop();
             _buildStrings = true;
             _stringLibraryStatus = _stringLibrary.Count > 0
                 ? "Loaded " + _stringLibrary.Count + " string variants from " + source + ". Choose one, then click Spawn selected string."
@@ -5976,7 +5896,7 @@ namespace PrefabEditorMod
             GUILayout.Label(_stringLibraryStatus, _stringNotesStyle);
             if (_stringLibrary.Count == 0) return;
             GUILayout.Label("Find a string by name", _mutedStyle);
-            _stringFilter = _stringFilterInput.Draw(_stringFilter);
+            _stringFilter = _textInput.Draw("StringLibraryFilter", _stringFilter);
             string query = _stringFilter.Trim();
             int shown = 0;
             _stringLibraryScroll = GUILayout.BeginScrollView(_stringLibraryScroll, GUILayout.Height(180f));
@@ -6008,15 +5928,13 @@ namespace PrefabEditorMod
             GUILayout.BeginHorizontal();
             GUILayout.Label(_group.Count > 1 ? "Size Δ each" : "Size Δ", GUILayout.Width(78f));
             GUI.enabled = enabled;
-            GUI.SetNextControlName("PrefabResizePercent");
-            string typed = GUILayout.TextField(_resizePercentText, GUILayout.Width(68f));
+            string typed = _textInput.Draw("PrefabResizePercent", _resizePercentText, GUILayout.Width(68f));
             if (typed != _resizePercentText)
             {
                 _resizePercentText = typed;
                 float parsed;
                 if (TryResizePercent(out parsed)) _resizePercent = parsed;
             }
-            _resizePercentFocused = GUI.GetNameOfFocusedControl() == "PrefabResizePercent";
             GUILayout.Label("%", GUILayout.Width(14f));
             float percent;
             bool valid = TryResizePercent(out percent);
@@ -6049,13 +5967,12 @@ namespace PrefabEditorMod
             if (GUILayout.Button((_importAtCamera ? "> " : "") + "At camera")) _importAtCamera = true;
             if (GUILayout.Button((!_importAtCamera ? "> " : "") + "Original positions")) _importAtCamera = false;
             GUILayout.EndHorizontal();
-            string path = _prefabPathInput.Draw(_importPath);
+            string path = _textInput.Draw("PrefabImportPath", _importPath);
             if (path != _importPath)
             {
                 _importPath = path;
                 _importEntries.Clear();
             }
-            _importPathFocused = _prefabPathInput.IsFocused;
             GUILayout.BeginHorizontal();
             GUI.enabled = !_importing && !_busy;
             if (GUILayout.Button("Browse prefabs...")) BrowseImportFile();
