@@ -11,4 +11,4 @@ All editing happens in game (F1). Keep Tavern Launcher open while playing.
 Source instructions: [player](tavern-addon/player-instructions.txt), [server](tavern-addon/server-instructions.txt), [shared Mods](tavern-addon/shared-instructions.txt).
 Build mods using their build.ps1 scripts with -GamePath. Package using tools/package_tavern_addon.py --output <folder>.
 
-Owners can use Manage Admin Access in Prefabulator to issue a personal token to each admin, choose allowed tabs, change permissions or revoke access. Update both packages to 1.0.6 first. All tabs never grants access management.
+Owners can use **Manage moderator access** in Prefabulator to issue a private code to each moderator, choose allowed tabs, change permissions or revoke access.

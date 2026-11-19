@@ -696,7 +696,7 @@ def _auto_connect(launcher):
         if _active and not _active.closed:
             if not _same_server(getattr(_active, 'game_host', getattr(_active, 'host', '')), host):
                 _active.close_reason = ('Editor disconnected: Prefabulator is connected to ' + getattr(_active, 'game_host', getattr(_active, 'host', '')) +
-                                        ', but the launcher selected ' + host + '. Open Prefabulator and click Change server / reconnect before joining.')
+                                        ', but the launcher selected ' + host + '. Open Prefabulator and click Change server before joining.')
                 launcher._print(_active.close_reason)
                 _active.close()
             elif _active.transport.client._connected and _active.process and _active.process.poll() is None:

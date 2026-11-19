@@ -1,3 +1,11 @@
+## 1.0.24 - Flat-screen camera, typing and launcher update
+
+- Start the F1 editor camera above the local character in flat-screen mode. Opening it again reads the character's current location.
+- Use the same text input behavior in editor fields, including trade deck settings and teleporter coordinates.
+- Add **Capture my position** in the Teleporter tab. Capture fills the destination, and **Link selected teleporter to destination** saves it.
+- Give Prefabulator a dedicated launcher connection form and dashboard with clearer status, setup and moderator actions.
+- Update the launcher add-on and player DLL to use these changes. Player mod 2.3.10 and server core 1.6.7 are included.
+
 ## 1.0.23 - Fix duplicate owner console commands
 
 - Make the personal-token interceptor a one-shot callback. Ordinary owner authentication restores the native WebSocket authorization callback before forwarding the first message, so native authorization can replace it with a single request handler.
